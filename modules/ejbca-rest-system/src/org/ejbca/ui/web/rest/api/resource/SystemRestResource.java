@@ -24,7 +24,6 @@ import jakarta.ws.rs.core.Response.Status;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.core.ejb.services.ServiceDataSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.ServiceExecutionResult;
@@ -40,10 +39,7 @@ public class SystemRestResource extends BaseRestResource {
     
     @EJB
     private ServiceSessionLocal serviceSession;
-    
-    @EJB
-    private ServiceDataSessionLocal serviceDataSession;
-    
+        
     private static final Logger log = Logger.getLogger(SystemRestResource.class);
 
     public Response runServiceWorker(

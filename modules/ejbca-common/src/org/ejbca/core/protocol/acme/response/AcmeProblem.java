@@ -20,8 +20,7 @@ package org.ejbca.core.protocol.acme.response;
 public enum AcmeProblem {
     PROBLEM_BAD_CSR("badCSR", "The CSR is unacceptable (e.g., due to a short key)"),
     PROBLEM_BAD_NONCE("badNonce", "The client sent an unacceptable anti-replay nonce"),
-    PROBLEM_BAD_SIGNATURE_ALGORITHM("badSignatureAlgorithm",
-                    "The JWS was signed with an algorithm the server does not support"),
+    PROBLEM_BAD_SIGNATURE_ALGORITHM("badSignatureAlgorithm", "The JWS was signed with an algorithm the server does not support"),
     PROBLEM_UNSUPPORTED_CONTACT("unsupportedContact", "The contact URL scheme is not supported. Use 'mailto'"),
     PROBLEM_INVALID_CONTACT("invalidContact", "The contact URI for an account was invalid"),
     PROBLEM_MALFORMED("malformed", "The request message was malformed"),
@@ -33,7 +32,7 @@ public enum AcmeProblem {
     PROBLEM_USER_ACTION_REQUIRED("userActionRequired", "Visit the \"instance\" URL and take actions specified there"),
     PROBLEM_ALREADY_REVOKED("alreadyRevoked", "The certificate is already revoked."),
     PROBLEM_BAD_REVOCATION_REASON("badRevocationReason", "The revocation reason provided is not allowed by the server"),
-    PROBLEM_CAA("caa", "CAA records forbid the CA from issuing"),
+    PROBLEM_CAA("caa", "CAA records forbid the CA from issuing a certificate."),
     PROBLEM_DNS("dns", "There was a problem with a DNS query"),
     PROBLEM_CONNECTION("connection", "The server could not connect to validation target"),
     PROBLEM_TLS("tls", "The server received a TLS error during validation"),

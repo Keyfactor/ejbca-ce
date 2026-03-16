@@ -227,6 +227,59 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         doTestX509CABasicOperations(AlgorithmConstants.SIGALG_LMS);
     }
 
+    @Test
+    public void testUseSignatureVerificationEnabledBlocksIssuanceWithMismatchedCAKey() throws Exception {
+        final String algName = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
+        final CryptoToken cryptoToken = getNewCryptoToken();
+        final X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
+
+        // Initial issuance should work with default profile settings (verification ON)
+        final EndEntityInformation user = new EndEntityInformation("useSigVerOnUser", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com",
+                new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
+        final KeyPair keypair = genTestKeyPair(algName);
+        final CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        Certificate usercert = x509ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", cp, "00000", cceConfig);
+        assertNotNull(usercert);
+
+        // Change the CA signing key (but keep the old CA certificate) to simulate renewal in progress
+        cryptoToken.generateKeyPair(getTestKeySpec(algName), CAToken.SOFTPRIVATESIGNKEYALIAS);
+
+        // With signature verification enabled we expect issuance to fail with a clear error
+        cp.setUseSignatureVerification(true);
+        try {
+            x509ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", cp, "00000", cceConfig);
+            fail("Issuance should fail when signature verification is enabled and CA key has changed");
+        } catch (CertificateCreateException e) {
+            // Expected path
+            assertTrue("Unexpected error message: " + e.getMessage(), e.getMessage() != null && e.getMessage().startsWith("Public key in the CA certificate does not match"));
+        }
+    }
+
+    @Test
+    public void testUseSignatureVerificationDisabledAllowsIssuanceWithMismatchedCAKey() throws Exception {
+        final String algName = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
+        final CryptoToken cryptoToken = getNewCryptoToken();
+        final X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
+
+        // Prepare end entity and key pair
+        final EndEntityInformation user = new EndEntityInformation("useSigVerOffUser", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com",
+                new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
+        final KeyPair keypair = genTestKeyPair(algName);
+        final CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+
+        // Establish baseline issuance (should succeed)
+        Certificate usercert = x509ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", cp, "00000", cceConfig);
+        assertNotNull(usercert);
+
+        // Change the CA signing key (but not the CA certificate) to make cert verification fail if checked
+        cryptoToken.generateKeyPair(getTestKeySpec(algName), CAToken.SOFTPRIVATESIGNKEYALIAS);
+
+        // Disable signature verification in the certificate profile and try issuing again
+        cp.setUseSignatureVerification(false);
+        usercert = x509ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", cp, "00000", cceConfig);
+        assertNotNull("Issuance should succeed when signature verification is disabled in the profile", usercert);
+    }
+
     private void doTestX509CABasicOperations(String algName) throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);

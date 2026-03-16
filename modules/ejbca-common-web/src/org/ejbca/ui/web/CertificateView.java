@@ -164,7 +164,9 @@ public class CertificateView implements Serializable {
         if (certificate==null) {
             return certificateData.getIssuerDN();
         }
-        return CertTools.getIssuerDN(certificate);
+        final String issuerDN = CertTools.getIssuerDN(certificate);
+
+        return StringUtils.defaultIfBlank(issuerDN, certificateData.getIssuerDN());
     }
 
     public String getIssuerDNField(int field, int number) {

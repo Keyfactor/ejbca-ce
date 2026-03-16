@@ -41,6 +41,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
@@ -120,9 +121,10 @@ public class KeyRecoveryImportCommandSystemTest {
         }
     }
 
-    /** Test to import key recovery data that already exists in the database, it should fail */
+    /** Test to import key recovery data that already exists in the database, it should fail 
+     * @throws CertificateCreateException */
     @Test
-    public void testImportAlreadyExisting() throws AuthorizationDeniedException, EndEntityExistsException, CADoesntExistsException, IllegalNameException, CertificateSerialNumberException, EndEntityProfileValidationException, WaitingForApprovalException, NotFoundException, EjbcaException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {
+    public void testImportAlreadyExisting() throws AuthorizationDeniedException, EndEntityExistsException, CADoesntExistsException, IllegalNameException, CertificateSerialNumberException, EndEntityProfileValidationException, WaitingForApprovalException, NotFoundException, EjbcaException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException, NoSuchEndEntityException, CouldNotRemoveEndEntityException, CertificateCreateException {
         final String username = TESTCLASS_NAME+"User";
         final EndEntityInformation userdata = new EndEntityInformation(username, END_ENTITY_SUBJECT_DN, x509ca.getCAId(), null, null,
                 EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,

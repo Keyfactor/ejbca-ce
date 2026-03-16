@@ -76,28 +76,6 @@
 # The offset can be overwritten by the user with it's corresponding value in a certificate profile
 certificate.validityoffset=-10m
 
-# When generating large CRLs, the RAM of the Java process will limit how many entries that can be
-# fetched from the database at the time. A small value will lead to multiple round-trips to the
-# database and CRL generation will take more time.
-#
-# The heap usage can be estimated to roughly 600 bytes * rows per database read. The default of
-# 0.5M revoked entries per database round trip will usually fit within a 2GiB heap assigned to the
-# application server. If multiple large CRLs are generated at the same time, the used heap will be
-# the sum of the heap used by each CRL generation.
-#
-# If you have plenty of RAM assigned to the application server you should increase this value.
-# Default: 500000
-#database.crlgenfetchsize=500000
-
-# Whether EJBCA should request ordered fetching of revoked certificates when generating CRLs.
-# EJBCA relies on Hibernate to return data in batches (see the database.crlgenfetchsize setting
-# above, to control the read batch size). However, Microsoft SQL Server 2016 is known to return
-# duplicates and/or missing entries when multiple batches are read. The setting below is a
-# workaround for this problem.
-#
-# Default: off (false)
-#database.crlgenfetchordered=true
-
 # ------------ Audit log configuration ---------------------
 # I you want to use integrity protection of the audit log (in the IntegrityProtectedDevice) you
 # must also configure integrity protection in conf/databaseprotection.properties

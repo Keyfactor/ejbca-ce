@@ -22,6 +22,8 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.QueryResultWrapper;
 import org.cesecore.util.ValidityDate;
@@ -43,6 +45,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
 
@@ -66,6 +69,8 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
     
     @EJB
     private AuthorizationSessionLocal authorizationSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     @Override
     protected EntityManager getEntityManager() {
@@ -318,6 +323,9 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
                     ", Last Base CRL Date: " + FastDateFormat.getInstance(ValidityDate.ISO8601_DATE_FORMAT, TimeZone.getTimeZone("GMT")).format(lastBaseCrlDate) +
                     ", Allow Invalidity Date: " + allowInvalidityDate);
         }
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        
         final String crlPartitionExpression;
         final String ordering;
         final Query query;
@@ -326,7 +334,7 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
         } else {
             crlPartitionExpression = " AND (crlPartitionIndex = :crlPartitionIndex OR crlPartitionIndex IS NULL)";
         }
-        if (CesecoreConfiguration.getDatabaseRevokedCertInfoFetchOrdered()) {
+        if (globalCesecoreConfiguration.getCrlGenerationFetchOrdered()) {
             ordering = " ORDER BY revocationDate, fingerprint ASC";
         } else {
             ordering = "";
@@ -367,7 +375,7 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
         }
         query.setParameter("issuerDN", issuerDN);
         query.setParameter("crlPartitionIndex", crlPartitionIndex);
-        return getRevokedCertInfosInternal(query, allowInvalidityDate);
+        return getRevokedCertInfosInternal(query, allowInvalidityDate, globalCesecoreConfiguration.getCrlGenerationFetchSize());
     }
 
     @Override
@@ -647,7 +655,8 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
     }
 
     @Override
-    public List<CertificateInfo> findOldCertificates(final Collection<String> issuerDns, final Date expiredBefore, final int maxNumberOfResults) {
+    public List<CertificateInfo> findOldCertificates(final Collection<String> issuerDns, final Date expiredBefore, final int maxNumberOfResults,
+            final Set<String> excludedCertificateIds) {
         final StringBuilder sb = new StringBuilder(SELECT_QUERY_FOR_CERTIFICATEINFO_SUBSET);
         sb.append("WHERE a.expireDate <= :expiredBefore ");
         if (issuerDns != null) {
@@ -655,6 +664,11 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
         }
         // Use ABS to prevent the optimizer from using an index
         sb.append(" AND ABS(a.type+1)-1 IN (:types)");
+        
+        // Exclude certificates that are in use by key bindings
+        if (excludedCertificateIds != null && !excludedCertificateIds.isEmpty()) {
+            sb.append(" AND a.fingerprint NOT IN (:excludedCertificateIds)");
+        }
 
         final String queryString = sb.toString();
         if (log.isTraceEnabled()) {
@@ -665,6 +679,16 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
         query.setParameter("types", Arrays.asList(CertificateConstants.CERTTYPE_ENDENTITY, CertificateConstants.CERTTYPE_SSH));
         if (issuerDns != null) {
             query.setParameter("issuerDns", issuerDns);
+        }
+        if (excludedCertificateIds != null && !excludedCertificateIds.isEmpty()) {
+            // Normalize to lowercase since CertificateData stores fingerprints in lowercase
+            final Set<String> lowercaseIds = new HashSet<>();
+            for (final String id : excludedCertificateIds) {
+                if (id != null) {
+                    lowercaseIds.add(id.toLowerCase(Locale.ROOT));
+                }
+            }
+            query.setParameter("excludedCertificateIds", lowercaseIds);
         }
         query.setMaxResults(maxNumberOfResults);
         final List<?> dbResults = query.getResultList();

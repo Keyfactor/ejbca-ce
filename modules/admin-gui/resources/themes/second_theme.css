@@ -1613,7 +1613,7 @@ textarea:disabled:not(.ui-state-disabled) {
     font-weight: bold;
     max-width: 35vw;
     min-width: 3rem;
-    word-break: break-all;
+    word-break: break-word;
 }
 
 .vertical-padding-1 {
@@ -1631,6 +1631,10 @@ textarea:disabled:not(.ui-state-disabled) {
 
 .text-align-left {
 	text-align: left !important;
+}
+
+.text-align-right {
+	text-align: right !important;
 }
 
 .action-buttons {
@@ -1688,6 +1692,18 @@ table.row-padding-bottom-1-rem tr td {
     margin-top: 1rem;
 }
 
+.margin-top-half-rem {
+	margin-top: .5rem;
+}
+
+.margin-left-half-rem {
+	margin-left: .5rem;
+}
+
+.margin-right-half-rem {
+	margin-right: .5rem;
+}
+
 .cell-padding-right-1-rem,
 .cell-padding-right-1-rem table tr td {
     padding-right: 1rem;
@@ -1711,6 +1727,36 @@ label.align-label > span.ui-outputlabel-label {
     display: flex;
     align-items: center;
     height: 100%;
+}
+
+.form-vertical-align {
+	table-layout: auto !important;
+}
+
+.form-vertical-align td {
+	vertical-align: middle !important;
+	padding: .5rem .5rem .5rem 0 !important;
+}
+
+.form-vertical-align td:first-child {
+	vertical-align: middle !important;
+}
+
+.form-label-col {
+	width: 1%;
+	white-space: nowrap;
+}
+
+.form-label-col label {
+	font-size: 1rem;
+}
+
+p.compositeText {
+	line-height:1.8rem;
+}
+
+.compositeKeyColor {
+	color:#284E81;
 }
 
 /*--------------------------------------------------------------------------*/

@@ -142,8 +142,8 @@
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-core-7.0.0.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-core-spi-7.0.0.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-undertow-7.0.0.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/undertow-core-2.3.19.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/undertow-servlet-2.3.19.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/undertow-core-2.3.22.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/undertow-servlet-2.3.22.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-jackson2-provider-7.0.0.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-multipart-provider-7.0.0.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/xnio-api-3.8.16.Final.jar"/>
@@ -189,12 +189,12 @@
 	<classpathentry kind="lib" path="lib/jee/soapclient/saaj-impl-3.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/gmbal-api-only-4.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/ejbca-ws-client-gen.jar"/>
-	<classpathentry kind="lib" path="lib/x509-common-util-5.6.2.jar" sourcepath="/x509-common-util"/>
-	<classpathentry kind="lib" path="lib/cryptotokens-api-3.4.2.jar"/>
-	<classpathentry kind="lib" path="lib/cryptotokens-impl-3.4.2.jar"/>
-	<classpathentry kind="lib" path="lib/cryptotokens-impl-ee-3.4.2.jar"/>
+	<classpathentry kind="lib" path="lib/x509-common-util-5.9.0.jar" sourcepath="/x509-common-util"/>
+	<classpathentry kind="lib" path="lib/cryptotokens-api-3.8.5.jar"/>
+	<classpathentry kind="lib" path="lib/cryptotokens-impl-3.8.5.jar"/>
+	<classpathentry kind="lib" path="lib/cryptotokens-impl-ee-3.8.5.jar"/>
 	<classpathentry kind="lib" path="lib/primefaces/primefaces-15.0.3-jakarta.jar"/>
-	<classpathentry kind="lib" path="lib/p11ng-0.27.0.jar" sourcepath="/p11ng"/>
+	<classpathentry kind="lib" path="lib/p11ng-0.29.0.jar" sourcepath="/p11ng"/>
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-jakarta-rs-json-provider-2.20.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-module-jaxb-annotations-2.20.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-jakarta-rs-base-2.20.0.jar"/>
@@ -271,9 +271,9 @@
 	<classpathentry kind="lib" path="lib/jee/soapclient/woodstox-core-6.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/wsdl4j-1.6.3.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/xmlschema-core-2.2.5.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-1.2-api-2.20.0.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-api-2.20.0.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-core-2.20.0.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2-api-2.25.3.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-api-2.25.3.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-core-2.25.3.jar"/>
 	<classpathentry kind="lib" path="lib/el-impl-2.2.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jakarta.jakartaee-api-10.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jakarta.servlet.jsp.jstl-api-3.0.0.jar"/>

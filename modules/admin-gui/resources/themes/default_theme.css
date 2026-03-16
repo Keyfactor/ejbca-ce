@@ -1623,7 +1623,7 @@ table.ui-md-1, table.ui-md-2, table.ui-md-3, table.ui-md-4, table.ui-md-5, table
     font-weight: bold;
     max-width: 35vw;
     min-width: 3rem;
-    word-break: break-all;
+    word-break: break-word;
 }
 
 .vertical-padding-1 {
@@ -1641,6 +1641,10 @@ table.ui-md-1, table.ui-md-2, table.ui-md-3, table.ui-md-4, table.ui-md-5, table
 
 .text-align-left {
 	text-align: left !important;
+}
+
+.text-align-right {
+	text-align: right !important;
 }
 
 .action-buttons {
@@ -1698,6 +1702,18 @@ table.row-padding-bottom-1-rem tr td {
     margin-top: 1rem;
 }
 
+.margin-top-half-rem {
+	margin-top: .5rem;
+}
+
+.margin-left-half-rem {
+	margin-left: .5rem;
+}
+
+.margin-right-half-rem {
+	margin-right: .5rem;
+}
+
 .cell-padding-right-1-rem,
 .cell-padding-right-1-rem table tr td {
     padding-right: 1rem;
@@ -1741,24 +1757,16 @@ label.align-label > span.ui-outputlabel-label {
 	white-space: nowrap;
 }
 
-.composite-hover {
-  display: none;
-  position: relative;
-  top: 1em;
-  left: 0;
-  border-top: 1px solid #808080;
-  padding: 4px;
-  width: 160px;
-  z-index: 999;
+.form-label-col label {
+	font-size: 1rem;
 }
 
-.cryptoTokenKeyPairAliasName:hover .composite-hover {
-  display: block;
+p.compositeText {
+	line-height:1.8rem;
 }
 
-.composite-hover ul {
-  margin: 5px 0 0 0;
-  padding-left: 15px;
+.compositeKeyColor {
+	color:#284E81;
 }
 
 /*--------------------------------------------------------------------------*/

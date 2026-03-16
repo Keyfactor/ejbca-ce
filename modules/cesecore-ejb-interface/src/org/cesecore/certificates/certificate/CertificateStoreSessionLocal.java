@@ -416,9 +416,10 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @param issuerDns The issuer DNs, or null for all.
      * @param expiredBefore Expiration date must be before this date.
      * @param maxNumberOfResults Batch size.
+     * @param excludedCertificateIds Set of certificate fingerprints to exclude from results.
      * @return Collection of certificate metadata.
      */
-    List<CertificateInfo> findExpiredCertificates(Collection<String> issuerDns, Date expiredBefore, int maxNumberOfResults);
+    List<CertificateInfo> findExpiredCertificates(Collection<String> issuerDns, Date expiredBefore, int maxNumberOfResults, Set<String> excludedCertificateIds);
 
     /**
      * Deletes an expired certificate. No authorization check is done.
@@ -437,9 +438,10 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @param batchSize Batch size.
      * @param adminForLogging The administrator to use in the log message.
      * @param previousDeletedFingerprints The certificates that were deleted in the previous execution. Used as a safety precaution to prevent an endless loop.
+     * @param excludedCertificateIds Set of certificate fingerprints to exclude (e.g., key binding certificates).
      * @return The fingerprints of the certificates that were deleted.
      */
     Set<String> deleteExpiredCertificatesInSeparateTransactions(List<String> issuerDns, Date maximumExpirationDate, int batchSize,
-            AuthenticationToken adminForLogging, Set<String> previousDeletedFingerprints);
+            AuthenticationToken adminForLogging, Set<String> previousDeletedFingerprints, Set<String> excludedCertificateIds);
 
 }
