@@ -242,49 +242,42 @@ public class ProcessApprovalRestResponse {
                     if (approval.getComment() != null && !approval.getComment().isEmpty()) {
                         partitionBuilder.approvalComment(approval.getComment());
                     }
-                    if (partition.getPropertyList() != null && !partition.getPropertyList().isEmpty()) {
-                        if (partition.getPropertyList().get("name") != null
-                                && partition.getPropertyList().get("name").getValueAsString() != null
-                                && !partition.getPropertyList().get("name").getValueAsString().isEmpty()) {
-                            partitionBuilder.name(partition.getPropertyList().get("name").getValueAsString());
-                        }
-                        partitionBuilder.propertyList(getApprovalPartitionPropertyRestResponses(partition, approvalProfile));
-                    }
+                    buildPartitionProperties(partition, approvalProfile, partitionBuilder);
                     partitionList.add(partitionBuilder.build());
-
                 }
             }
         }
         return partitionList;
     }
 
-    static List<ApprovalPartitionRestResponse.ApprovalPartitionStep> buildStepPartitionNextStep(int stepId, ApprovalPartition partition, Collection<Approval> approvals, ApprovalProfile approvalProfile, String approvalStatus) {
+    static ApprovalPartitionRestResponse.ApprovalPartitionStep buildStepPartitionNextStep(int stepId, ApprovalPartition partition, Collection<Approval> approvals, ApprovalProfile approvalProfile, String approvalStatus) {
 
-        final List<ApprovalPartitionRestResponse.ApprovalPartitionStep> partitionList = new ArrayList<>();
+        final ApprovalPartitionRestResponse.ApprovalPartitionStep.Builder partitionBuilder = ApprovalPartitionRestResponse.ApprovalPartitionStep.builder();
 
         if (approvals != null) {
             for (Approval approval : approvals) {
-
-                final ApprovalPartitionRestResponse.ApprovalPartitionStep.Builder partitionBuilder = ApprovalPartitionRestResponse.ApprovalPartitionStep.builder();
-
-                partitionBuilder.approvalAction(approvalStatus);
-
-                if (approval.getComment() != null && !approval.getComment().isEmpty()) {
-                    partitionBuilder.approvalComment(approval.getComment());
-                }
-                if (partition.getPropertyList() != null && !partition.getPropertyList().isEmpty()) {
-                    if (partition.getPropertyList().get("name") != null
-                            && partition.getPropertyList().get("name").getValueAsString() != null
-                            && !partition.getPropertyList().get("name").getValueAsString().isEmpty()) {
-                        partitionBuilder.name(partition.getPropertyList().get("name").getValueAsString());
+                if (approval.getStepId() == stepId) {
+                    if (approval.getComment() != null && !approval.getComment().isEmpty()) {
+                        partitionBuilder.approvalComment(approval.getComment());
                     }
-                    partitionBuilder.propertyList(getApprovalPartitionPropertyRestResponses(partition, approvalProfile));
                 }
-                partitionList.add(partitionBuilder.build());
-
             }
         }
-        return partitionList;
+        partitionBuilder.approvalAction(approvalStatus);
+
+        buildPartitionProperties(partition, approvalProfile, partitionBuilder);
+        return partitionBuilder.build();
+    }
+
+    private static void buildPartitionProperties(ApprovalPartition partition, ApprovalProfile approvalProfile, ApprovalPartitionRestResponse.ApprovalPartitionStep.Builder partitionBuilder) {
+        if (partition.getPropertyList() != null && !partition.getPropertyList().isEmpty()) {
+            if (partition.getPropertyList().get("name") != null
+                    && partition.getPropertyList().get("name").getValueAsString() != null
+                    && !partition.getPropertyList().get("name").getValueAsString().isEmpty()) {
+                partitionBuilder.name(partition.getPropertyList().get("name").getValueAsString());
+            }
+            partitionBuilder.propertyList(getApprovalPartitionPropertyRestResponses(partition, approvalProfile));
+        }
     }
 
     private static List<ApprovalPartitionPropertyRestResponse> getApprovalPartitionPropertyRestResponses(ApprovalPartition partition, ApprovalProfile approvalProfile) {
