@@ -102,6 +102,8 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String KEY_ENABLED_RENEWAL_INFO = "enabledRenewalInfo";
     private static final String KEY_SUGGESTED_RENEWAL_START = "suggestedRenewalStart";
     private static final String KEY_SUGGESTED_RENEWAL_END = "suggestedRenewalEnd";
+    private static final String KEY_USE_CAA_ACCOUNT_URI_VALIDATION = "useCaaAccountUriValidation";
+    private static final String KEY_USE_CAA_VALIDATION_METHODS_VALIDATION = "useCaaValidationMethodsValidation";
 
     private static final String DEFAULT_RA_USERNAME_GENERATION_SCHEME = UsernameGenerateMode.RANDOM.name();
     private static final String DEFAULT_RA_USERNAME_GENERATION_PARAMS = "CN";
@@ -145,6 +147,9 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     public static final String DEFAULT_SUGGESTED_RENEWAL_END = "1d";
 
     private static final String[] DEFAULT_TLS_APLN_PROTOCOLS_ENABLED = new String[]{ "TLSv1.2", "TLSv1.3" };
+    
+    private static final boolean DEFAULT_KEY_USE_CAA_ACCOUNT_URI_VALIDATION = false;
+    private static final boolean DEFAULT_KEY_USE_CAA_VALIDATION_METHODS_VALIDATION = false;
 
     private String configurationId = null;
     private List<String> caaIdentities = new ArrayList<>();
@@ -907,6 +912,22 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     public String[] getTlsAlpnProtocolsEnabled() {
         return DEFAULT_TLS_APLN_PROTOCOLS_ENABLED;
     }
+    
+    public void setUseCaaAccountUriValidation(final boolean use) {
+        super.data.put(KEY_USE_CAA_ACCOUNT_URI_VALIDATION, String.valueOf(use));
+    }
+    
+    public boolean isUseCaaAccountUriValidation() {
+        return super.data.get(KEY_USE_CAA_ACCOUNT_URI_VALIDATION) != null && Boolean.valueOf((String) super.data.get(KEY_USE_CAA_ACCOUNT_URI_VALIDATION)); 
+    }
+    
+    public void setUseCaaValidationMethodsValidation(final boolean use) {
+        super.data.put(KEY_USE_CAA_VALIDATION_METHODS_VALIDATION, String.valueOf(use));
+    }
+    
+    public boolean isUseCaaValidationMethodsValidation() {
+        return super.data.get(KEY_USE_CAA_VALIDATION_METHODS_VALIDATION) != null && Boolean.valueOf((String) super.data.get(KEY_USE_CAA_VALIDATION_METHODS_VALIDATION)); 
+    }
 
     /**
      * Initializes a new acme configuration with default values.
@@ -951,5 +972,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         setEnabledRenewalInfo(DEFAULT_ENABLED_RENEWAL_INFO);
         setSuggestedRenewalStart(DEFAULT_SUGGESTED_RENEWAL_START);
         setSuggestedRenewalEnd(DEFAULT_SUGGESTED_RENEWAL_END);
+        setUseCaaAccountUriValidation(DEFAULT_KEY_USE_CAA_ACCOUNT_URI_VALIDATION);
+        setUseCaaValidationMethodsValidation(DEFAULT_KEY_USE_CAA_VALIDATION_METHODS_VALIDATION);
     }
 }
