@@ -14,6 +14,7 @@ package org.ejbca.core.protocol.scep;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 
@@ -37,4 +38,20 @@ public interface ScepOperationPlugin {
      */
     boolean performOperation(AuthenticationToken authenticationToken, ScepRequestMessage reqmsg, final ScepConfiguration scepConfig,
             final String alias) throws AuthorizationDeniedException, WaitingForApprovalException;
+
+    /**
+     * Performs an operation on this extension for ProxyCA
+     * 
+     * @param authenticationToken an authentication token for any operations that may require one
+     * @param reqmsg the requestmessage to perform operations on
+     * @param scepConfig the SCEP configuration, if required
+     * @param alias alias of the SCEP configuration
+     * @return true if the operation succeeded 
+     * @throws AuthorizationDeniedException if the request was sent to the wrong CA, the current token does not have access to that CA, or the RA password being used was incorrect
+     * @throws WaitingForApprovalException if the request was processed but requires approval
+     * 
+     * @return EndEntityInformation to be used later
+     */
+    EndEntityInformation performOperationForProxyCa(AuthenticationToken admin, ScepRequestMessage reqmsg, ScepConfiguration scepConfiguration,
+            String configAlias) throws AuthorizationDeniedException, WaitingForApprovalException;
 }

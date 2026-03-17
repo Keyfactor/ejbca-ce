@@ -51,7 +51,7 @@ public class ProxyCaInfo extends CAInfo {
         this.signedby = SIGNEDBYEXTERNALCA;
         this.status = CAConstants.CA_EXTERNAL;
         setApprovals(null);
-        setUseUserStorage(true);
+        //setUseUserStorage(true);
     }
 
     public ProxyCaInfo(final String name, final String description, final String subjectDn, final int status, Collection<Integer> validators,
@@ -73,7 +73,7 @@ public class ProxyCaInfo extends CAInfo {
         this.signedby = SIGNEDBYEXTERNALCA;
         this.status = CAConstants.CA_EXTERNAL;
         setApprovals(null);
-        setUseUserStorage(true);
+        //setUseUserStorage(true);
     }
 
     public String getEnrollWithCsrUrl() {
