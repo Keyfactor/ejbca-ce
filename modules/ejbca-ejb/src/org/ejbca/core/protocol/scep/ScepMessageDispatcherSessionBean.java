@@ -515,31 +515,11 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                     log.debug("Received a SCEP PKCSREQ message, operating in RA mode: " + isRAModeOK);
                 }
                 try {
-                    if (caInfo instanceof ProxyCaInfo) {
-                        log.warn("Received a SCEP PKCSREQ message, but the CA is a proxy CA. This is not implemented yet.");
-                        /*
-                        final ProxyCa proxyCa = (ProxyCa) CAFactory.INSTANCE.getProxyCa(caInfo);
-                        var cryptoToken = cryptoTokenSession.getCryptoToken(reqmsg.getEncryptionCryptoTokenId());
-                        var signingAlgorithm = scepConfig.getSigningAlgorithm(alias);
-                        var subject = ((X509Certificate) reqmsg.getSigningCertificate()).getSubjectX500Principal().getName();
-                        var csr = CertificateUtils.createCsr(
-                                cryptoToken,
-                                reqmsg.getSigningKeyAlias(),
-                                new X500Name(subject),
-                                signingAlgorithm);
-                        var certificate = proxyCa.generateCertificate(csr, scepConfig.getProxyCaEnrollmentTemplate(alias));
-                        var scepResponseInfo = ScepResponseInfo.onlyResponseBytes(certificate.getEncoded());
-                        return scepResponseInfo;
-                         */
+                    if (!scepRaModeExtension.performOperation(administrator, reqmsg, scepConfig, alias)) {
+                        String errmsg = "Error. Failed to add or edit user: " + reqmsg.getUsername();
+                        log.info(errmsg);
+                        return null;
                     }
-                    else {
-                        if (!scepRaModeExtension.performOperation(administrator, reqmsg, scepConfig, alias)) { // *********************
-                            String errmsg = "Error. Failed to add or edit user: " + reqmsg.getUsername();
-                            log.info(errmsg);
-                            return null;
-                        }
-                    }
-                    //}
                 } catch (WaitingForApprovalException e) {
                     //Return a pending response message, because this request is now waiting to be approved
                     if (log.isDebugEnabled()) {
