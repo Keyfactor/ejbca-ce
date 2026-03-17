@@ -397,12 +397,13 @@ public class ApprovalRequestRestResponse extends ProcessApprovalRestResponse {
                 .status(status)
                 .steps(steps);
         if (requestInfo.getNextApprovalStep() != null) {
-            final List<ApprovalPartitionRestResponse> partitions = new ArrayList<>();
+            final List<ApprovalPartitionRestResponse.ApprovalPartitionStep> partitions = new ArrayList<>();
             for (ApprovalPartition partition : requestInfo.getNextApprovalStep().getPartitionList()) {
                 if (requestInfo.getApprovalProfile().canView(requestInfo.getRolesTokenIsMemberOf(), partition) ||
                         requestInfo.getApprovalProfile().canApprove(requestInfo.getRolesTokenIsMemberOf(), partition)) {
-                    partitions.add(buildStepPartition(requestInfo.getNextApprovalStep().getStepIdentifier(), partition,
-                            requestInfo.getApprovalData().getApprovals(), requestInfo.getApprovalProfile(), status.getValue()));
+                    ApprovalPartitionRestResponse.ApprovalPartitionStep partitionStep = buildStepPartitionNextStep(requestInfo.getNextApprovalStep().getStepIdentifier(), partition,
+                            requestInfo.getApprovalData().getApprovals(), requestInfo.getApprovalProfile(), status.getValue());
+                    partitions.add(partitionStep);
                 }
             }
             if (!partitions.isEmpty()) {
