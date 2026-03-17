@@ -115,6 +115,7 @@ public class ApprovalRestResourceSwagger extends ApprovalRestResource {
         return super.getApprovalSearchResults(requestContext, searchApprovalRestRequest);
     }
 
+    @POST
     @Path("/{request_id}/process")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
