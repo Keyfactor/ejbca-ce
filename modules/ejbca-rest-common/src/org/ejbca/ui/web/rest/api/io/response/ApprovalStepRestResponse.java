@@ -28,7 +28,7 @@ public class ApprovalStepRestResponse {
     
     @Schema(description = "Partitions provided with the approval step")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private List<ApprovalPartitionRestResponse> partitionList;
+    private List<ApprovalPartitionRestResponse.ApprovalPartitionStep> partitionList;
 
 
     private ApprovalStepRestResponse(final Builder builder) {
@@ -40,7 +40,7 @@ public class ApprovalStepRestResponse {
         return stepNumber;
     }
 
-    public List<ApprovalPartitionRestResponse> getPartitionList() {
+    public List<ApprovalPartitionRestResponse.ApprovalPartitionStep> getPartitionList() {
         return partitionList;
     }
 
@@ -50,14 +50,14 @@ public class ApprovalStepRestResponse {
 
     public static class Builder {
         private int stepNumber;
-        private List<ApprovalPartitionRestResponse> partitionList;
+        private List<ApprovalPartitionRestResponse.ApprovalPartitionStep> partitionList;
 
         public Builder stepNumber(final int step) {
             this.stepNumber = step;
             return this;
         }
 
-        public Builder partitionList(final List<ApprovalPartitionRestResponse> partitionList) {
+        public Builder partitionList(final List<ApprovalPartitionRestResponse.ApprovalPartitionStep> partitionList) {
             this.partitionList = partitionList;
             return this;
         }

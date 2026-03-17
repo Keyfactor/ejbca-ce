@@ -203,11 +203,10 @@ public class ProcessApprovalRestResponse {
         if (previousSteps != null) {
             // Get all approvals from the approval data
 
-
             for (RaApprovalStepInfo stepInfo : previousSteps) {
-                final List<ApprovalPartitionRestResponse> partitions = new ArrayList<>();
+                final List<ApprovalPartitionRestResponse.ApprovalPartitionStep> partitions = new ArrayList<>();
                 for (ApprovalPartition partition : stepInfo.getPartitions()) {
-                    partitions.add(buildStepPartition(stepInfo.getStepId(), partition, approvals, approvalProfile, approvalStatus));
+                   partitions.addAll(buildStepPartition(stepInfo.getStepId(), partition, approvals, approvalProfile, approvalStatus));
                 }
                 final ApprovalStepRestResponse.Builder stepBuilder = ApprovalStepRestResponse.builder()
                         .stepNumber(stepNumber)
@@ -219,43 +218,58 @@ public class ProcessApprovalRestResponse {
         return steps;
     }
 
-    static ApprovalPartitionRestResponse buildStepPartition(int stepId, ApprovalPartition partition, Collection<Approval> approvals, ApprovalProfile approvalProfile, String approvalStatus) {
-        final ApprovalPartitionRestResponse.Builder partitionBuilder = ApprovalPartitionRestResponse.builder();
+    static List<ApprovalPartitionRestResponse.ApprovalPartitionStep> buildStepPartition(int stepId, ApprovalPartition partition, Collection<Approval> approvals, ApprovalProfile approvalProfile, String approvalStatus) {
 
-        // Find the approval record for this step and partition
-        Approval matchingApproval = null;
+        final List<ApprovalPartitionRestResponse.ApprovalPartitionStep> partitionList = new ArrayList<>();
+
         if (approvals != null) {
             for (Approval approval : approvals) {
-                if (approval.getStepId() == stepId &&
-                        approval.getPartitionId() == partition.getPartitionIdentifier()) {
-                    matchingApproval = approval;
-                    //break;
-                    // TODO Now we only display in the latest approving admin for this step (i.e. the one which sent this request)
-                    // In the GUI we display all administrators that performed this step (accumulative profile)
-                    // If we want to do the same for the REST API, we'd need to restructure the response objects JSON
+
+                if (stepId == approval.getStepId()) {
+
+                    final ApprovalPartitionRestResponse.ApprovalPartitionStep.Builder partitionBuilder = ApprovalPartitionRestResponse.ApprovalPartitionStep.builder();
+
+                    partitionBuilder.approvalAction(approval.isApproved() ? "APPROVED" : approvalStatus);
+
+                    if (approval.getApprovalDate() != null) {
+                        partitionBuilder.approvalDate(new SimpleDateFormat(DATE_FORMAT).format(approval.getApprovalDate()));
+                    }
+
+                    if (approval.getAdmin() != null) {
+                        partitionBuilder.approvalAdmin(approval.getAdmin().toString());
+                    }
+
+                    if (approval.getComment() != null && !approval.getComment().isEmpty()) {
+                        partitionBuilder.approvalComment(approval.getComment());
+                    }
+                    buildPartitionProperties(partition, approvalProfile, partitionBuilder);
+                    partitionList.add(partitionBuilder.build());
                 }
             }
         }
+        return partitionList;
+    }
 
-        // Populate approval details if found
-        if (matchingApproval != null) {
-            partitionBuilder.approvalAction(matchingApproval.isApproved() ? "APPROVED" : "REJECTED");
+    static ApprovalPartitionRestResponse.ApprovalPartitionStep buildStepPartitionNextStep(int stepId, ApprovalPartition partition, Collection<Approval> approvals, ApprovalProfile approvalProfile, String approvalStatus) {
 
-            if (matchingApproval.getApprovalDate() != null) {
-                partitionBuilder.approvalDate(new SimpleDateFormat(DATE_FORMAT).format(matchingApproval.getApprovalDate()));
+        final ApprovalPartitionRestResponse.ApprovalPartitionStep.Builder partitionBuilder = ApprovalPartitionRestResponse.ApprovalPartitionStep.builder();
+
+        if (approvals != null) {
+            for (Approval approval : approvals) {
+                if (approval.getStepId() == stepId) {
+                    if (approval.getComment() != null && !approval.getComment().isEmpty()) {
+                        partitionBuilder.approvalComment(approval.getComment());
+                    }
+                }
             }
-
-            if (matchingApproval.getAdmin() != null) {
-                partitionBuilder.approvalAdmin(matchingApproval.getAdmin().toString());
-            }
-
-            if (matchingApproval.getComment() != null && !matchingApproval.getComment().isEmpty()) {
-                partitionBuilder.approvalComment(matchingApproval.getComment());
-            }
-        } else {
-            // Fallback if no matching approval found
-            partitionBuilder.approvalAction(approvalStatus);
         }
+        partitionBuilder.approvalAction(approvalStatus);
+
+        buildPartitionProperties(partition, approvalProfile, partitionBuilder);
+        return partitionBuilder.build();
+    }
+
+    private static void buildPartitionProperties(ApprovalPartition partition, ApprovalProfile approvalProfile, ApprovalPartitionRestResponse.ApprovalPartitionStep.Builder partitionBuilder) {
         if (partition.getPropertyList() != null && !partition.getPropertyList().isEmpty()) {
             if (partition.getPropertyList().get("name") != null
                     && partition.getPropertyList().get("name").getValueAsString() != null
@@ -264,7 +278,6 @@ public class ProcessApprovalRestResponse {
             }
             partitionBuilder.propertyList(getApprovalPartitionPropertyRestResponses(partition, approvalProfile));
         }
-        return partitionBuilder.build();
     }
 
     private static List<ApprovalPartitionPropertyRestResponse> getApprovalPartitionPropertyRestResponses(ApprovalPartition partition, ApprovalProfile approvalProfile) {
