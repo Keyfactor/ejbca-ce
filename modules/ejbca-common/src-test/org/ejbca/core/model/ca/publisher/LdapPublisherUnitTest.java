@@ -13,16 +13,10 @@
 package org.ejbca.core.model.ca.publisher;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.Collections;
 
-import com.novell.ldap.LDAPAttribute;
-import com.novell.ldap.LDAPEntry;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.junit.Before;
 import org.junit.Test;
