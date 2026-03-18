@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.license;
 
-public class LicenseValidationException extends RuntimeException {
+public class LicenseValidationException extends Exception {
     private static final long serialVersionUID = 6784065315018278137L;
 
     private final LicenseState licenseState;
