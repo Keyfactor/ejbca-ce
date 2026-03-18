@@ -1,0 +1,29 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+package org.ejbca.ui.web.rest.api.exception;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
+
+@Provider
+public class JsonProcessingExceptionMapper implements ExceptionMapper<JsonProcessingException> {
+
+    @Override
+    public Response toResponse(com.fasterxml.jackson.core.JsonProcessingException exception) {
+        return Response.status(Response.Status.BAD_REQUEST)
+                .entity("Malformed JSON request, check if format of the values of every parameter is correct and request structure is proper.")
+                .build();
+    }
+}
