@@ -31,7 +31,7 @@ public enum LicenseState {
     
     // Expired
     EXPIRED("EJBCA license has expired and will shut down in _days_ days"),
-    EXPIRED_LONG_BACK("EJBCA license has expired since _days_ days. Shutting down"),
+    EXPIRED_LONG_BACK("EJBCA license has expired since _days_ days. Shutting down."),
     
     // Customer is doing something bad e.g. removing libraries or providing their own implementation.
     EJBCA_SETUP_INVALID("Ejbca environment is misconfigured."); 
