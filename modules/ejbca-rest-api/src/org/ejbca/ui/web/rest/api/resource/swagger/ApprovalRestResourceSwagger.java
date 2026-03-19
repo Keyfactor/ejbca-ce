@@ -40,6 +40,7 @@ import org.ejbca.ui.web.rest.api.io.response.ApprovalRequestRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.ProcessApprovalRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.ApprovalRequestStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
+import org.ejbca.ui.web.rest.api.io.response.SearchApprovalRestResponse;
 import org.ejbca.ui.web.rest.api.resource.ApprovalRestResource;
 
 /**
@@ -106,7 +107,7 @@ public class ApprovalRestResourceSwagger extends ApprovalRestResource {
                     @ApiResponse(
                             responseCode = "200",
                             description = "Successful search of approval data",
-                            content = @Content(schema = @Schema(implementation = SearchApprovalRestRequest.class))
+                            content = @Content(schema = @Schema(implementation = SearchApprovalRestResponse.class))
                     ),
                     @ApiResponse(responseCode = "400", description = "Invalid search data provided", content = @Content),
                     @ApiResponse(responseCode = "403", description = "Authorization denied for the current admin", content = @Content)
