@@ -28,6 +28,8 @@ import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateParsingException;
 
 import static org.easymock.EasyMock.anyInt;
 import static org.easymock.EasyMock.anyObject;
@@ -60,6 +62,23 @@ public class LdapPublisherRevokeCertificateUnitTest {
             5wSOJhoVJSaEGHMPw6t3e+CbnEL9Yh5GlgxVAJCmIqhoScTMiov3QpDRHOZlZ15c
             UlqugRBtORuA9xnLkrdxYNCHmX6aJTfjdIW61+o/ovP0yz6ulBkqcKzopAZLirX+
             XSWf2uI9miNtxYMVnbQ1KPdEAt7Za3OQR6zcS0lGKg==
+            -----END CERTIFICATE-----
+            """.getBytes(StandardCharsets.UTF_8);
+
+	private static final byte[] OTHER_CERTIFICATE = """
+            -----BEGIN CERTIFICATE-----
+            MIICcjCCAVqgAwIBAgIUXRQWxgdQvHoxJu0gJajoa9CKLFswDQY
+            JKoZIhvcNAQELBQAwPTEPMA0GA1UEAwwGbGRhcGNhMRMwEQYKCZImiZPyLGQBGRYDbGFiMRUwEw
+            YKCZImiZPyLGQBGRYFbG9jYWwwHhcNMjYwMzE4MDkwMDUwWhcNMjgwMzE3MDkwMDQ5WjAMMQowC
+            AYDVQQDDAFjMEAwEAYHKoZIzj0CAQYFK4EEAA8DLAAEA0gNABag+uBhiKdmjaksw7QXsnR/BNVd
+            ysPbvBPuQqXKnq+n7f6erh0/o38wfTAMBgNVHRMBAf8EAjAAMB8GA1UdIwQYMBaAFNOwwoFfJLP
+            1BdljbWKpBaEWEYLoMB0GA1UdJQQWMBQGCCsGAQUFBwMCBggrBgEFBQcDBDAdBgNVHQ4EFgQUxr
+            u+QMgh5/wkY2tAPcr7rYsgmn4wDgYDVR0PAQH/BAQDAgbAMA0GCSqGSIb3DQEBCwUAA4IBAQAY0
+            2o3o+ychn7V0yrfCK25yIIn27DbylgYeIQ5G5tkLabX2zToj0YhF7mTCzdwkzpHj+zJipISWl7k
+            8S1gvKGAxOIALyWGwT8JFiNYbyqqTvn/Xdbf8gkELtyhK43yolXoLVu0sN4858KugJB1MJyitP/
+            i7UhjRzuilcr5OHgRy1WgIwXxrwfOelWrQAKTvg6KUTIqK6yQU6E9RU6aeGJ1OyyEYL2ZrW0/tz
+            IzLyptUoiODiLDqpdxdPeim2WPDh9TkIrcYGHF6xuopfTr5Vi4qlmNBOyr8cwNqZrvdPmADhKwZ
+            0HJHBAoFWdVOYh8e0mJi9HjyQrKb8RBwHx6g1gH
             -----END CERTIFICATE-----
             """.getBytes(StandardCharsets.UTF_8);
 
@@ -168,9 +187,12 @@ public class LdapPublisherRevokeCertificateUnitTest {
 		final String username = "test 3";
 		final int reason = RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED;
 		final String userDN = "CN=test 3,O=Test Org,C=SE";
-		final LDAPEntry	fromLdap = getLdapUserEntryWithoutCertificate(userDN);
+		final LDAPEntry	fromLdap = getLdapUserEntryWithOtherCertificate(userDN);
 
 		setupLdapConnection();
+		ldapConnection.modify(anyString(), anyObject(LDAPModification[].class), anyObject(LDAPConstraints.class));
+		EasyMock.expectLastCall().once();
+
 		expect(testClass.searchOldEntity(eq(username), eq(LDAPConnection.LDAP_V3), eq(ldapConnection), anyString(), anyString(), anyString())).andReturn(fromLdap);
 
 		replay(testClass);
@@ -229,14 +251,22 @@ public class LdapPublisherRevokeCertificateUnitTest {
 
 	}
 
-	private LDAPEntry getLdapUserEntryWithCertificate(final String userDN) {
+	private LDAPEntry getLdapUserEntryWithCertificate(final String userDN) throws CertificateParsingException, CertificateEncodingException {
 		final LDAPAttributeSet attributes = new LDAPAttributeSet();
-		attributes.add(new LDAPAttribute("userCertificate", CERTIFICATE));
+		final Certificate cert = CertTools.getCertfromByteArray(CERTIFICATE, Certificate.class);
+		attributes.add(new LDAPAttribute("userCertificate;binary", cert.getEncoded()));
 		return new LDAPEntry(userDN, attributes);
 	}
 
 	private LDAPEntry getLdapUserEntryWithoutCertificate(final String userDN) {
 		final LDAPAttributeSet attributes = new LDAPAttributeSet();
+		return new LDAPEntry(userDN, attributes);
+	}
+
+	private LDAPEntry getLdapUserEntryWithOtherCertificate(final String userDN) throws CertificateParsingException, CertificateEncodingException {
+		final LDAPAttributeSet attributes = new LDAPAttributeSet();
+		final Certificate cert = CertTools.getCertfromByteArray(OTHER_CERTIFICATE, Certificate.class);
+		attributes.add(new LDAPAttribute("userCertificate;binary", cert.getEncoded()));
 		return new LDAPEntry(userDN, attributes);
 	}
 

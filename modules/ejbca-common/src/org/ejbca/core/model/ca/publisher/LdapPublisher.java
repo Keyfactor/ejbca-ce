@@ -648,7 +648,7 @@ public class LdapPublisher extends BasePublisher {
 			if (log.isDebugEnabled()) {
 				log.debug("Removing end user certificate from first available server of " + getHostnames());
 			}
-			if (oldEntry != null) {          
+			if (oldEntry != null) {
 				if (removecert) {
                     // Get the current set of certificates
                     LDAPAttribute oldAttr = oldEntry.getAttribute(getUserCertAttribute());
@@ -665,7 +665,7 @@ public class LdapPublisher extends BasePublisher {
                         }
 
                         // Check if there are remaining certificates to keep
-                        if ( oldAttr.size() >= 1) {
+                        if ( oldAttr.getByteValueArray().length >= 1) {
                             // Update the LDAP entry to keep other certificates
                             modSet.add(new LDAPModification(LDAPModification.REPLACE, oldAttr));
                             // Even if 'removeuser' is enabled, lets overwrite this to prevent the user being deleted.
