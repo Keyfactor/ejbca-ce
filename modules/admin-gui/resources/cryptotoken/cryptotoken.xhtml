@@ -484,6 +484,7 @@
                         <h:panelGroup id="currentCryptoTokenP11Library">
                             <h:selectOneMenu value="#{cryptoTokenMBean.currentCryptoToken.p11Library}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}">
                                 <f:selectItems value="#{cryptoTokenMBean.availableCryptoTokenP11Libraries}"/>
+                                <f:ajax render="currentCryptoTokenP11SlotLabelType currentCryptoTokenP11Slot"/>
                             </h:selectOneMenu>
                             <h:outputText value="#{cryptoTokenMBean.currentCryptoToken.p11LibraryAlias}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
                         </h:panelGroup>
