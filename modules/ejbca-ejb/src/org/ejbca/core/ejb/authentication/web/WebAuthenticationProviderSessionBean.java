@@ -63,6 +63,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.util.oauth.OAuthTools;
 
@@ -112,6 +113,8 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private InternalKeyBindingMgmtSessionLocal internalKeyBindingSession;
+    @EJB
+    private RaMasterApiProxyBeanLocal raMasterApi;
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
 
@@ -515,8 +518,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 redirectUrl = getBaseUrl();
             }
 
-            OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenSession, caSession));
-            oAuthGrantResponseInfo = oauthRequestHelper.sendRefreshTokenRequest(refreshToken, keyInfo, redirectUrl);
+            oAuthGrantResponseInfo = raMasterApi.sendOAuthRefreshTokenRequest(refreshToken, keyInfo, redirectUrl);
         } catch (ParseException e) {
             LOG.info("Failed to parse OAuth2 JWT: " + e.getMessage(), e);
             return null;

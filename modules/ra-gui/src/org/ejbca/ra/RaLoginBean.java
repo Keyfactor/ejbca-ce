@@ -33,16 +33,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
-import org.cesecore.authentication.oauth.OauthRequestHelper;
-import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
-import org.cesecore.keybind.KeyBindingFinder;
 import org.cesecore.keybind.KeyBindingNotFoundException;
-import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
@@ -68,17 +62,9 @@ public class RaLoginBean implements Serializable {
     private String oauthClicked = null;
 
     @EJB
-    private CaSessionLocal caSession;
-    @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
-    @EJB
-    private CryptoTokenManagementSessionLocal cryptoToken;
-    @EJB
-    private CertificateStoreSessionLocal certificateStoreLocal;
-    @EJB
-    private InternalKeyBindingMgmtSessionLocal internalKeyBindings;
 
     @Inject
     private RaAuthenticationBean raAuthenticationBean;
@@ -130,18 +116,17 @@ public class RaLoginBean implements Serializable {
         if (globalConfiguration == null) {
             initGlobalConfiguration();
         }
-        OAuthKeyInfo oAuthKeyInfo = oAuthConfiguration.getOauthKeyByLabel(oauthClicked);
+        final OAuthKeyInfo oAuthKeyInfo = oAuthConfiguration.getOauthKeyByLabel(oauthClicked);
         if (oAuthKeyInfo != null) {
             try {
-                OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(internalKeyBindings, certificateStoreLocal, cryptoToken, caSession));
-                OAuthGrantResponseInfo token = oauthRequestHelper.sendTokenRequest(oAuthKeyInfo, authCode, getRedirectUri());
-                if (token.compareTokenType(HttpTools.AUTHORIZATION_SCHEME_BEARER)) {
+                final OAuthGrantResponseInfo token = raMasterApi.requestOAuthToken(oAuthKeyInfo, authCode, getRedirectUri());
+                if (token != null && token.compareTokenType(HttpTools.AUTHORIZATION_SCHEME_BEARER)) {
                     servletRequest.getSession(true).setAttribute("ejbca.bearer.token", token.getAccessToken());
                     servletRequest.getSession(true).setAttribute("ejbca.id.token", token.getIdToken());
                     servletRequest.getSession(true).setAttribute("ejbca.refresh.token", token.getRefreshToken());
                     raAuthenticationBean.resetAuthentication();
                     HttpTools.sendRedirect(FacesContext.getCurrentInstance(), "/index.xhtml");
-                } else {
+                } else if (token != null) {
                     log.info("Received OAuth token of unsupported type '" + token.getTokenType() + "'");
                 }
             } catch (CryptoTokenOfflineException | KeyBindingNotFoundException e) {
