@@ -45,6 +45,8 @@ import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -97,6 +99,8 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
 	private EndEntityAuthenticationSessionLocal authenticationSession;
     @EJB
     private AuthorizationSessionLocal authorizationSession;
+    @EJB
+    private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
     private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
@@ -370,6 +374,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             throws EndEntityProfileValidationException, AuthorizationDeniedException, NoSuchEndEntityException, CertificateSignatureException,
             KeyStoreException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
         final EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(userdata.getEndEntityProfileId());
+        final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(userdata.getCertificateProfileId());
         // Make a certificate chain from the certificate and the CA-certificate
         X509Certificate[] cachain = caSession.getCertificateChain(caid).toArray(new X509Certificate[0]);
         // Verify CA-certificate
@@ -386,11 +391,13 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
         }
         // Verify that the user-certificate is signed by our CA
         Certificate cacert = cachain[0];
-        try {
-            cert.verify(cacert.getPublicKey());
-        } catch (GeneralSecurityException se) {
-            throw new CertificateSignatureException("Generated certificate does not verify using CA-certificate, issuerDN: "+CertTools.getIssuerDN(cert)+", subjectDN: "+CertTools.getSubjectDN(cert)+
-                    ", caIssuerDN: "+CertTools.getIssuerDN(cacert)+", caSubjectDN: "+CertTools.getSubjectDN(cacert), se);
+        if (certificateProfile.getUseSignatureVerification()) {
+            try {
+                cert.verify(cacert.getPublicKey());
+            } catch (GeneralSecurityException se) {
+                throw new CertificateSignatureException("Generated certificate does not verify using CA-certificate, issuerDN: "+CertTools.getIssuerDN(cert)+", subjectDN: "+CertTools.getSubjectDN(cert)+
+                        ", caIssuerDN: "+CertTools.getIssuerDN(cacert)+", caSubjectDN: "+CertTools.getSubjectDN(cacert), se);
+            }
         }
         if (savekeys) {
             // Save generated keys to database.
