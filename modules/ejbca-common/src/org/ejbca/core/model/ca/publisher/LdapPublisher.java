@@ -588,6 +588,41 @@ public class LdapPublisher extends BasePublisher {
 		return true;
 	}
 
+	/*
+	 * The reason for this logic is that OpenLDAP and AD from Microsoft might have different implementations when
+	 * it comes to deleting certificates. One of them requires the base name (the part before ;) and the other one
+	 * requires the full name.
+	 */
+	boolean isDeleteUserCertAttribute(final LDAPEntry oldEntry, final LDAPAttribute attr) {
+		final LDAPAttribute oldAttrByBaseName = oldEntry.getAttribute(attr.getBaseName());
+		final LDAPAttribute oldAttrByName     = oldEntry.getAttribute(attr.getName());
+
+		// Don't try to remove the cert if it doesn't exist
+		if (oldAttrByBaseName != null || oldAttrByName != null) {
+			return true;
+		} else {
+			String msg = intres.getLocalizedMessage("publisher.inforevokenocert");
+			log.info(msg);
+			return false;
+		}
+	}
+
+	private boolean removeCertificate(final LDAPAttribute ldapAttribute, final Certificate certificate) {
+		try {
+			ldapAttribute.removeValue(certificate.getEncoded());
+			return true;
+		} catch (CertificateEncodingException e) {
+			// Exception should not happen!
+			String msg = "Unexpected certificate encoding issue. Cannot remove the certificate from LDAP.";
+			log.warn(msg);
+			return false;
+		}
+	}
+
+	private boolean isRemainingCertificates(final LDAPAttribute ldapAttribute) {
+		return ldapAttribute.getByteValueArray().length >= 1;
+	}
+
 	/**
 	 * Revokes a certificate, which means for LDAP that we may remove the certificate or the whole user entry.
 	 * 
@@ -651,36 +686,29 @@ public class LdapPublisher extends BasePublisher {
 			if (oldEntry != null) {
 				if (removecert) {
                     // Get the current set of certificates
-                    LDAPAttribute oldAttr = oldEntry.getAttribute(getUserCertAttribute());
-                    if (oldAttr != null) {
-                        modSet = getModificationSet(oldEntry, certdn, null, false, true, null, cert);
-                        // Remove the revoked cert from the attribute
-                        try {
-                            oldAttr.removeValue(cert.getEncoded());
-                        } catch (CertificateEncodingException e) {
-                            // Exception should not happen!
-                            String msg = "Unexpected certificate encoding issue. Cannot remove the certificate from LDAP.";
-                            log.error(msg);
-                            return;
-                        }
-
-                        // Check if there are remaining certificates to keep
-                        if ( oldAttr.getByteValueArray().length >= 1) {
-                            // Update the LDAP entry to keep other certificates
-                            modSet.add(new LDAPModification(LDAPModification.REPLACE, oldAttr));
-                            // Even if 'removeuser' is enabled, lets overwrite this to prevent the user being deleted.
-                            removeuser = false;
-                        } else {
-                            // Delete the userCertificate attribute as no certificates remains.
-							LDAPAttribute attr = new LDAPAttribute(getUserCertAttribute());
-                            modSet.add(new LDAPModification(LDAPModification.DELETE, attr));
-                        }
-                    } else {
-                        // No userCertificate attribute, nothing to do.
-                        String msg = intres.getLocalizedMessage("publisher.inforevokenocert");
-                        log.info(msg);
-                        return;
-                    }
+					final String userCertAttribute = getUserCertAttribute();
+                    LDAPAttribute oldAttr = oldEntry.getAttribute(userCertAttribute);
+					if (isDeleteUserCertAttribute(oldEntry, oldAttr)) {
+						if (oldAttr != null) {
+							modSet = getModificationSet(oldEntry, certdn, null, false, true, null, cert);
+							// Remove the revoked cert from the attribute
+							if (!removeCertificate(oldAttr, cert)) {
+								return;
+							}
+							if (isRemainingCertificates(oldAttr)) {
+								modSet.add(new LDAPModification(LDAPModification.REPLACE, oldAttr));
+								removeuser = false;
+							} else {
+								LDAPAttribute attr = new LDAPAttribute(userCertAttribute);
+								modSet.add(new LDAPModification(LDAPModification.DELETE, attr));
+							}
+						} else {
+							// No userCertificate attribute, nothing to do.
+							String msg = intres.getLocalizedMessage("publisher.inforevokenocert");
+							log.info(msg);
+							return;
+						}
+					}
 				}
 			} else {
 				String msg = intres.getLocalizedMessage("publisher.errorrevokenoentry");
@@ -720,12 +748,12 @@ public class LdapPublisher extends BasePublisher {
 				// Add or modify the entry
 				if (modSet != null && getModifyExistingUsers()) {
 					if (removecert) {
-						LDAPModification[] mods = new LDAPModification[modSet.size()]; 
+						LDAPModification[] mods = new LDAPModification[modSet.size()];
 						mods = (LDAPModification[])modSet.toArray(mods);
-						lc.modify(oldEntry.getDN(), mods, ldapStoreConstraints);            		
+						lc.modify(oldEntry.getDN(), mods, ldapStoreConstraints);
 					}
 					if (removeuser) {
-						lc.delete(oldEntry.getDN(), ldapStoreConstraints);            		
+						lc.delete(oldEntry.getDN(), ldapStoreConstraints);
 					}
 					String msg = intres.getLocalizedMessage("publisher.ldapremove", LogRedactionUtils.getSubjectDnLogSafe(dn));
 					log.info(msg);
