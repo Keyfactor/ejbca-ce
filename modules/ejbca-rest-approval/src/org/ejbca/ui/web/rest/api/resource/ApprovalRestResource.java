@@ -23,19 +23,30 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.dto.RoleDataDto;
+import org.cesecore.util.ui.DynamicUiProperty;
+import org.cesecore.util.ui.MultiLineString;
+import org.cesecore.util.ui.PropertyValidationException;
+import org.cesecore.util.ui.RadioButton;
+import org.cesecore.util.ui.UrlString;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.ApprovalRequestStatus;
 import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaApprovalResponseRequest;
@@ -43,6 +54,7 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaRequestsSearchRequest;
 import org.ejbca.core.model.era.RaRequestsSearchResponse;
 import org.ejbca.ui.web.rest.api.exception.RestException;
+import org.ejbca.ui.web.rest.api.io.request.ApprovalPartitionRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.ProcessApprovalRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.SearchApprovalRestRequest;
 import org.ejbca.ui.web.rest.api.io.response.ApprovalRequestRestResponse;
@@ -351,17 +363,41 @@ public class ApprovalRestResource extends BaseRestResource {
                     ? RaApprovalResponseRequest.Action.APPROVE 
                     : RaApprovalResponseRequest.Action.REJECT;
 
-            final RaApprovalResponseRequest responseRequest = new RaApprovalResponseRequest(
-                    requestId,
-                    approvalRequestInfo.getNextApprovalStep().getStepIdentifier(),
-                    nextPartition.getPartitionIdentifier(),
-                    approvalRequestInfo.getApprovalRequest(),
-                    request.getComment() != null ? request.getComment() : "",
-                    action
-            );
 
-            // Process the approval request
-            raMasterApi.addRequestResponse(admin, responseRequest);
+            ApprovalRequest approvalRequest = approvalRequestInfo.getApprovalRequest();
+            int stepIdentifier = approvalRequestInfo.getNextApprovalStep().getStepIdentifier();
+
+            for (var requestPartition : request.getApprovalPartitions()) {
+                int partitionIdentifier = requestPartition.getPartitionIdentifier();
+                ApprovalPartition partition = approvalRequest.getApprovalProfile()
+                        .getStep(stepIdentifier).getPartition(partitionIdentifier);
+                if (partition != null) {
+                    if (!canApprove(partition, approvalRequest.getApprovalProfile(), admin)){
+                        log.info("Partition " + partitionIdentifier + " can not be approved by the user " + admin.toString());
+                        throw new RestException(Response.Status.FORBIDDEN.getStatusCode(),
+                                "You don't have permission to approve partition  " + partitionIdentifier);
+
+                    }
+                    LinkedHashMap<String, DynamicUiProperty<? extends Serializable>> propertyList = partition.getPropertyList();
+                    Collection<DynamicUiProperty<? extends Serializable>> updatedProperties = fillPartitionProperties(propertyList, requestPartition);
+                    approvalRequest.getApprovalProfile().addPropertiesToPartition(stepIdentifier, partitionIdentifier, updatedProperties);
+                    final RaApprovalResponseRequest responseRequest = new RaApprovalResponseRequest(
+                            requestId,
+                            stepIdentifier,
+                            partitionIdentifier,
+                            approvalRequest,
+                            request.getComment() != null ? request.getComment() : "",
+                            action
+                    );
+
+                    // Process the approval request
+                    raMasterApi.addRequestResponse(admin, responseRequest);
+                } else {
+                    log.info("Partition " + partitionIdentifier + " not found in approval profile");
+                    throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
+                            "Partition " + partitionIdentifier + " not found. Wrong partition identifier or partition already performed.");
+                }
+            }
         } catch (ApprovalRequestExpiredException e) {
             log.info("Approval request " + requestId + " has expired");
             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
@@ -374,7 +410,10 @@ public class ApprovalRestResource extends BaseRestResource {
             log.info("Error processing approval request " + requestId + ": " + e.getMessage());
             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
                     "Error processing approval request: " + e.getMessage());
-        } catch (Exception e) {
+        } catch (RestException e){
+            throw e;
+        }
+        catch (Exception e) {
             log.info("Unexpected error processing approval request " + requestId + ": " + e.getMessage());
             throw new RestException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
                     "Unexpected error processing approval request: " + e.getMessage());
@@ -390,6 +429,67 @@ public class ApprovalRestResource extends BaseRestResource {
         // Build the response
         final ProcessApprovalRestResponse response = ProcessApprovalRestResponse.buildApprovalResponse(updatedRequestInfo);
         return Response.ok(response).build();
+    }
+
+    private boolean canApprove(ApprovalPartition partition, ApprovalProfile approvalProfile, AuthenticationToken authenticationToken) {
+        if (approvalProfile.canAnyoneApprovePartition(partition)) {
+            return true;
+        } else {
+            List<RoleDataDto> roles = raMasterApi.getRolesAuthenticationTokenIsMemberOfV2(authenticationToken);
+            List<Integer> roleIdsWhichCanApprove = approvalProfile.getAllowedRoleIds(partition);
+            for (RoleDataDto role : roles) {
+                if (roleIdsWhichCanApprove.contains(role.id())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private Collection<DynamicUiProperty<? extends Serializable>> fillPartitionProperties(LinkedHashMap<String, DynamicUiProperty<? extends Serializable>> propertyList, ApprovalPartitionRestRequest partition) throws RestException {
+        for (var property : partition.getPropertyList()) {
+            if (propertyList.containsKey(property.getLabel())) {
+                DynamicUiProperty<Serializable> dynamicUiProperty = (DynamicUiProperty<Serializable>) propertyList.get(property.getLabel());
+                String value = property.getValue();
+                if (value != null && !value.isEmpty()) {
+                    if (!property.getType().equals(dynamicUiProperty.getType().getSimpleName())) {
+                        throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
+                                "Wrong type for property with label " + property.getLabel());
+                    } else {
+                        Serializable parsedValue;
+                        if (dynamicUiProperty.getType().equals(String.class)) {
+                            parsedValue = value;
+                        } else if (dynamicUiProperty.getType().equals(Integer.class)) {
+                            parsedValue = Integer.parseInt(value);
+                        } else if (dynamicUiProperty.getType().equals(Boolean.class)) {
+                            parsedValue = Boolean.parseBoolean(value);
+                        } else if (dynamicUiProperty.getType().equals(Long.class)) {
+                            parsedValue = Long.parseLong(value);
+                        } else if (dynamicUiProperty.getType().equals(RadioButton.class)) {
+                            parsedValue = new RadioButton(value);
+                        } else if (dynamicUiProperty.getType().equals(MultiLineString.class)) {
+                            parsedValue = new MultiLineString(value);
+                        } else if (dynamicUiProperty.getType().equals(UrlString.class)) {
+                            parsedValue = new UrlString(value);
+                        } else {
+                            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
+                                    "Unknown type for property with label " + property.getLabel());
+                        }
+                        try {
+                            dynamicUiProperty.setValue(parsedValue);
+                        } catch (PropertyValidationException e) {
+                            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
+                                    "Wrong type for property with label " + property.getLabel());
+                        }
+
+                    }
+                }
+            } else {
+                throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
+                        "No property with label " + property.getLabel() + " found in partition");
+            }
+        }
+        return propertyList.values();
     }
 
 }

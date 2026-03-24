@@ -28,6 +28,9 @@ public class ApprovalPartitionPropertyRestResponse {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<String> possibleValues;
 
+    private ApprovalPartitionPropertyRestResponse() {
+    }
+
     public ApprovalPartitionPropertyRestResponse(Builder builder) {
         this.label = builder.label;
         this.value = builder.value;

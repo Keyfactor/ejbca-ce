@@ -12,7 +12,10 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.ArrayList;
+import java.util.List;
 import org.ejbca.ui.web.rest.api.validator.ValidProcessApprovalRestRequest;
 
 /**
@@ -28,12 +31,17 @@ public class ProcessApprovalRestRequest {
     @Schema(description = "Optional comment for the approval/rejection action", example = "Approved after verification")
     private String comment;
 
+    @Schema(description = "Partition list with properties provided on approving/rejecting partitioned approval request")
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    private List<ApprovalPartitionRestRequest> approvalPartitions = new ArrayList<>();
+
     public ProcessApprovalRestRequest() {
     }
 
-    public ProcessApprovalRestRequest(final Boolean approve, final String comment) {
+    public ProcessApprovalRestRequest(final Boolean approve, final String comment, final List<ApprovalPartitionRestRequest> approvalPartitions) {
         this.approve = approve;
         this.comment = comment;
+        this.approvalPartitions = approvalPartitions;
     }
 
     public Boolean getApprove() {
@@ -50,5 +58,13 @@ public class ProcessApprovalRestRequest {
 
     public void setComment(final String comment) {
         this.comment = comment;
+    }
+
+    public List<ApprovalPartitionRestRequest> getApprovalPartitions() {
+        return approvalPartitions;
+    }
+
+    public void setApprovalPartitions(final List<ApprovalPartitionRestRequest> approvalPartitions) {
+        this.approvalPartitions = approvalPartitions;
     }
 }

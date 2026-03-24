@@ -276,6 +276,7 @@ public class ProcessApprovalRestResponse {
                     && !partition.getPropertyList().get("name").getValueAsString().isEmpty()) {
                 partitionBuilder.name(partition.getPropertyList().get("name").getValueAsString());
             }
+            partitionBuilder.partitionIdentifier(partition.getPartitionIdentifier());
             partitionBuilder.propertyList(getApprovalPartitionPropertyRestResponses(partition, approvalProfile));
         }
     }
