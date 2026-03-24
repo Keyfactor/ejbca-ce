@@ -1097,6 +1097,9 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     }
                     
                     scepConfig.setEncryptionCAs(alias, currentAlias.getEncryptionCAs());
+                    scepConfig.setProxyCaEncryptionCertTemplate(alias, currentAlias.getProxyCaEncryptionCertTemplate());
+                    scepConfig.setProxyCaSigningCertTemplate(alias, currentAlias.getProxyCaSigningCertTemplate());
+                    scepConfig.setProxyCaEnrollmentTemplate(alias, currentAlias.getProxyCaCaEnrollmentTemplate());
                 }
 
                 globalConfigSession.saveConfiguration(getAuthenticationToken(), scepConfig);
