@@ -664,7 +664,7 @@
 										value="#{msg['subject_directory_attributes_'.concat(instance.name)]} *"
 										rendered="#{instance.required and instance.modifiable}" />
 									<h:inputText id="subjectDirectoryField" value="#{instance.value}" styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
-										rendered="#{!instance.selectable and instance.modifiable}" required="#{instance.require}" >
+										rendered="#{!instance.selectable and instance.modifiable}" required="#{instance.required}" >
 										<f:validator validatorId="extendedRegexValidator" />
 										<f:attribute name="pattern" value="#{instance.regexPatternRequired ? instance.regexPattern : ''}"/>
 										<f:validator validatorId="extendedRequiredValidator"/>
