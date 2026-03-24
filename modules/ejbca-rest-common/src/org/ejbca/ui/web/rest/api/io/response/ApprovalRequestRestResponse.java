@@ -399,14 +399,19 @@ public class ApprovalRequestRestResponse extends ProcessApprovalRestResponse {
         if (requestInfo.getNextApprovalStep() != null) {
             final List<ApprovalPartitionRestResponse.ApprovalPartitionStep> partitions = new ArrayList<>();
             for (ApprovalPartition partition : requestInfo.getNextApprovalStep().getPartitionList()) {
-                ApprovalPartitionRestResponse.ApprovalPartitionStep partitionStep = buildStepPartitionNextStep(requestInfo.getNextApprovalStep().getStepIdentifier(), partition,
-                        requestInfo.getApprovalData().getApprovals(), requestInfo.getApprovalProfile(), status.getValue());
-                partitions.add(partitionStep);
+                if (requestInfo.getApprovalProfile().canView(requestInfo.getRolesTokenIsMemberOf(), partition) ||
+                        requestInfo.getApprovalProfile().canApprove(requestInfo.getRolesTokenIsMemberOf(), partition)) {
+                    ApprovalPartitionRestResponse.ApprovalPartitionStep partitionStep = buildStepPartitionNextStep(requestInfo.getNextApprovalStep().getStepIdentifier(), partition,
+                            requestInfo.getApprovalData().getApprovals(), requestInfo.getApprovalProfile(), status.getValue());
+                    partitions.add(partitionStep);
+                }
             }
-            final ApprovalStepRestResponse.Builder stepBuilder = ApprovalStepRestResponse.builder()
-                    .stepNumber(steps.size() + 1)
-                    .partitionList(partitions);
-            builder.nextStep(stepBuilder.build());
+            if (!partitions.isEmpty()) {
+                final ApprovalStepRestResponse.Builder stepBuilder = ApprovalStepRestResponse.builder()
+                        .stepNumber(steps.size() + 1)
+                        .partitionList(partitions);
+                builder.nextStep(stepBuilder.build());
+            }
         }
         builder.certificateProfileName(requestInfo.getCertificateProfileName())
                 .endEntityProfileName(requestInfo.getEndEntityProfileName());

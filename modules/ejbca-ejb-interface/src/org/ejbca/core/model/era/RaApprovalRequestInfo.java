@@ -64,6 +64,7 @@ public class RaApprovalRequestInfo implements Serializable {
     /** Editable request data for end entity requests */
     private final RaEditableRequestData editableData;
 
+    private final List<RoleDataDto> rolesTokenIsMemberOf;
     private final boolean requestedByMe;
     private final boolean lastEditedByMe;
     private boolean approvedByMe;
@@ -120,6 +121,7 @@ public class RaApprovalRequestInfo implements Serializable {
         this.approvalProfile = approval.getApprovalProfile();
         this.maxExtensionTime = approval.getApprovalProfile().getMaxExtensionTime();
 
+        this.rolesTokenIsMemberOf = rolesTokenIsMemberOf;
         final AuthenticationToken requestAdmin = approval.getApprovalRequest().getRequestAdmin();
         requestedByMe = requestAdmin != null && requestAdmin.equals(authenticationToken);
         lastEditedByMe = approval.getApprovalRequest().isEditedByMe(authenticationToken);
@@ -204,6 +206,10 @@ public class RaApprovalRequestInfo implements Serializable {
             step = approvalProfile.getStep(nextStepId);
             stepOrdinal++;
         }
+    }
+
+    public List<RoleDataDto> getRolesTokenIsMemberOf() {
+        return rolesTokenIsMemberOf;
     }
 
     public int getId() {
