@@ -4,6 +4,7 @@ description: Official Keyfactor EJBCA Chart
 type: application
 version: "0.0.0"
 appVersion: "0.0.0"
+kubeVersion: ">=1.32.0-0"
 home: https://www.ejbca.org
 icon: https://raw.githubusercontent.com/Keyfactor/ejbca-ce/main/.github/images/community-ejbca-icon.png
 keywords: ["pki", "security", "encryption", "certificates", "management", "automation", "infrastructure", "pqc", "protocol", "tls"]
