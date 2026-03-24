@@ -37,6 +37,7 @@
 			<h:inputText value="#{scepConfigMBean.currentAlias.alias}" rendered="#{scepConfigMBean.currentAliasEditMode}"
 						 required="true" requiredMessage="#{web.text.YOUAREREQUIRED} #{web.text.NAME}" styleClass="ui-md-12">
 				<f:converter converterId="trimConverter"/>
+        <f:ajax render="@form"/>
 			</h:inputText>
 		</h:panelGroup>
  
