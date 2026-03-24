@@ -436,6 +436,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             // Use reflection to determine if it is a ProxyCA instance
             Class.forName("org.ejbca.ca.proxyca.ProxyCaImpl");
             proxyCaDefintionPresent = true;
+            return true;
         } catch (ClassNotFoundException e) {
             log.debug("No Proxy CA definition found.");
         }
