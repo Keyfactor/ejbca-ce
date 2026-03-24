@@ -424,14 +424,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
         }
         
-        try {
-            // Use reflection to determine if it is a ProxyCA instance
-            Class.forName("org.ejbca.ca.proxyca.ProxyCaImpl");
-            proxyCaDefintionPresent = true;
-        } catch (ClassNotFoundException e) {
-            log.debug("No Proxy CA definition found.");
-        }
-
         // If the cached activeCaIdCache was not active, or didn't exist, we move on to check all in the list
         for (int caId : caSession.getAllCaIds()) {
             if (caSession.getCAInfoInternal(caId).getStatus() == CAConstants.CA_ACTIVE) {
@@ -439,6 +431,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 return true;
             }
         }
+        
+        try {
+            // Use reflection to determine if it is a ProxyCA instance
+            Class.forName("org.ejbca.ca.proxyca.ProxyCaImpl");
+            proxyCaDefintionPresent = true;
+        } catch (ClassNotFoundException e) {
+            log.debug("No Proxy CA definition found.");
+        }
+        
         return false;
     }
 
