@@ -59,8 +59,10 @@ Enable individual sidecars and volumes: Luna
   image: {{ include "ejbca.hsmImage" . }}
   imagePullPolicy: {{ .Values.hsm.imagePullPolicy }}
   env:
+    {{- if .Values.hsm.luna.server_name }}
     - name: SERVER_NAME
       value: {{ .Values.hsm.luna.server_name }}
+    {{- end}}
     - name: CKLOG2_ENABLED
       value: {{ quote .Values.hsm.luna.CKLOG2_ENABLED }}
     - name: PROTECTED_AUTHENTICATION_PATH_FLAG_STATUS
@@ -75,6 +77,11 @@ Enable individual sidecars and volumes: Luna
     - name: hsm-luna-secret-client-key
       mountPath: /opt/luna/certs-client/dockerlunaclientKey.pem
       subPath: dockerlunaclientKey.pem
+    {{- if .Values.hsm.luna.custom_chrystoki_conf_secret }}
+    - name: hsm-custom-chrystoki-conf
+      mountPath: /opt/keyfactor/Chrystoki.conf
+      subPath: Chrystoki.conf
+    {{- end}}
 {{- end }}
 {{- end -}}
 
@@ -94,6 +101,11 @@ Enable individual sidecars and volumes: Luna
 - name: hsm-luna-secret-client-key
   secret:
     secretName: {{ .Values.hsm.luna.credentials.privateKey.secret }}
+{{- if .Values.hsm.luna.custom_chrystoki_conf_secret }}
+- name: hsm-custom-chrystoki-conf
+  secret:
+    secretName: {{ .Values.hsm.luna.custom_chrystoki_conf_secret }}
+{{- end}}
 {{- end -}}
 
 {{/*
