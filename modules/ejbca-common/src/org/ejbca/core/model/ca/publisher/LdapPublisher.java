@@ -19,6 +19,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509CRL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -632,6 +633,35 @@ public class LdapPublisher extends BasePublisher {
 	}
 
 	/**
+	 * @param ldapAttribute The LDAPAttribute to iterate
+	 * @param encodedCertificate The certificate to search for
+	 * @return If ldapAttribute contains the encoded certificate
+	 */
+	private boolean containsCertificate(final LDAPAttribute ldapAttribute, final byte[] encodedCertificate) {
+		for (final var array : ldapAttribute.getByteValueArray()) {
+			if (Arrays.equals(array, encodedCertificate)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * @param certificate The certificate to extract from
+	 * @return The Subject DN from a certificate
+	 * @throws PublisherException If the extraction fails
+	 */
+	private String getSubjectDN(final Certificate certificate) throws PublisherException {
+		try {
+			return CertTools.getSubjectDN(certificate);
+		} catch (Exception e) {
+			String msg = intres.getLocalizedMessage("publisher.errorldapdecode", "certificate");
+			log.error(msg, LogRedactionUtils.getRedactedException(e));
+			throw new PublisherException(msg);
+		}
+	}
+
+	/**
 	 * Revokes a certificate, which means for LDAP that we may remove the certificate or the whole user entry.
 	 * 
      * @param cert The certificate to be revoked.
@@ -666,17 +696,8 @@ public class LdapPublisher extends BasePublisher {
 		int ldapVersion = LDAPConnection.LDAP_V3;
 		LDAPConnection lc = createLdapConnection();
 
-		final String dn;
-		final String certdn;
-		try {
-			// Extract the users DN from the cert.
-			certdn = CertTools.getSubjectDN(cert);
-			dn = constructLDAPDN(certdn, userDN);
-		} catch (Exception e) {
-			String msg = intres.getLocalizedMessage("publisher.errorldapdecode", "certificate");
-			log.error(msg, LogRedactionUtils.getRedactedException(e));
-			throw new PublisherException(msg);            
-		}
+		final String certdn = getSubjectDN(cert);
+		final String dn = constructLDAPDN(certdn, userDN);
 
 		// Extract the users email from the cert.
 		String email = DnComponents.getEMailAddress(cert);
@@ -686,6 +707,7 @@ public class LdapPublisher extends BasePublisher {
 
 		ArrayList<LDAPModification> modSet = null;
 
+		boolean removedCertOrUser = false;
 		if (!CertTools.isCA(cert)) {
 			oldEntry = searchOldEntity(username, ldapVersion, lc, certdn, userDN, email);
 			if (log.isDebugEnabled()) {
@@ -702,14 +724,16 @@ public class LdapPublisher extends BasePublisher {
 						if (encoded == null) {
 							return;
 						}
-						// Remove the revoked cert from the attribute
-						oldAttr.removeValue(encoded);
-						if (containsCertificates(oldAttr)) {
-							modSet.add(new LDAPModification(LDAPModification.REPLACE, oldAttr));
-							removeuser = false;
-						} else {
-							LDAPAttribute attr = new LDAPAttribute(userCertAttribute);
-							modSet.add(new LDAPModification(LDAPModification.DELETE, attr));
+						if (containsCertificate(oldAttr, encoded)) {
+							oldAttr.removeValue(encoded);
+							removedCertOrUser = true;
+							if (containsCertificates(oldAttr)) {
+								modSet.add(new LDAPModification(LDAPModification.REPLACE, oldAttr));
+								removeuser = false;
+							} else {
+								LDAPAttribute attr = new LDAPAttribute(userCertAttribute);
+								modSet.add(new LDAPModification(LDAPModification.DELETE, attr));
+							}
 						}
 					}
 				}
@@ -757,9 +781,12 @@ public class LdapPublisher extends BasePublisher {
 					}
 					if (removeuser) {
 						lc.delete(oldEntry.getDN(), ldapStoreConstraints);
+						removedCertOrUser = true;
 					}
-					String msg = intres.getLocalizedMessage("publisher.ldapremove", LogRedactionUtils.getSubjectDnLogSafe(dn));
-					log.info(msg);
+					if (removedCertOrUser) {
+						String msg = intres.getLocalizedMessage("publisher.ldapremove", LogRedactionUtils.getSubjectDnLogSafe(dn));
+						log.info(msg);
+					}
 				} else {
 					if (log.isDebugEnabled()) {
 						if (modSet == null) {
@@ -1709,7 +1736,7 @@ public class LdapPublisher extends BasePublisher {
 	 * @param userDataDN user data DN
 	 * @return LDAP DN to be used.
 	 */
-	protected String constructLDAPDN(String certDN, String userDataDN){
+	protected String constructLDAPDN(String certDN, String userDataDN) {
 		if (log.isDebugEnabled()) {
 			log.debug("DN in certificate '" + LogRedactionUtils.getSubjectDnLogSafe(certDN) + "'. DN in user data '" + LogRedactionUtils.getSubjectDnLogSafe(userDataDN) + "'.");
 		}
