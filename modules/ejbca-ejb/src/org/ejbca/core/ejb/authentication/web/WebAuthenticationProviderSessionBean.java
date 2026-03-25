@@ -518,7 +518,15 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 redirectUrl = getBaseUrl();
             }
 
-            oAuthGrantResponseInfo = raMasterApi.sendOAuthRefreshTokenRequest(refreshToken, keyInfo, redirectUrl);
+            if (keyInfo.getKeyBinding() != null) {
+                // Key binding flow: proxy the refresh token request to the node that owns the key binding
+                oAuthGrantResponseInfo = raMasterApi.sendOAuthRefreshTokenRequest(refreshToken, keyInfo, redirectUrl);
+            } else {
+                // Client secret flow: perform the refresh token request locally as before
+                final OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(
+                        new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenSession, caSession));
+                oAuthGrantResponseInfo = oauthRequestHelper.sendRefreshTokenRequest(refreshToken, keyInfo, redirectUrl);
+            }
         } catch (ParseException e) {
             LOG.info("Failed to parse OAuth2 JWT: " + e.getMessage(), e);
             return null;
