@@ -608,6 +608,10 @@ public class LdapPublisher extends BasePublisher {
 		return false;
 	}
 
+	/**
+	 * @param certificate The certificate to encode
+	 * @return The byte array representation of a certificate or null if it cannot be encoded.
+	 */
 	private byte[] getEncoded(final Certificate certificate) {
         try {
             return certificate.getEncoded();
@@ -620,19 +624,10 @@ public class LdapPublisher extends BasePublisher {
 
     }
 
-	private boolean removeCertificate(final LDAPAttribute ldapAttribute, final Certificate certificate) {
-		try {
-			ldapAttribute.removeValue(certificate.getEncoded());
-			return true;
-		} catch (CertificateEncodingException e) {
-			// Exception should not happen!
-			String msg = "Unexpected certificate encoding issue. Cannot remove the certificate from LDAP.";
-			log.warn(msg);
-			return false;
-		}
-	}
-
-	private boolean containsRemainingCertificates(final LDAPAttribute ldapAttribute) {
+	/**
+	 * @return Returns if ldapAttribute contains one or more certificates.
+	 */
+	private boolean containsCertificates(final LDAPAttribute ldapAttribute) {
 		return ldapAttribute.getByteValueArray().length >= 1;
 	}
 
@@ -709,7 +704,7 @@ public class LdapPublisher extends BasePublisher {
 						}
 						// Remove the revoked cert from the attribute
 						oldAttr.removeValue(encoded);
-						if (containsRemainingCertificates(oldAttr)) {
+						if (containsCertificates(oldAttr)) {
 							modSet.add(new LDAPModification(LDAPModification.REPLACE, oldAttr));
 							removeuser = false;
 						} else {
@@ -1787,7 +1782,7 @@ public class LdapPublisher extends BasePublisher {
 		return clone;	
 	}
 
-	/* *
+	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#getLatestVersion()
 	 */
 	public float getLatestVersion() {		
@@ -1865,6 +1860,7 @@ public class LdapPublisher extends BasePublisher {
     public boolean isCallingExternalScript() {
         return false;        
     }
+
     @Override
     public void setExternalScriptsAllowlist(ExternalScriptsAllowlist allowList) {
         // Method not applicable for this publisher type!        
