@@ -472,9 +472,8 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     }
 
     /** Invoked when the user wants to renew a the InternalKeyBinding certificates issued by a instance local CA */
-    public void commandRenewCertificate() {
+    public void commandRenewCertificate(final GuiInfo guiInfo) {
         try {
-            final GuiInfo guiInfo = getInternalKeyBindingGuiList().getRowData();
             final int internalKeyBindingId = guiInfo.getInternalKeyBindingId();
             // Find username and current data for this user
             final InternalKeyBindingInfo internalKeyBindingInfo = getInternalKeyBindingSession().getInternalKeyBindingInfo(getAuthenticationToken(),
@@ -504,9 +503,8 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     }
 
     /** Invoked when the user wants to search the database for new certificates matching an InternalKeyBinding key pair */
-    public void commandReloadCertificate() {
+    public void commandReloadCertificate(final GuiInfo guiInfo) {
         try {
-            final GuiInfo guiInfo = getInternalKeyBindingGuiList().getRowData();
             final int internalKeyBindingId = guiInfo.getInternalKeyBindingId();
             final String certificateId = getInternalKeyBindingSession().updateCertificateForInternalKeyBinding(getAuthenticationToken(), internalKeyBindingId);
             if (certificateId == null) {
@@ -521,9 +519,8 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     }
 
     /** Invoked when the user wants to generate a nextKeyPair for an InternalKeyBinding */
-    public void commandGenerateNewKey() {
+    public void commandGenerateNewKey(final GuiInfo guiInfo) {
         try {
-            final GuiInfo guiInfo = getInternalKeyBindingGuiList().getRowData();
             final int internalKeyBindingId = guiInfo.getInternalKeyBindingId();
             final String nextKeyPairAlias = getInternalKeyBindingSession().generateNextKeyPair(getAuthenticationToken(), internalKeyBindingId);
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Generated next key with alias " + nextKeyPairAlias + "."));
@@ -534,9 +531,8 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     }
 
     /** Invoked when the user wants to get a CSR for the current or next KeyPair for an InternalKeyBinding */
-    public void commandGenerateRequest() {
+    public void commandGenerateRequest(final GuiInfo guiInfo) {
         try {
-            final GuiInfo guiInfo = getInternalKeyBindingGuiList().getRowData();
             final int internalKeyBindingId = guiInfo.getInternalKeyBindingId();
             final byte[] pkcs10 = getInternalKeyBindingSession().generateCsrForNextKey(getAuthenticationToken(), internalKeyBindingId, null);
             final byte[] pemEncodedPkcs10 = CertTools.getPEMFromCertificateRequest(pkcs10);
@@ -554,14 +550,14 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     }
 
     /** Invoked when the user wants to disable an InternalKeyBinding */
-    public void commandDisable() {
-        changeStatus(getInternalKeyBindingGuiList().getRowData().getInternalKeyBindingId(), InternalKeyBindingStatus.DISABLED);
+    public void commandDisable(final GuiInfo guiInfo) {
+        changeStatus(guiInfo.getInternalKeyBindingId(), InternalKeyBindingStatus.DISABLED);
         flushListCaches();
     }
 
     /** Invoked when the user wants to enable an InternalKeyBinding */
-    public void commandEnable() {
-        changeStatus(getInternalKeyBindingGuiList().getRowData().getInternalKeyBindingId(), InternalKeyBindingStatus.ACTIVE);
+    public void commandEnable(final GuiInfo guiInfo) {
+        changeStatus(guiInfo.getInternalKeyBindingId(), InternalKeyBindingStatus.ACTIVE);
         flushListCaches();
     }
 
@@ -586,9 +582,8 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     }
 
     /** Invoked when the user wants to remove an InternalKeyBinding */
-    public void commandDelete() {
+    public void commandDelete(final GuiInfo guiInfo) {
         try {
-            final GuiInfo guiInfo = getInternalKeyBindingGuiList().getRowData();
             if (getInternalKeyBindingSession().deleteInternalKeyBinding(getAuthenticationToken(), guiInfo.getInternalKeyBindingId())) {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(guiInfo.getName() + " deleted."));
             } else {
@@ -1045,14 +1040,13 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     
  
     
-    public String getTrustedCertificatesCaName() {
-        return getCaSession().getCAIdToNameMap().get(getTrustedCertificates().getRowData().getCaId());
+    public String getTrustedCertificatesCaName(final InternalKeyBindingTrustEntry trustEntry) {
+        return getCaSession().getCAIdToNameMap().get(trustEntry.getCaId());
     }
-    
 
-
-    public String getTrustedCertificatesSerialNumberHex() {
-        return getTrustedCertificates().getRowData().fetchCertificateSerialNumber().toString(16);
+    public String getTrustedCertificatesSerialNumberHex(final InternalKeyBindingTrustEntry trustEntry) {
+        final BigInteger serialNumber = trustEntry.fetchCertificateSerialNumber();
+        return serialNumber == null ? null : serialNumber.toString(16);
     }
     
 
@@ -1088,8 +1082,7 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     }
 
     /** Invoked when the user wants to remove an entry to the list of trusted certificate references */
-    public void removeTrust() {
-        final InternalKeyBindingTrustEntry trustEntry = (getTrustedCertificates().getRowData());
+    public void removeTrust(final InternalKeyBindingTrustEntry trustEntry) {
         trustedCertificateList.remove(trustEntry);
     }
     
@@ -1103,19 +1096,17 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     }
 
     /** @return the lookup result of message key "INTERNALKEYBINDING_<type>_<property-name>" or property-name if no key exists. */
-    public String getPropertyNameTranslated() {
-        final String name = ((DynamicUiProperty<? extends Serializable>) getInternalKeyBindingPropertyList().getRowData()).getName();
+    public String getPropertyNameTranslated(final DynamicUiProperty<? extends Serializable> property) {
+        final String name = property.getName();
         final String msgKey = "INTERNALKEYBINDING_" + getSelectedInternalKeyBindingType().toUpperCase() + "_" + name.toUpperCase();
         final String translatedName = super.getEjbcaWebBean().getText(msgKey);
         return translatedName.equals(msgKey) ? name : translatedName;
     }
 
     /** @return the current multi-valued property's possible values as JSF friendly SelectItems. */
-    public List<SelectItem/*<String,String>*/> getPropertyPossibleValues() {
+    public List<SelectItem/*<String,String>*/> getPropertyPossibleValues(final DynamicUiProperty<? extends Serializable> property) {
         final List<SelectItem> propertyPossibleValues = new ArrayList<>();
-        if (getInternalKeyBindingPropertyList() != null) {
-            final DynamicUiProperty<? extends Serializable> property = getInternalKeyBindingPropertyList()
-                    .getRowData();
+        if (property != null) {
             for (final Serializable possibleValue : property.getPossibleValues()) {
                 propertyPossibleValues.add(new SelectItem(property.getAsEncodedValue(property.getType().cast(possibleValue)), possibleValue
                         .toString()));

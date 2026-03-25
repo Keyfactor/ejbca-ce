@@ -132,7 +132,7 @@
                     </f:facet>
                     <div class="action-buttons">
                         <h:commandButton rendered="#{guiInfo.status ne 'INTERNALKEYBINDING_STATUS_DISABLED'}"
-                                         action="#{remoteAuthenticationMBean.commandDisable}"
+                                         action="#{remoteAuthenticationMBean.commandDisable(guiInfo)}"
                                          id="disable"
                                          value="#{web.text.INTERNALKEYBINDING_DISABLE_SHORT}"
                                          title="#{web.text.INTERNALKEYBINDING_DISABLE_FULL}"
@@ -141,7 +141,7 @@
                                          styleClass="rounded-button"
                         />
                         <h:commandButton rendered="#{guiInfo.status eq 'INTERNALKEYBINDING_STATUS_DISABLED'}"
-                                         action="#{remoteAuthenticationMBean.commandEnable}"
+                                         action="#{remoteAuthenticationMBean.commandEnable(guiInfo)}"
                                          id="enable"
                                          value="#{web.text.INTERNALKEYBINDING_ENABLE_SHORT}"
                                          title="#{web.text.INTERNALKEYBINDING_ENABLE_FULL}"
@@ -151,7 +151,7 @@
                         />
                         <h:commandButton
                                 rendered="#{!guiInfo.nextKeyAliasAvailable and guiInfo.authorizedToGenerateKeys}"
-                                action="#{remoteAuthenticationMBean.commandGenerateNewKey}"
+                                action="#{remoteAuthenticationMBean.commandGenerateNewKey(guiInfo)}"
                                 id="generateNewKeys"
                                 value="#{web.text.INTERNALKEYBINDING_GENERATENEWKEY_SHORT}"
                                 title="#{web.text.INTERNALKEYBINDING_GENERATENEWKEY_FULL}"
@@ -160,7 +160,7 @@
                                 styleClass="rounded-button"
                         />
                         <h:commandButton rendered="#{guiInfo.authorizedToCryptoToken}"
-                                         action="#{remoteAuthenticationMBean.commandGenerateRequest}"
+                                         action="#{remoteAuthenticationMBean.commandGenerateRequest(guiInfo)}"
                                          id="csr"
                                          value="#{web.text.INTERNALKEYBINDING_GETCSR_SHORT}"
                                          title="#{web.text.INTERNALKEYBINDING_GETCSR_FULL}"
@@ -168,7 +168,7 @@
                                          ajax="false"
                                          styleClass="rounded-button"
                         />
-                        <h:commandButton action="#{remoteAuthenticationMBean.commandReloadCertificate}"
+                        <h:commandButton action="#{remoteAuthenticationMBean.commandReloadCertificate(guiInfo)}"
                                          value="#{web.text.INTERNALKEYBINDING_RELOADCERTIFICATE_SHORT}"
                                          id="reload"
                                          title="#{web.text.INTERNALKEYBINDING_RELOADCERTIFICATE_FULL}"
@@ -177,7 +177,7 @@
                                          styleClass="rounded-button"
                         />
                         <h:commandButton rendered="#{guiInfo.issuedByInternalCa}"
-                                         action="#{remoteAuthenticationMBean.commandRenewCertificate}"
+                                         action="#{remoteAuthenticationMBean.commandRenewCertificate(guiInfo)}"
                                          id="renew"
                                          value="#{web.text.INTERNALKEYBINDING_RENEWCERTIFICATE_SHORT}"
                                          title="#{web.text.INTERNALKEYBINDING_RENEWCERTIFICATE_FULL}"
@@ -185,7 +185,7 @@
                                          ajax="false"
                                          styleClass="rounded-button"
                         />
-                        <h:commandButton action="#{remoteAuthenticationMBean.commandDelete}"
+                        <h:commandButton action="#{remoteAuthenticationMBean.commandDelete(guiInfo)}"
                                          id="delete"
                                          value="#{web.text.INTERNALKEYBINDING_DELETE_SHORT}"
                                          title="#{web.text.INTERNALKEYBINDING_DELETE_FULL}"

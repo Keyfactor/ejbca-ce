@@ -248,7 +248,7 @@
                         <f:facet name="header">
                             <h:outputText value="#{web.text.INTERNALKEYBINDING_CA}"/>
                         </f:facet>
-                        <h:outputText value="#{ocspResponderMBean.trustedCertificatesCaName}"
+                        <h:outputText value="#{ocspResponderMBean.getTrustedCertificatesCaName(trustEntry)}"
                                       title="#{trustEntry.caId}"/>
                         <f:facet name="footer">
                             <h:selectOneMenu rendered="#{ocspResponderMBean.inEditMode}"
@@ -263,7 +263,7 @@
                         <f:facet name="header"><h:outputText
                                 value="#{web.text.INTERNALKEYBINDING_SERIALNUMER}"/></f:facet>
                         <h:outputText rendered="#{!empty trustEntry.certificateSerialNumberDecimal}"
-                                      value="#{ocspResponderMBean.trustedCertificatesSerialNumberHex}"/>
+                                      value="#{ocspResponderMBean.getTrustedCertificatesSerialNumberHex(trustEntry)}"/>
                         <h:outputText rendered="#{empty trustEntry.certificateSerialNumberDecimal}" value="ANY"/>
                         <f:facet name="footer">
                             <h:inputText id="certificateSerialNumber" rendered="#{ocspResponderMBean.inEditMode}"
@@ -295,7 +295,7 @@
                     <p:column rendered="#{ocspResponderMBean.inEditMode}">
                         <f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_ACTIONS}"/></f:facet>
                         <div class="action-buttons">
-                            <h:commandButton id="deleteTrust" value="#{web.text.DELETE}" action="#{ocspResponderMBean.removeTrust}"/>
+                            <h:commandButton id="deleteTrust" value="#{web.text.DELETE}" action="#{ocspResponderMBean.removeTrust(trustEntry)}"/>
                             <f:facet name="footer">
                                 <h:commandButton rendered="#{ocspResponderMBean.inEditMode}"
                                                  action="#{ocspResponderMBean.addTrust}"
@@ -329,8 +329,9 @@
                              emptyMessage=""
                 >
                     <p:column styleClass="table-title-column">
-                        <f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_CA}"/></f:facet>
-                        <h:outputText value="#{ocspResponderMBean.signOcspResponseForCasCaName}"
+                        <f:facet name="header"><h:outputText
+                                value="#{web.text.INTERNALKEYBINDING_CA}"/></f:facet>
+                        <h:outputText value="#{ocspResponderMBean.getSignOcspResponseForCasCaName(otherCa)}"
                                       title="#{otherCa.caId}"/>
                         <f:facet name="footer">
                             <h:selectOneMenu rendered="#{ocspResponderMBean.inEditMode}"
@@ -360,7 +361,7 @@
                         <f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_ACTIONS}"/></f:facet>
                         <div class="action-buttons">
                             <h:commandButton id="deleteCaToSign" value="#{web.text.DELETE}"
-                                             action="#{ocspResponderMBean.removeCaToSignOcspResponse}"/>
+                                             action="#{ocspResponderMBean.removeCaToSignOcspResponse(otherCa)}"/>
                             <f:facet name="footer">
                                 <h:commandButton action="#{ocspResponderMBean.addCaToSignOcspResponse}"
                                                  value="#{web.text.ADD}"/>
@@ -380,7 +381,7 @@
             <p:dataTable value="#{ocspResponderMBean.internalKeyBindingPropertyList}" var="property"
                          styleClass="grid table-layout-auto vertical-padding-1 no-header no-border">
                 <p:column>
-                    <h:outputText value="#{ocspResponderMBean.propertyNameTranslated}"/>
+                    <h:outputText value="#{ocspResponderMBean.getPropertyNameTranslated(property)}"/>
                 </p:column>
                 <p:column>
                     <h:panelGroup rendered="#{!property.multiValued}">
@@ -396,7 +397,7 @@
                     </h:panelGroup>
                     <h:selectOneMenu disabled="#{!ocspResponderMBean.inEditMode}" rendered="#{property.multiValued}"
                                      value="#{property.encodedValue}" class="ui-md-12">
-                        <f:selectItems value="#{ocspResponderMBean.propertyPossibleValues}"/>
+                        <f:selectItems value="#{ocspResponderMBean.getPropertyPossibleValues(property)}"/>
                     </h:selectOneMenu>
                 </p:column>
             </p:dataTable>
@@ -460,7 +461,7 @@
                     <p:column styleClass="table-title-column">
                         <f:facet name="header"><h:outputText
                                 value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_OCSPEXTENSION_NAME}"/></f:facet>
-                        <h:outputText value="#{ocspResponderMBean.ocspExtensionDisplayName}"/>
+                        <h:outputText value="#{ocspResponderMBean.getOcspExtensionDisplayName(extensionEntry)}"/>
                         <f:facet name="footer">
                             <h:selectOneMenu rendered="#{ocspResponderMBean.inEditMode}"
                                              value="#{ocspResponderMBean.currentOcspExtension}">
@@ -471,7 +472,7 @@
                     <p:column styleClass="text-align-left">
                         <f:facet name="header"><h:outputText
                                 value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_OCSPEXTENSION_OID}"/></f:facet>
-                        <h:outputText value="#{ocspResponderMBean.ocspExtensionOid}"/>
+                        <h:outputText value="#{ocspResponderMBean.getOcspExtensionOid(extensionEntry)}"/>
                     </p:column>
                     <p:column rendered="#{ocspResponderMBean.inEditMode}">
                         <f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_ACTIONS}"/></f:facet>
