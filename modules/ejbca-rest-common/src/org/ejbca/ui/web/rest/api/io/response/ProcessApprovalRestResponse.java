@@ -225,7 +225,7 @@ public class ProcessApprovalRestResponse {
         if (approvals != null) {
             for (Approval approval : approvals) {
 
-                if (stepId == approval.getStepId()) {
+                if (stepId == approval.getStepId() && partition.getPartitionIdentifier() == approval.getPartitionId()) {
 
                     final ApprovalPartitionRestResponse.ApprovalPartitionStep.Builder partitionBuilder = ApprovalPartitionRestResponse.ApprovalPartitionStep.builder();
 
