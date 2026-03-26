@@ -44,7 +44,7 @@ public class ValidApprovalPartitionPropertyRestRequestUnitTest {
     @Test
     public void errorWrongType() {
         // given
-        final String expectedMessage = "Invalid ApprovalPartitionPropertyRestRequest content, type is unknown.";
+        final String expectedMessage = "Invalid ApprovalPartitionPropertyRestRequest content, type 'somethingWrong' is unknown.";
         final ApprovalPartitionPropertyRestRequest testClass = new ApprovalPartitionPropertyRestRequest();
         testClass.setLabel("username");
         testClass.setType("somethingWrong");
@@ -59,11 +59,11 @@ public class ValidApprovalPartitionPropertyRestRequestUnitTest {
     @Test
     public void errorWrongInteger() {
         // given
-        final String expectedMessage = "Invalid ApprovalPartitionPropertyRestRequest content, value is not a valid integer.";
+        final String expectedMessage = "Invalid ApprovalPartitionPropertyRestRequest content, value 'invalidIntegerValue' for label 'Height' is not a valid integer.";
         final ApprovalPartitionPropertyRestRequest testClass = new ApprovalPartitionPropertyRestRequest();
-        testClass.setLabel("username");
+        testClass.setLabel("Height");
         testClass.setType("Integer");
-        testClass.setValue("something wrong");
+        testClass.setValue("invalidIntegerValue");
         // when
         final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
         // then
@@ -75,11 +75,11 @@ public class ValidApprovalPartitionPropertyRestRequestUnitTest {
     @Test
     public void errorWrongBoolean() {
         // given
-        final String expectedMessage = "Invalid ApprovalPartitionPropertyRestRequest content, value is not a boolean. Use 'true' or 'false'.";
+        final String expectedMessage = "Invalid ApprovalPartitionPropertyRestRequest content, value 'invalidBooleanValue' for label 'Agree?' is not a boolean. Use 'true' or 'false'.";
         final ApprovalPartitionPropertyRestRequest testClass = new ApprovalPartitionPropertyRestRequest();
-        testClass.setLabel("username");
+        testClass.setLabel("Agree?");
         testClass.setType("Boolean");
-        testClass.setValue("something wrong");
+        testClass.setValue("invalidBooleanValue");
         // when
         final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
         // then
@@ -90,9 +90,9 @@ public class ValidApprovalPartitionPropertyRestRequestUnitTest {
         @Test
         public void errorWrongLong() {
             // given
-            final String expectedMessage = "Invalid ApprovalPartitionPropertyRestRequest content, value is not a valid Long.";
+            final String expectedMessage = "Invalid ApprovalPartitionPropertyRestRequest content, value 'invalidLongValue' for label 'Age' is not a valid Long.";
             final ApprovalPartitionPropertyRestRequest testClass = new ApprovalPartitionPropertyRestRequest();
-            testClass.setLabel("username");
+            testClass.setLabel("Age");
             testClass.setType("Long");
             testClass.setValue("invalidLongValue");
             // when
