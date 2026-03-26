@@ -12,11 +12,10 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
-import org.ejbca.ui.web.rest.api.io.response.ApprovalPartitionPropertyRestResponse;
 
 /**
  * Represents a single approval partition in an approval request.
@@ -27,15 +26,10 @@ public class ApprovalPartitionRestRequest {
     private int partitionIdentifier;
 
     @Schema(description = "Partition properties provided with the approval action")
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    private List<ApprovalPartitionPropertyRestResponse> propertyList = new ArrayList<>();
+    @Valid
+    private List<ApprovalPartitionPropertyRestRequest> propertyList = new ArrayList<>();
 
     public ApprovalPartitionRestRequest() {
-    }
-
-    public ApprovalPartitionRestRequest(int partitionIdentifier, List<ApprovalPartitionPropertyRestResponse> propertyList) {
-        this.partitionIdentifier = partitionIdentifier;
-        this.propertyList = propertyList;
     }
 
     public int getPartitionIdentifier() {
@@ -46,11 +40,11 @@ public class ApprovalPartitionRestRequest {
         this.partitionIdentifier = partitionIdentifier;
     }
 
-    public List<ApprovalPartitionPropertyRestResponse> getPropertyList() {
+    public List<ApprovalPartitionPropertyRestRequest> getPropertyList() {
         return propertyList;
     }
 
-    public void setPropertyList(List<ApprovalPartitionPropertyRestResponse> propertyList) {
+    public void setPropertyList(List<ApprovalPartitionPropertyRestRequest> propertyList) {
         this.propertyList = propertyList;
     }
 }

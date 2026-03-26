@@ -12,8 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import org.ejbca.ui.web.rest.api.validator.ValidProcessApprovalRestRequest;
@@ -32,7 +32,7 @@ public class ProcessApprovalRestRequest {
     private String comment;
 
     @Schema(description = "Partition list with properties provided on approving/rejecting partitioned approval request")
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @Valid
     private List<ApprovalPartitionRestRequest> approvalPartitions = new ArrayList<>();
 
     public ProcessApprovalRestRequest() {

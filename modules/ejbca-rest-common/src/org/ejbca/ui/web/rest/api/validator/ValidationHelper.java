@@ -13,6 +13,7 @@
 package org.ejbca.ui.web.rest.api.validator;
 
 import jakarta.validation.ConstraintValidatorContext;
+import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
 
 /**
  * A helper class to manage constraint violation cases.
@@ -35,6 +36,20 @@ public class ValidationHelper {
             final String template) {
         context.disableDefaultConstraintViolation();
         context.buildConstraintViolationWithTemplate(template).addConstraintViolation();
+    }
+
+    public static void addConstraintViolation(
+            final ConstraintValidatorContext context,
+            final String template, final Object... params) {
+
+        HibernateConstraintValidatorContext hibernateContext =
+                context.unwrap(HibernateConstraintValidatorContext.class);
+        hibernateContext.disableDefaultConstraintViolation();
+
+        for (int i = 0; i < params.length; i++) {
+            hibernateContext.addMessageParameter(String.valueOf(i), String.valueOf(params[i]));
+        }
+        hibernateContext.buildConstraintViolationWithTemplate(template).addConstraintViolation();
     }
 
 }
