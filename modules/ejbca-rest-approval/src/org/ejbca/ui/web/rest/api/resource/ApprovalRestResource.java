@@ -338,31 +338,12 @@ public class ApprovalRestResource extends BaseRestResource {
 
         // Retrieve the approval request
         final RaApprovalRequestInfo approvalRequestInfo = raMasterApi.getApprovalRequest(admin, requestId);
-        if (approvalRequestInfo == null) {
-            throw new RestException(Response.Status.NOT_FOUND.getStatusCode(),
-                    "Approval request with ID " + requestId + " not found or unauthorized");
-        }
-
-        // Check if the request can be processed
-        final int status = approvalRequestInfo.getStatus();
-        if (status != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
-            final String statusName = ApprovalRequestStatus.fromIntWithCombinedStates(status).toString();
-            throw new RestException(Response.Status.CONFLICT.getStatusCode(),
-                    "Approval request cannot be processed. Current status: " + statusName);
-        }
-
-        // Get the next approval step and partition
-        final ApprovalPartition nextPartition = approvalRequestInfo.getNextApprovalStepPartition();
-        if (nextPartition == null) {
-            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
-                    "No approval step available for processing");
-        }
+        validateIfCanProcess(requestId, approvalRequestInfo);
 
         try {
             final RaApprovalResponseRequest.Action action = request.getApprove() 
                     ? RaApprovalResponseRequest.Action.APPROVE 
                     : RaApprovalResponseRequest.Action.REJECT;
-
 
             ApprovalRequest approvalRequest = approvalRequestInfo.getApprovalRequest();
             int stepIdentifier = approvalRequestInfo.getNextApprovalStep().getStepIdentifier();
@@ -376,7 +357,6 @@ public class ApprovalRestResource extends BaseRestResource {
                         log.info("Partition " + partitionIdentifier + " can not be approved by the user " + admin.toString());
                         throw new RestException(Response.Status.FORBIDDEN.getStatusCode(),
                                 "You don't have permission to approve partition  " + partitionIdentifier);
-
                     }
                     LinkedHashMap<String, DynamicUiProperty<? extends Serializable>> propertyList = partition.getPropertyList();
                     Collection<DynamicUiProperty<? extends Serializable>> updatedProperties = fillPartitionProperties(propertyList, requestPartition);
@@ -429,6 +409,41 @@ public class ApprovalRestResource extends BaseRestResource {
         // Build the response
         final ProcessApprovalRestResponse response = ProcessApprovalRestResponse.buildApprovalResponse(updatedRequestInfo);
         return Response.ok(response).build();
+    }
+
+    private static void validateIfCanProcess(int requestId, RaApprovalRequestInfo approvalRequestInfo) throws RestException {
+        if (approvalRequestInfo == null) {
+            throw new RestException(Response.Status.NOT_FOUND.getStatusCode(),
+                    "Approval request with ID " + requestId + " not found or unauthorized");
+        }
+
+        // Check if the request can be processed
+        final int status = approvalRequestInfo.getStatus();
+        if (status != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
+            final String statusName = ApprovalRequestStatus.fromIntWithCombinedStates(status).toString();
+            throw new RestException(Response.Status.CONFLICT.getStatusCode(),
+                    "Approval request cannot be processed. Current status: " + statusName);
+        }
+
+        if (approvalRequestInfo.isRequestedByMe()) {
+            throw new RestException(Response.Status.FORBIDDEN.getStatusCode(),
+                    "You have created this request and cannot approve it");
+        }
+        if (approvalRequestInfo.isEditedByMe()) {
+            throw new RestException(Response.Status.FORBIDDEN.getStatusCode(),
+                    "You have edited this request and cannot approve it");
+        }
+        if (approvalRequestInfo.isApprovedByMe()) {
+            throw new RestException(Response.Status.FORBIDDEN.getStatusCode(),
+                    "You have approved part of this request and cannot approve it further");
+        }
+
+        // Get the next approval step and partition
+        final ApprovalPartition nextPartition = approvalRequestInfo.getNextApprovalStepPartition();
+        if (nextPartition == null) {
+            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
+                    "No approval step available for processing");
+        }
     }
 
     private boolean canApprove(ApprovalPartition partition, ApprovalProfile approvalProfile, AuthenticationToken authenticationToken) {
