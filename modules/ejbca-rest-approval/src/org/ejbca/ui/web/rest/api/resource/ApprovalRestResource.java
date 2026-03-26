@@ -347,36 +347,48 @@ public class ApprovalRestResource extends BaseRestResource {
 
             ApprovalRequest approvalRequest = approvalRequestInfo.getApprovalRequest();
             int stepIdentifier = approvalRequestInfo.getNextApprovalStep().getStepIdentifier();
+            if (request.getApprovalPartitions() != null && !request.getApprovalPartitions().isEmpty()) {
+                for (var requestPartition : request.getApprovalPartitions()) {
+                    int partitionIdentifier = requestPartition.getPartitionIdentifier();
+                    ApprovalPartition partition = approvalRequest.getApprovalProfile()
+                            .getStep(stepIdentifier).getPartition(partitionIdentifier);
+                    if (partition != null) {
+                        if (!canApprove(partition, approvalRequest.getApprovalProfile(), admin)) {
+                            log.info("Partition " + partitionIdentifier + " can not be approved by the user " + admin.toString());
+                            throw new RestException(Response.Status.FORBIDDEN.getStatusCode(),
+                                    "You don't have permission to approve partition  " + partitionIdentifier);
+                        }
+                        LinkedHashMap<String, DynamicUiProperty<? extends Serializable>> propertyList = partition.getPropertyList();
+                        Collection<DynamicUiProperty<? extends Serializable>> updatedProperties = fillPartitionProperties(propertyList, requestPartition);
+                        approvalRequest.getApprovalProfile().addPropertiesToPartition(stepIdentifier, partitionIdentifier, updatedProperties);
+                        final RaApprovalResponseRequest responseRequest = new RaApprovalResponseRequest(
+                                requestId,
+                                stepIdentifier,
+                                partitionIdentifier,
+                                approvalRequest,
+                                request.getComment() != null ? request.getComment() : "",
+                                action
+                        );
 
-            for (var requestPartition : request.getApprovalPartitions()) {
-                int partitionIdentifier = requestPartition.getPartitionIdentifier();
-                ApprovalPartition partition = approvalRequest.getApprovalProfile()
-                        .getStep(stepIdentifier).getPartition(partitionIdentifier);
-                if (partition != null) {
-                    if (!canApprove(partition, approvalRequest.getApprovalProfile(), admin)){
-                        log.info("Partition " + partitionIdentifier + " can not be approved by the user " + admin.toString());
-                        throw new RestException(Response.Status.FORBIDDEN.getStatusCode(),
-                                "You don't have permission to approve partition  " + partitionIdentifier);
+                        // Process the approval request
+                        raMasterApi.addRequestResponse(admin, responseRequest);
+                    } else {
+                        log.info("Partition " + partitionIdentifier + " not found in approval profile");
+                        throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
+                                "Partition " + partitionIdentifier + " not found. Wrong partition identifier or partition already performed.");
                     }
-                    LinkedHashMap<String, DynamicUiProperty<? extends Serializable>> propertyList = partition.getPropertyList();
-                    Collection<DynamicUiProperty<? extends Serializable>> updatedProperties = fillPartitionProperties(propertyList, requestPartition);
-                    approvalRequest.getApprovalProfile().addPropertiesToPartition(stepIdentifier, partitionIdentifier, updatedProperties);
-                    final RaApprovalResponseRequest responseRequest = new RaApprovalResponseRequest(
-                            requestId,
-                            stepIdentifier,
-                            partitionIdentifier,
-                            approvalRequest,
-                            request.getComment() != null ? request.getComment() : "",
-                            action
-                    );
-
-                    // Process the approval request
-                    raMasterApi.addRequestResponse(admin, responseRequest);
-                } else {
-                    log.info("Partition " + partitionIdentifier + " not found in approval profile");
-                    throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
-                            "Partition " + partitionIdentifier + " not found. Wrong partition identifier or partition already performed.");
                 }
+            } else {
+                final RaApprovalResponseRequest responseRequest = new RaApprovalResponseRequest(
+                        requestId,
+                        stepIdentifier,
+                        approvalRequestInfo.getNextApprovalStepPartition().getPartitionIdentifier(),
+                        approvalRequest,
+                        request.getComment() != null ? request.getComment() : "",
+                        action
+                );
+                // Process the approval request
+                raMasterApi.addRequestResponse(admin, responseRequest);
             }
         } catch (ApprovalRequestExpiredException e) {
             log.info("Approval request " + requestId + " has expired");
