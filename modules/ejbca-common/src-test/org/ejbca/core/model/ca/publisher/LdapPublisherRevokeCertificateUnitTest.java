@@ -190,8 +190,6 @@ public class LdapPublisherRevokeCertificateUnitTest {
 		final LDAPEntry	fromLdap = getLdapUserEntryWithOtherCertificate(userDN);
 
 		setupLdapConnection();
-		ldapConnection.modify(anyString(), anyObject(LDAPModification[].class), anyObject(LDAPConstraints.class));
-		EasyMock.expectLastCall().once();
 
 		expect(testClass.searchOldEntity(eq(username), eq(LDAPConnection.LDAP_V3), eq(ldapConnection), anyString(), anyString(), anyString())).andReturn(fromLdap);
 
