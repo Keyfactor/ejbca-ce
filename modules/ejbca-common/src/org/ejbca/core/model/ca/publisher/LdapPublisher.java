@@ -734,6 +734,9 @@ public class LdapPublisher extends BasePublisher {
 								LDAPAttribute attr = new LDAPAttribute(userCertAttribute);
 								modSet.add(new LDAPModification(LDAPModification.DELETE, attr));
 							}
+						} else if (containsCertificates(oldAttr)) {
+							log.debug("There are still certificates in the user entry, so we will not remove the user entry.");
+							removeuser = false;
 						}
 					}
 				}
@@ -774,7 +777,7 @@ public class LdapPublisher extends BasePublisher {
                 lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes(StandardCharsets.UTF_8), ldapBindConstraints);
 				// Add or modify the entry
 				if (modSet != null && getModifyExistingUsers()) {
-					if (removecert) {
+					if (removecert && removedCertOrUser) {
 						LDAPModification[] mods = new LDAPModification[modSet.size()];
 						mods = (LDAPModification[])modSet.toArray(mods);
 						lc.modify(oldEntry.getDN(), mods, ldapStoreConstraints);
