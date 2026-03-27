@@ -735,7 +735,7 @@ public class LdapPublisher extends BasePublisher {
 								modSet.add(new LDAPModification(LDAPModification.DELETE, attr));
 							}
 						} else if (containsCertificates(oldAttr)) {
-							log.debug("There are still certificates in the user entry, so we will not remove the user entry.");
+							log.debug("User " + username + " still have certificates in the LDAP user entry, so the user entry will not be removed.");
 							removeuser = false;
 						}
 					}
