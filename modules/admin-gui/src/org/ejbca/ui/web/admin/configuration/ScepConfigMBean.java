@@ -960,6 +960,10 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             if ("ra".equalsIgnoreCase(currentAlias.getMode())) {
                 scepConfig.setClientCertificateRenewal(alias, false);
                 scepConfig.setAllowClientCertificateRenewalWithOldKey(alias, false);
+
+                scepConfig.setProxyCaEncryptionCertTemplate(alias, currentAlias.getProxyCaEncryptionCertTemplate());
+                scepConfig.setProxyCaSigningCertTemplate(alias, currentAlias.getProxyCaSigningCertTemplate());
+                scepConfig.setProxyCaEnrollmentTemplate(alias, currentAlias.getProxyCaCaEnrollmentTemplate());
             } else {
                 scepConfig.setClientCertificateRenewal(alias, currentAlias.getClientCertificateRenewal());
                 scepConfig.setAllowClientCertificateRenewalWithOldKey(alias, currentAlias.getAllowClientCertificateRenewalWithOldKey());
@@ -1036,10 +1040,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     } else {
                         scepConfig.setSigningCertificate(alias, currentAlias.signingCertificateInfo.pemEncodedCertificate);
                     }
-                    
-                    scepConfig.setProxyCaEncryptionCertTemplate(alias, currentAlias.getProxyCaEncryptionCertTemplate());
-                    scepConfig.setProxyCaSigningCertTemplate(alias, currentAlias.getProxyCaSigningCertTemplate());
-                    scepConfig.setProxyCaEnrollmentTemplate(alias, currentAlias.getProxyCaCaEnrollmentTemplate());
+
                 } else {
                     // CA mode
                     if (currentAlias.encryptionCryptoTokenId == null || currentAlias.encryptionKeyAlias == null
