@@ -1357,14 +1357,6 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         // ECA-11391 and "Forbid encryption usage for ECC keys" flag in Certificate Profile allow creating certificates
         // using the same Certificate Profile (relevant key usages) where for example both RSA and ECDSA key algorithms are selected in the profile.
         final String keyAlg = AlgorithmTools.getKeyAlgorithm(publicKey);
-//        if (Strings.CS.startsWith(keyAlg, "EC")
-//                || Strings.CS.startsWith(keyAlg, "Ed")
-//                || AlgorithmTools.isPQC(keyAlg) && !AlgorithmTools.isKEM(keyAlg)
-//                && certProfile.getKeyUsageForbidEncryptionUsageForECC()) {
-//            certProfile.setKeyUsage(CertificateConstants.KEYENCIPHERMENT, false);
-//            certProfile.setKeyUsage(CertificateConstants.DATAENCIPHERMENT, false);
-//        }
-
         if (certProfile.getKeyUsageForbidEncryptionUsageForECC() &&
                 (Strings.CS.startsWith(keyAlg, "EC")
                 || Strings.CS.startsWith(keyAlg, "Ed")
