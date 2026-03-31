@@ -119,6 +119,9 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     public static final String PROPERTY_CA_GENERATION = "certChainGeneration";
     
     {
+        addProperty(new DynamicUiProperty<>(PROPERTY_NON_EXISTING_BEHAVIOR, OcspNonExistingBehavior.UNKNOWN.getLabel(),
+                Arrays.asList(OcspNonExistingBehavior.UNKNOWN.getLabel(), OcspNonExistingBehavior.GOOD.getLabel(),
+                        OcspNonExistingBehavior.REVOKED.getLabel(), OcspNonExistingBehavior.UNAUTHORIZED.getLabel())));
         addProperty(new DynamicUiProperty<>(PROPERTY_INCLUDE_CERT_CHAIN, Boolean.TRUE));
         addProperty(new DynamicUiProperty<>(PROPERTY_INCLUDE_SIGN_CERT, Boolean.TRUE));
         addProperty(new DynamicUiProperty<>(PROPERTY_RESPONDER_ID_TYPE, ResponderIdType.KEYHASH.name(),
@@ -168,14 +171,11 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     }
     
     public OcspNonExistingBehavior getOcspNonExistingBehavior() {
-        if(getData(PROPERTY_NON_EXISTING_BEHAVIOR, null) == null) {
-            setOcspNonExistingBehavior(OcspNonExistingBehavior.UNKNOWN);
-        }
-        return OcspNonExistingBehavior.fromLabel(getData(PROPERTY_NON_EXISTING_BEHAVIOR, null));
+        return OcspNonExistingBehavior.fromLabel((String) getProperty(PROPERTY_NON_EXISTING_BEHAVIOR).getValue());
     }
     
     public void setOcspNonExistingBehavior(final OcspNonExistingBehavior ocspNonExistingBehavior) {
-        putData(PROPERTY_NON_EXISTING_BEHAVIOR, ocspNonExistingBehavior.getLabel());
+        setProperty(PROPERTY_NON_EXISTING_BEHAVIOR, ocspNonExistingBehavior.getLabel());
     }
     
     public boolean getIncludeCertChain() {

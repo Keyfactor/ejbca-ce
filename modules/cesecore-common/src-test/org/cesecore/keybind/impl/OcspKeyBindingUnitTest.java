@@ -159,6 +159,7 @@ public class OcspKeyBindingUnitTest {
     public void testProperties() {
         final OcspKeyBinding keybind = new OcspKeyBinding();
         // Check defaults (please update if changed)
+        assertEquals("Default nonExistingBehavior should be UNKNOWN.", OcspNonExistingBehavior.UNKNOWN, keybind.getOcspNonExistingBehavior());
         assertTrue("getIncludeSignCert", keybind.getIncludeSignCert());
         assertFalse("getRequireTrustedSignature", keybind.getRequireTrustedSignature());
         assertEquals("getResponderIdType", ResponderIdType.KEYHASH, keybind.getResponderIdType());
