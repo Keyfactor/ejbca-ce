@@ -56,6 +56,10 @@ public class ValidityDateValidator implements Validator<Object> {
         if (null != component.getAttributes().get("allowNull")) {
             allowNull = Boolean.parseBoolean((String) component.getAttributes().get("allowNull")); 
         }
+        boolean disallowRelativeDates = false;
+        if (null != component.getAttributes().get("disallowRelativeDates")) {
+            disallowRelativeDates = Boolean.parseBoolean((String) component.getAttributes().get("disallowRelativeDates"));
+        }
         boolean failed = true;
         if (allowNull && StringUtils.isEmpty(value)) {
             failed = false;
@@ -68,7 +72,7 @@ public class ValidityDateValidator implements Validator<Object> {
                 } catch (ParseException e) {
                     // NOOP
                 }
-                if (failed) {
+                if (failed && !disallowRelativeDates) {
                     // Parse time unit format.
                     try {
                         final long millis = format.parseMillis(value);
