@@ -498,7 +498,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         final CA ca;
         if (suppliedUserData == null) {
             ca = getCAFromRequest(admin, req, false);
-        } else {
+        } else { // here
             ca = (CA) caSession.getCANoLog(admin, suppliedUserData.getCAId(), null); // Take the CAId from the supplied userdata, if any
         }
         if (ca.getStatus() != CAConstants.CA_ACTIVE && ca.getStatus() != CAConstants.CA_EXTERNAL) {

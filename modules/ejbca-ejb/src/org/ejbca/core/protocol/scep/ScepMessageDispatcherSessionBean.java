@@ -492,7 +492,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
 
         boolean isRAModeOK = scepConfig.getRAMode(alias);
         CAInfo caInfo = caSession.getCAInfoInternal(-1, scepConfig.getRADefaultCA(alias), true);
-
+        EndEntityInformation suppliedUserData = null;
 
         if (reqmsg.getErrorNo() != 0) {
             log.info("Error '" + reqmsg.getErrorNo() + "' receiving Scep request message.");
@@ -513,10 +513,19 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                     log.debug("Received a SCEP PKCSREQ message, operating in RA mode: " + isRAModeOK);
                 }
                 try {
-                    if (!scepRaModeExtension.performOperation(administrator, reqmsg, scepConfig, alias)) {
-                        String errmsg = "Error. Failed to add or edit user: " + reqmsg.getUsername();
-                        log.info(errmsg);
-                        return null;
+                    if (caInfo.getCAType()!=CAInfo.CATYPE_PROXY) {
+                        if (!scepRaModeExtension.performOperation(administrator, reqmsg, scepConfig, alias)) {
+                            String errmsg = "Error. Failed to add or edit user: " + reqmsg.getUsername();
+                            log.info(errmsg);
+                            return null;
+                        }
+                    } else {
+                        suppliedUserData = scepRaModeExtension.performOperationForProxyCa(administrator, reqmsg, scepConfig, alias);
+                        if (suppliedUserData==null) {
+                            String errmsg = "Error. Failed to process user for KeyfactorEnrollProxyCa: " + reqmsg.getUsername();
+                            log.info(errmsg);
+                            return null;
+                        }
                     }
                 } catch (WaitingForApprovalException e) {
                     //Return a pending response message, because this request is now waiting to be approved
@@ -524,8 +533,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         log.debug("Returning a PENDING message to PKCSREQ request for end entity '" + reqmsg.generateUsername(scepConfig, alias)
                                 + "' to SCEP alias '" + alias + "'");
                     }
-                    X509CAInfo cainfo = (X509CAInfo) caSession.getCAInfoInternal(-1, scepConfig.getRADefaultCA(alias), true);
-                    ResponseMessage resp = createPendingResponseMessage(reqmsg, cainfo);
+                    ResponseMessage resp = createPendingResponseMessage(reqmsg, (X509CAInfo) caInfo);
                     return ScepResponseInfo.onlyResponseBytes(resp.getResponseMessage());
                 }
             }
@@ -546,7 +554,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                     if (log.isDebugEnabled()) {
                         log.debug("SCEP certificate enrollment with alias '" + alias + "'");
                     }
-                    ResponseMessage resp = signSession.createCertificate(administrator, reqmsg, ScepResponseMessage.class, null); // *****************************
+                    ResponseMessage resp = signSession.createCertificate(administrator, reqmsg, ScepResponseMessage.class, suppliedUserData);
                     if (resp != null) {
                         ret = resp.getResponseMessage();
                         ScepResponseMessage scepResponseMessage = (ScepResponseMessage) resp;
