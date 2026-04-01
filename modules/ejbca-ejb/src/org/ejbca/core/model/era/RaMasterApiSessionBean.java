@@ -1304,6 +1304,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
             return emptyResponse;
         }
+
         // Check Certificate Profile authorization
         final List<Integer> authorizedCpIds = new ArrayList<>(certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, 0));
         final boolean accessAnyCpAvailable = authorizedCpIds.containsAll(certificateProfileSession.getCertificateProfileIdToNameMap().keySet());
@@ -1317,6 +1318,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
             return emptyResponse;
         }
+
         // Check End Entity Profile authorization
         final Collection<Integer> authorizedEepIds = new ArrayList<>(endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.VIEW_END_ENTITY));
         final boolean accessAnyEepAvailable = authorizedEepIds.containsAll(endEntityProfileSession.getEndEntityProfileIdToNameMap().keySet());
@@ -1334,6 +1336,17 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (authorizedEepIds.contains(EndEntityConstants.EMPTY_END_ENTITY_PROFILE)) {
             authorizedEepIds.add(EndEntityConstants.NO_END_ENTITY_PROFILE);
             authorizedCpIds.add(CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
+        }
+
+        // Check if viewing certificates is authorized based on access rule
+        // view_certificate should be working with /endentityprofilesrules/
+        final String certificateViewRule = StandardRules.CAFUNCTIONALITY.resource()+"/view_certificate";
+        if(!authorizationSession.isAuthorizedNoLogging(authenticationToken, certificateViewRule)) {
+            final String msg = intres.getLocalizedMessage("authorization.usernotauthorizedtoresource", certificateViewRule, null);
+            if (log.isDebugEnabled()) {
+                log.debug(msg);
+            }
+            return emptyResponse;
         }
 
         // If the query looks like a serial number, try a fast serial number search first

@@ -1311,14 +1311,14 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     }
 
     private void handleWaitingForApprovalException(WaitingForApprovalException e) {
-        addNonTranslatedErrorMessage(getEjbcaWebBean().getText("REQHAVEBEENADDEDFORAPPR"));
+        addNonTranslatedInfoMessage(getEjbcaWebBean().getText("REQHAVEBEENADDEDFORAPPR"));
     }
 
     private void handleApprovalException(ApprovalException e) {
         if (e.getErrorCode().equals(ErrorCode.VALIDATION_FAILED)) {
             addNonTranslatedErrorMessage(getEjbcaWebBean().getText("DOMAINBLACKLISTVALIDATOR_VALIDATION_FAILED"));
         } else {
-            addNonTranslatedErrorMessage(getEjbcaWebBean().getText("THEREALREADYEXISTSAPPROVAL"));
+            addNonTranslatedInfoMessage(getEjbcaWebBean().getText("THEREALREADYEXISTSAPPROVAL"));
         }
     }
 

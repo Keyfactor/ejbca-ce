@@ -24,6 +24,7 @@ import jakarta.ws.rs.core.EntityPart;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
+import org.ejbca.ui.web.rest.api.io.request.GenerateCsrCaRequest;
 import org.ejbca.ui.web.rest.api.io.response.CaInfosRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.CreateCrlRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.CrlRestResponse;
@@ -36,6 +37,7 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -130,12 +132,14 @@ public class CaRestResourceSwagger extends CaRestResource {
     @POST
     @Path("/{issuer_dn}/createcrl")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Operation(description = "Create CRL(main, partition and delta) issued by this CA", responses = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Successful operation",
-                    content = @Content(schema = @Schema(implementation = CreateCrlRestResponse.class))
-            )
+    @Operation(description = "Create CRL (main, partition and delta) issued by this CA. " +
+                "Operation will only be called on local CA's for this EJBCA instance, not on upstream instances that this instance is acting as RA/VA for.",
+            responses = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successful operation",
+                        content = @Content(schema = @Schema(implementation = CreateCrlRestResponse.class))
+                )
     })
     public Response createCrl(@Context HttpServletRequest httpServletRequest,
                               @Parameter(description = "the CRL issuers DN (CAs subject DN)", required = true) @PathParam("issuer_dn") String issuerDn,
@@ -151,7 +155,8 @@ public class CaRestResourceSwagger extends CaRestResource {
     @Path("/{issuer_dn}/importcrl")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(description = "Import a certificate revocation list (CRL) for a CA",
+    @Operation(description = "Import a certificate revocation list (CRL) for a CA. " +
+                "Operation will only be called on local CA's for this EJBCA instance, not on upstream instances that this instance is acting as RA/VA for.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "CRL file was imported successfully"),
                     @ApiResponse(responseCode = "400", description = "Error while importing CRL file")
@@ -162,5 +167,21 @@ public class CaRestResourceSwagger extends CaRestResource {
                               @Parameter(description = "CRL file in DER format", schema = @Schema(type="string", format="binary")) @FormParam("crlFile") final EntityPart crlFileEP
     ) throws AuthorizationDeniedException, RestException {
         return super.importCrl(httpServletRequest, issuerDn, crlPartitionIndexEP, crlFileEP);
+    }
+    
+    @Override
+    @PUT
+    @Path("/{issuer_dn}/generatecsr")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.WILDCARD)
+    @Operation(description = "Create a CSR for the CA." +
+                "Operation will only be called on local CA's for this EJBCA instance, not on upstream instances that this instance is acting as RA/VA for.",
+            responses = { 
+                    @ApiResponse(responseCode = "200", description = "Successful operation"),
+                    @ApiResponse(responseCode = "400", description = "Error while creating the CSR") })
+    public Response generateCsr(@Context final HttpServletRequest httpServletRequest,
+            @Parameter(description = "the CRL issuers DN (CAs subject DN)", required = true) @PathParam("issuer_dn") String issuerDn,
+            @Parameter(name = "CSR generation request") GenerateCsrCaRequest request) throws AuthorizationDeniedException, RestException {
+        return super.generateCsr(httpServletRequest, issuerDn, request);
     }
 }

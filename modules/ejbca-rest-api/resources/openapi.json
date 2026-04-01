@@ -1043,6 +1043,43 @@
         }
       }
     },
+    "/v1/ca/{issuer_dn}/generatecsr": {
+      "put": {
+        "tags": [
+          "v1/ca"
+        ],
+        "description": "Create a CSR for the CA",
+        "operationId": "generateCsr",
+        "parameters": [
+          {
+            "name": "issuer_dn",
+            "in": "path",
+            "description": "the CRL issuers DN (CAs subject DN)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateCsrCaRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "400": {
+            "description": "Error while creating the CSR"
+          }
+        }
+      }
+    },
     "/v1/ca/{subject_dn}/certificate/download": {
       "get": {
         "tags": [
@@ -3078,6 +3115,29 @@
           },
           "all_success": {
             "type": "boolean"
+          }
+        }
+      },
+      "GenerateCsrCaRequest": {
+        "type": "object",
+        "properties": {
+          "key_pair": {
+            "type": "string",
+            "description": "Name of the key or keyAlias in CA's cryptotoken",
+            "example": "signKey or GENERATE_NEW"
+          },
+          "certificate_chain": {
+            "type": "array",
+            "description": "Certificate Chain as PEM(Optional)",
+            "items": {
+              "type": "string",
+              "description": "Certificate Chain as PEM(Optional)"
+            }
+          },
+          "response_format": {
+            "type": "string",
+            "description": "Response format",
+            "example": "DER"
           }
         }
       },
