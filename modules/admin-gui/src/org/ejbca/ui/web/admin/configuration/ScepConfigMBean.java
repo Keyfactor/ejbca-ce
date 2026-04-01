@@ -960,6 +960,10 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             if ("ra".equalsIgnoreCase(currentAlias.getMode())) {
                 scepConfig.setClientCertificateRenewal(alias, false);
                 scepConfig.setAllowClientCertificateRenewalWithOldKey(alias, false);
+
+                scepConfig.setProxyCaEncryptionCertTemplate(alias, currentAlias.getProxyCaEncryptionCertTemplate());
+                scepConfig.setProxyCaSigningCertTemplate(alias, currentAlias.getProxyCaSigningCertTemplate());
+                scepConfig.setProxyCaEnrollmentTemplate(alias, currentAlias.getProxyCaCaEnrollmentTemplate());
             } else {
                 scepConfig.setClientCertificateRenewal(alias, currentAlias.getClientCertificateRenewal());
                 scepConfig.setAllowClientCertificateRenewalWithOldKey(alias, currentAlias.getAllowClientCertificateRenewalWithOldKey());
@@ -1036,6 +1040,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     } else {
                         scepConfig.setSigningCertificate(alias, currentAlias.signingCertificateInfo.pemEncodedCertificate);
                     }
+
                 } else {
                     // CA mode
                     if (currentAlias.encryptionCryptoTokenId == null || currentAlias.encryptionKeyAlias == null
@@ -1250,16 +1255,24 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         }
         final EndEntityProfile p = endentityProfileSession.getEndEntityProfile(eep);
         if (p != null) {
+            final List<SelectItem> availableCAs;
             if (p.getAvailableCAs().contains(CAConstants.ALLCAS)) {
-                return getAvailableCAs();
+                availableCAs = getAvailableCAs();
             } else {
                 final Map<Integer, String> caidname = caSession.getCAIdToNameMap();
-                return p.getAvailableCAs().stream()
+                availableCAs = p.getAvailableCAs().stream()
                         .map(caidname::get)
                         .map(SelectItem::new)
                         .sorted(new SelectItemComparator())
                         .collect(Collectors.toList());
             }
+            // If raDefaultCA is not set, auto-initialize it to the first available CA.
+            // This ensures the model matches what JSF displays (visually auto-selects first item),
+            // so that dependent render conditions (e.g. Proxy CA template fields) evaluate correctly.
+            if (StringUtils.isBlank(currentAlias.getRaDefaultCA()) && !availableCAs.isEmpty()) {
+                currentAlias.setRaDefaultCA((String) availableCAs.get(0).getValue());
+            }
+            return availableCAs;
         }
         return List.of();
     }
