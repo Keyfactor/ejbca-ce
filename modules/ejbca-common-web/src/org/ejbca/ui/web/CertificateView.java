@@ -170,7 +170,7 @@ public class CertificateView implements Serializable {
         if (StringUtils.isBlank(issuerDn) && certificateData!=null) {
             return certificateData.getIssuerDN();
         }
-        return "";
+        return issuerDn;
     }
 
     public String getIssuerDNField(int field, int number) {
