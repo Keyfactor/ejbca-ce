@@ -14,10 +14,12 @@
 package org.cesecore.util;
 
 import java.text.ParseException;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
@@ -55,6 +57,8 @@ public class ValidityDate {
     private static final String ISO_TIME_REGEX = "\\d{4,}-(0\\d|10|11|12)-[0123]\\d( \\d\\d:\\d\\d(:\\d\\d)?)?([+-]\\d\\d:\\d\\d)?"; // example: 2019-12-31 or 2019-12-31 23:59:59+00:00
     public static final String VALIDITY_TIME_REGEX = "^(" + RELATIVE_TIME_REGEX + "|" + ISO_TIME_REGEX + ")$";
     private static final Pattern VALIDITY_TIME_PATTERN = Pattern.compile(VALIDITY_TIME_REGEX);
+
+	private static final Pattern TIMEZONE_PATTERN = Pattern.compile("[+-]\\d{2}:\\d{2}$");
 	
     // Can't be instantiated
     private ValidityDate() {
@@ -133,7 +137,31 @@ public class ValidityDate {
 	public static String getISO8601FromImpliedUTC(final String dateString, final TimeZone timeZone) throws ParseException {
 		return formatAsISO8601(parseAsUTC(dateString), timeZone);
 	}
-    
+
+	/**
+	 * Extracts the timezone offset from an date string ending with Z (for UTC) or +/-HH:MM (for timzone offsets.
+	 * These formats are used by ISO-8601 and RFC-3339.
+	 * <p>
+	 * Note that +/-01 syntax (without colon/minutes) is NOT supported, since it would be ambiguous with dates, for
+	 * example in 2026-01-01.
+	 *
+	 * @param dateString the date string to extract the timezone from
+	 * @param defaultTimeZone returned if the timezone is not specified in the date string
+	 */
+	public static TimeZone extractTimeZone(final String dateString, final TimeZone defaultTimeZone) {
+		if (dateString.endsWith("Z")) {
+			return TIMEZONE_UTC;
+		} else {
+			final Matcher matcher = TIMEZONE_PATTERN.matcher(dateString);
+			if (!matcher.find()) {
+				return defaultTimeZone;
+			}
+			final String timezoneOffsetString = matcher.group();
+			final ZoneOffset zoneOffset = ZoneOffset.of(timezoneOffsetString);
+			return TimeZone.getTimeZone(zoneOffset);
+		}
+	}
+
 	/**
      * Decodes encoded value to Date.
      * <p>

@@ -35,6 +35,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,7 +57,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final long serialVersionUID = 1L;
 
     protected static final InternalResources intres = InternalResources.getInstance();
-    protected static final float LATEST_VERSION = 15;
+    protected static final float LATEST_VERSION = 16;
 
     private static final String KEY_RA_NAMEGENERATIONSCHEME = "ra.namegenerationscheme";
     private static final String KEY_RA_NAMEGENERATIONPARAMS = "ra.namegenerationparameters";
@@ -153,6 +154,8 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     public static final String DEFAULT_SUGGESTED_RENEWAL_START = "5d";
     public static final String DEFAULT_SUGGESTED_RENEWAL_END = "1d";
 
+    public static final boolean DEFAULT_ENABLE_ARI_EARLY_RENEWAL = false;
+
     private static final String[] DEFAULT_TLS_APLN_PROTOCOLS_ENABLED = new String[]{ "TLSv1.2", "TLSv1.3" };
     
     private static final boolean DEFAULT_KEY_USE_CAA_ACCOUNT_URI_VALIDATION = false;
@@ -180,7 +183,12 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
             // New version of the class, upgrade.
             log.info(intres.getLocalizedMessage("acmeconfiguration.upgrade", getVersion()));
 
-            // v14. Renewal Info
+            // v16. Early Mass-Renewal
+            if (data.get(KEY_ENABLE_ARI_EARLY_RENEWAL) == null) {
+                setEnableAriEarlyRenewal(DEFAULT_ENABLE_ARI_EARLY_RENEWAL); // Off by default. Other mass-renewal settings are irrelevant when it's turned off.
+            }
+
+            // v14-v15. Renewal Info
             if (data.get(KEY_ENABLED_RENEWAL_INFO) == null) {
                 setEnabledRenewalInfo(DEFAULT_ENABLED_RENEWAL_INFO);
             }
@@ -672,8 +680,9 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     }
 
     private String reformatDate(final String dateString) {
-        final Instant instant = checkAndReturnDate(dateString);
-        return ValidityDate.formatAsISO8601ServerTZ(instant.toEpochMilli(), null);
+        var instant = checkAndReturnDate(dateString);
+        var timezone = ValidityDate.extractTimeZone(dateString, ValidityDate.TIMEZONE_SERVER);
+        return ValidityDate.formatAsISO8601(Date.from(instant), timezone);
     }
 
     public String getAriEarlyRenewalCutoffDateAsString() { return (String) super.data.get(KEY_ARI_EARLY_RENEWAL_CUTOFF_DATE); }
