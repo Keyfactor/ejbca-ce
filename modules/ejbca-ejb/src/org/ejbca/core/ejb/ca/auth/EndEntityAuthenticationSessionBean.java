@@ -110,7 +110,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
     	if (log.isTraceEnabled()) {
             log.trace(">authenticateUser(" + username + ", hiddenpwd)");
     	}
-    	boolean eichange = false;
+    	boolean eichange;
         try {
             // Find the user with username username, or throw ObjectNotFoundException
             final UserData data = endEntityAccessSession.findByUsername(username);
@@ -122,43 +122,39 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
             // Decrease the remaining login attempts. When zero, the status is set to STATUS_GENERATED
             ExtendedInformation ei = data.getExtendedInformation();
            	eichange = decRemainingLoginAttempts(data, ei);
-           	boolean authenticated = false;
            	final int status = data.getStatus();
-            if (isAllowedToEnroll(admin, username)) {
-            	if (log.isDebugEnabled()) {
-            		log.debug("Trying to authenticate user: username="+username+", dn="+ LogRedactionUtils.getSubjectDnLogSafe(data.getSubjectDnNeverNull())+", email="+data.getSubjectEmail()+", status="+status+", type="+data.getType());
-            	}
-                if (checkPassword && !data.comparePassword(password)) {
-                	final String msg = intres.getLocalizedMessage("authentication.invalidpwd", username);            	
-                    final Map<String, Object> details = new LinkedHashMap<>();
-                    details.put("msg", msg);
-                    auditSession.log(EjbcaEventTypes.CA_USERAUTH, EventStatus.FAILURE, ModuleTypes.CA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(data.getCaId()), null, username, details);
-                    if (eichange) {
-                        data.setTimeModified(new Date().getTime());
-                        data.setExtendedInformation(ei);
-                    }
-                	throw new AuthLoginException(ErrorCode.LOGIN_ERROR, msg);
-                }
-                // Resets the remaining login attempts as this was a successful login
-                if (UserData.resetRemainingLoginAttemptsInternal(ei, data.getUsername())) {
-                    // This call can never set eichange to false, only to true (because it is already false if it should be)
-                    eichange = true;
-                }
-            	// Log formal message that authentication was successful
-                final Map<String, Object> details = new LinkedHashMap<>();
-                details.put("msg", intres.getLocalizedMessage("authentication.authok", username));
-                auditSession.log(EjbcaEventTypes.CA_USERAUTH, EventStatus.SUCCESS, ModuleTypes.CA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(data.getCaId()), null, username, details);
-            	if (log.isTraceEnabled()) {
-                    log.trace("<authenticateUser("+username+", hiddenpwd)");
-            	}
-            	authenticated = true;
-            }
+			if (log.isDebugEnabled()) {
+				log.debug("Trying to authenticate user: username="+username+", dn="+ LogRedactionUtils.getSubjectDnLogSafe(data.getSubjectDnNeverNull())+", email="+data.getSubjectEmail()+", status="+status+", type="+data.getType());
+			}
+			if (checkPassword && !data.comparePassword(password)) {
+				final String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
+				final Map<String, Object> details = new LinkedHashMap<>();
+				details.put("msg", msg);
+				auditSession.log(EjbcaEventTypes.CA_USERAUTH, EventStatus.FAILURE, ModuleTypes.CA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(data.getCaId()), null, username, details);
+				if (eichange) {
+					data.setTimeModified(new Date().getTime());
+					data.setExtendedInformation(ei);
+				}
+				throw new AuthLoginException(ErrorCode.LOGIN_ERROR, msg);
+			}
+			// Resets the remaining login attempts as this was a successful login
+			if (UserData.resetRemainingLoginAttemptsInternal(ei, data.getUsername())) {
+				// This call can never set eichange to false, only to true (because it is already false if it should be)
+				eichange = true;
+			}
+			// Log formal message that authentication was successful
+			final Map<String, Object> details = new LinkedHashMap<>();
+			details.put("msg", intres.getLocalizedMessage("authentication.authok", username));
+			auditSession.log(EjbcaEventTypes.CA_USERAUTH, EventStatus.SUCCESS, ModuleTypes.CA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(data.getCaId()), null, username, details);
+			if (log.isTraceEnabled()) {
+				log.trace("<authenticateUser("+username+", hiddenpwd)");
+			}
             if (eichange) {
                 data.setTimeModified(new Date().getTime());
                 data.setExtendedInformation(ei);
             }
-            if (authenticated) {
-                return data.toEndEntityInformation();
+			if (isAllowedToEnroll(admin, username)) {
+				return data.toEndEntityInformation();
             } else {
                 final String msg = intres.getLocalizedMessage("authentication.wrongstatus", EndEntityConstants.getStatusText(status), status, username);
                 log.info(msg);

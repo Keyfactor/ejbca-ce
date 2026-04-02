@@ -14,7 +14,6 @@
 package org.cesecore.repository;
 
 import jakarta.persistence.EntityManager;
-import org.apache.log4j.Logger;
 import org.cesecore.dto.Dto;
 import org.cesecore.repository.util.SynchronizationUtil;
 import org.ejbca.dto.EntityManagerBean;
@@ -25,8 +24,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 
 public final class CachedDatabase<T extends Dto<Id>, Id, Bean extends EntityManagerBean<T>> implements Repository<T, Id> {
-
-    private static final Logger log = Logger.getLogger(CachedDatabase.class);
 
     private final Database<T, Id, Bean> database;
     private final Cache<T, Id> cache;

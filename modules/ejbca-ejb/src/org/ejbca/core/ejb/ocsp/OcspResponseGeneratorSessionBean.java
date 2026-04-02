@@ -352,9 +352,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                                 "Referenced private key with alias " + signKeyAlias + " does not exist. Ignoring CA with id " + caId);
                                         continue;
                                     }
-                                } catch (CryptoTokenOfflineException e) {
+                                } catch (CryptoTokenOfflineException | RuntimeException e) { // CKRException is a RuntimeException
                                     log.warn("Referenced private key with alias " + signKeyAlias
                                             + " could not be used. CryptoToken is off-line for CA with id " + caId + ": " + e.getMessage());
+                                    log.debug("Referenced private key could not be used", e); // include stack trace at debug level
                                     continue;
                                 }
 
@@ -364,7 +365,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 
                                 final String signatureProviderName = cryptoToken.getSignProviderName();
                                 if (!caCertificateChain.isEmpty()) {
-                                    generateOcspSigningCacheEntries(caCertificateChain, signatureProviderName, privateKey, ocspConfiguration, caToken);
+                                    try {
+                                        generateOcspSigningCacheEntries(caCertificateChain, signatureProviderName, privateKey, ocspConfiguration, caToken);
+                                    } catch (RuntimeException e) {
+                                        log.warn("Failed to generate OCSP signing cache entries for CA with ID " + caId + ": " + e.getMessage(), e);
+                                    }
                                 } else {
                                     log.warn("CA with ID " + caId
                                             + " appears to lack a certificate in the database. This may be a serious error if not in a test environment.");
@@ -382,9 +387,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             final PrivateKey privateKey;
                             try {
                                 privateKey = cryptoToken.getPrivateKey(keyPairAlias);
-                            } catch (CryptoTokenOfflineException e) {
+                            } catch (CryptoTokenOfflineException | RuntimeException e) { // CKRException is a RuntimeException
                                 log.warn("Referenced private key with alias " + keyPairAlias
                                         + " could not be used. CryptoToken is off-line for CA with id " + caId + ": " + e.getMessage());
+                                log.debug("Referenced private key could not be used", e); // include stack trace at debug level
                                 continue;
                             }
                             if (privateKey == null) {
@@ -393,8 +399,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             }
                             final String signatureProviderName = cryptoToken.getSignProviderName();
                             if (!caCertificateChain.isEmpty()) {
-                                generateOcspSigningCacheEntries(caCertificateChain, signatureProviderName, privateKey, ocspConfiguration, caToken);
-                                generateOcspConfigCacheEntry(caCertificateChain.get(0), caId, preProduceOcspResponse, storeOcspResponseOnDemand, isMsCaCompatible);
+                                try {
+                                    generateOcspSigningCacheEntries(caCertificateChain, signatureProviderName, privateKey, ocspConfiguration, caToken);
+                                    generateOcspConfigCacheEntry(caCertificateChain.get(0), caId, preProduceOcspResponse, storeOcspResponseOnDemand, isMsCaCompatible);
+                                } catch (RuntimeException e) {
+                                    log.warn("Failed to generate OCSP signing cache entries for CA with ID " + caId + ": " + e.getMessage(), e);
+                                }
 
                             } else {
                                 log.warn("CA with ID " + caId
@@ -468,7 +478,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         log.warn("OCSP Responder certificate with subject DN '" + CertTools.getSubjectDN(ocspSigningCertificate)
                                 + "' and serial number " + CertTools.getSerialNumber(ocspSigningCertificate) + " is revoked.");
                     }
-                    final long warnBeforeExpirationTime = OcspConfiguration.getWarningBeforeExpirationTime();
+                    GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+                    final long warnBeforeExpirationTime = globalOcspConfiguration.getWarningBeforeExpiryTimeSeconds()*1000L;
                     //Check if signing cert is expired
                     if (!CertTools.isCertificateValid(ocspSigningCertificate, true, warnBeforeExpirationTime)) {
                         log.warn("OCSP Responder certificate with subject DN '" + CertTools.getSubjectDN(ocspSigningCertificate)
@@ -592,7 +603,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     + ".");
         }
         //Check if CA cert is expired
-        final long warnBeforeExpirationTime = OcspConfiguration.getWarningBeforeExpirationTime();
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        final long warnBeforeExpirationTime = globalOcspConfiguration.getWarningBeforeExpiryTimeSeconds()*1000L;
         if (!CertTools.isCertificateValid(caCertificate, true, warnBeforeExpirationTime)) {
             log.warn("Active CA with subject DN '" + CertTools.getSubjectDN(caCertificate) + "' and serial number "
                     + CertTools.getSerialNumber(caCertificate) + " has an expired certificate with expiration date "
@@ -1437,24 +1449,25 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             // If the Extended Revoked Definition should be added for certificates that we can not find in the database, see RFC6960 4.4.8
             boolean addExtendedRevokedExtension = false;
             Date producedAt = null;
-            
+
             for (Req ocspRequest : ocspRequests) {
                 CertificateID certId = ocspRequest.getCertID();
                 ASN1ObjectIdentifier certIdhash = certId.getHashAlgOID();
-                
+
                 if (!OIWObjectIdentifiers.idSHA1.equals(certIdhash) && !NISTObjectIdentifiers.id_sha256.equals(certIdhash) 
                         && !NISTObjectIdentifiers.id_sha384.equals(certIdhash) && !NISTObjectIdentifiers.id_sha512.equals(certIdhash)) {
                     throw new InvalidAlgorithmException("CertID with SHA1, SHA256, SHA384 and SHA512 are supported, not: "+certIdhash.getId());
                 }
                 if (!isPreSigning && transactionLogger.isEnabled()) {
-                    transactionLogger.paramPut(TransactionLogger.SERIAL_NOHEX, certId.getSerialNumber().toByteArray());
+                    transactionLogger.paramAppend(TransactionLogger.SERIAL_NOHEX, certId.getSerialNumber().toByteArray());
                     transactionLogger.paramPut(TransactionLogger.DIGEST_ALGOR, certId.getHashAlgOID().toString());
                     transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_HASH, certId.getIssuerNameHash());
                     transactionLogger.paramPut(TransactionLogger.ISSUER_KEY, certId.getIssuerKeyHash());
                 }
+                
                 if (!isPreSigning && auditLogger.isEnabled()) {
                     auditLogger.paramPut(AuditLogger.ISSUER_KEY, certId.getIssuerKeyHash());
-                    auditLogger.paramPut(AuditLogger.SERIAL_NOHEX, certId.getSerialNumber().toByteArray());
+                    auditLogger.paramAppend(AuditLogger.SERIAL_NOHEX, certId.getSerialNumber().toByteArray());
                     auditLogger.paramPut(AuditLogger.ISSUER_NAME_HASH, certId.getIssuerNameHash());
                 }
                 final String hash = StringTools.hex(certId.getIssuerNameHash());
@@ -2565,7 +2578,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         log.error("No key available. " + errMsg);
                         continue;
                     }
-                    final long warnBeforeExpirationTime = OcspConfiguration.getWarningBeforeExpirationTime();
+                    GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+                    final long warnBeforeExpirationTime = globalOcspConfiguration.getWarningBeforeExpiryTimeSeconds()*1000L;
                     if (OcspConfiguration.getHealthCheckCertificateValidity() && !CertTools.isCertificateValid(ocspSigningCertificate, true, warnBeforeExpirationTime) ) {
                         sb.append('\n').append(errMsg);
                         continue;

@@ -13,7 +13,6 @@
 
 package org.ejbca.core.ejb.ra;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.security.InvalidAlgorithmParameterException;
@@ -30,26 +29,16 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 
-import jakarta.annotation.Resource;
-import jakarta.ejb.EJB;
-import jakarta.ejb.SessionContext;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
-
 import com.keyfactor.CesecoreException;
 import com.keyfactor.ErrorCode;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.keys.KeyStoreTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
-import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x500.X500NameBuilder;
-import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.Properties;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -93,7 +82,6 @@ import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -108,6 +96,13 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.ssh.SshRequestMessage;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
+
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 /**
  * Combines EditUser (RA) with CertReq (CA) methods using transactions.
@@ -151,17 +146,17 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     private SessionContext sessionContext;
 
     @Override
-    public byte[] processCertReq(AuthenticationToken admin, EndEntityInformation userdata, String req, int reqType, int responseType) 
+    public byte[] processCertReq(AuthenticationToken admin, EndEntityInformation userdata, String req, int reqType, int responseType)
             throws AuthorizationDeniedException, NotFoundException, InvalidKeyException, NoSuchAlgorithmException,
             InvalidKeySpecException, NoSuchProviderException, SignatureException, IOException, CertificateException,
             EndEntityProfileValidationException, ApprovalException, EjbcaException, CesecoreException, CertificateExtensionException {
         byte[] retval = null;
 
         // Check tokentype
-        if (userdata.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN) {
+        if (userdata.getTokenType() != EndEntityConstants.TOKEN_USERGEN) {
             throw new WrongTokenTypeException("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests");
         }
-        
+
         String password = userdata.getPassword();
         String username = userdata.getUsername();
         RequestMessage requestMessage;
@@ -189,20 +184,18 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
                 try {
                     ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).getDeclaredConstructor().newInstance();
                     requestMessage = extendedUserDataHandler.processRequestMessage(requestMessage, certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId()));
-                    
+
                     final X500Name x500NameFromRequest = requestMessage.getRequestX500Name(); 
-                    if (x500NameFromRequest != null && x500NameFromRequest.getRDNs().length != 0) {
-                        userdata.setDN(updateUserDNFromRequest(x500NameFromRequest));
+                    if (x500NameFromRequest != null && x500NameFromRequest.getRDNs().length > 0) {
+                        userdata.setDN(x500NameFromRequest.toString());
                     }
-                    
                 } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException
                         | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                     throw new IllegalStateException("Request Preprocessor implementation " + preProcessorClass + " could not be instantiated.");
                 }
-
             }
         }
-        
+
         EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(userdata.getEndEntityProfileId());
         if (profile == null) {
             throw new EndEntityProfileNotFoundException("End Entity Profile with id " + userdata.getEndEntityProfileId() + " does not exist.");
@@ -218,11 +211,11 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             }
             KeyPair keyPairToArchive = null;
             log.debug("reqtype: " + reqType + ", resptype: " + responseType);
-            if (reqType==CertificateConstants.CERT_REQ_TYPE_MS_KEY_ARCHIVAL) { 
+            if (reqType==CertificateConstants.CERT_REQ_TYPE_MS_KEY_ARCHIVAL) {
                 keyPairToArchive = validatePermissionsAndDecryptMsaeKeyPairToArchive(admin, (MsKeyArchivalRequestMessage)requestMessage, userdata);
                 log.info("Verified and retrieved private key for archival");
             }
-            
+
             // If no username is supplied initially and the EEP has autogenerated username,
             // requestMessage should be updated. RequestMessage is created before
             // autogenerated username is calculated in addOrEditUser.
@@ -234,8 +227,8 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             if (StringUtils.isEmpty(password) && entityProfile.useAutoGeneratedPasswd()) {
                 requestMessage.setPassword(userdata.getPassword());
             }
-            
-            retval = getCertResponseFromPublicKey(admin, requestMessage, responseType, userdata, keyPairToArchive);                
+
+            retval = getCertResponseFromPublicKey(admin, requestMessage, responseType, userdata, keyPairToArchive);
         } catch (CertificateExtensionException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw LogRedactionUtils.getRedactedException(e);
@@ -254,7 +247,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         }
         return retval;
     }
-    
+
     /**
      * Performs checks that the admin is authorized for key recovery and that Key Recovery is enabled in the EEP and system config setting.
      * If the checks pass the KeyRecoveryCAService is called to decrypt the encrypted private key from the MS Key Archival request.
@@ -297,7 +290,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     public ResponseMessage processCertReq(AuthenticationToken admin, EndEntityInformation userdata, RequestMessage req, Class<? extends CertificateResponseMessage> responseClass)
             throws EndEntityExistsException, AuthorizationDeniedException, EndEntityProfileValidationException, EjbcaException, CesecoreException, CertificateExtensionException {
         // Check tokentype
-        if (userdata.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN) {
+        if (userdata.getTokenType() != EndEntityConstants.TOKEN_USERGEN) {
             throw new WrongTokenTypeException("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests");
         }
         CAInfo cainfo = caSession.getCAInfoInternal(userdata.getCAId());
@@ -310,12 +303,12 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
                 try {
                     ExtendedUserDataHandler extendedUserDataHandler = (ExtendedUserDataHandler) Class.forName(preProcessorClass).getDeclaredConstructor().newInstance();
                     req = extendedUserDataHandler.processRequestMessage(req, certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId()));
-                    
+
                     final X500Name x500NameFromRequest = req.getRequestX500Name(); 
-                    if (x500NameFromRequest != null && x500NameFromRequest.getRDNs().length != 0) {
-                        userdata.setDN(updateUserDNFromRequest(x500NameFromRequest));
+                    if (x500NameFromRequest != null && x500NameFromRequest.getRDNs().length > 0) {
+                        userdata.setDN(x500NameFromRequest.toString());
                     }
-                    
+
                 } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException
                         | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                     throw new IllegalStateException("Request Preprocessor implementation " + preProcessorClass + " could not be instansiated.");
@@ -323,16 +316,16 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 
             }
         }
-        
+
         if(req instanceof SshRequestMessage) {
-            CertificateProfile cerificateProfile = 
+            CertificateProfile cerificateProfile =
                     certificateProfileSession.getCertificateProfile(userdata.getCertificateProfileId());
             if(cerificateProfile!=null) {
                 // otherwise, properly logged exception will thrown later
                 ((SshRequestMessage) req).populateEndEntityData(userdata, cerificateProfile);
-            }            
+            }
         }
-        
+
         // This is the secret sauce, do the end entity handling automagically here before we get the cert
         addOrEditUser(admin, userdata, false, true);
         ResponseMessage retval = null;
@@ -346,37 +339,6 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             throw e;
         }
         return retval;
-    }
-
-    /**
-     * Builds a formatted Distinguished Name (DN) from the X.500 name in the request.
-     * This method processes each Relative Distinguished Name (RDN) from the input
-     * and constructs a new DN using BouncyCastle's X500NameBuilder with BCStyle formatting.
-     *
-     * @param requestX500Name the X500Name object containing the DN information from the request
-     * @return a properly formatted DN string containing all valid RDNs from the request
-     * @see org.bouncycastle.asn1.x500.X500Name
-     */
-
-    private String updateUserDNFromRequest(final X500Name requestX500Name) {
-        try {
-            X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
-
-            for (final RDN rdn : requestX500Name.getRDNs()) {
-                AttributeTypeAndValue atv = rdn.getFirst();
-                if (atv != null) {
-                    builder.addRDN(atv);
-                }
-            }
-            return builder.build().toString();
-
-        } catch (IllegalArgumentException e) {
-            log.error("Invalid RDN format in X500Name: " + LogRedactionUtils.getRedactedMessage(requestX500Name.toString()));
-            throw LogRedactionUtils.getRedactedException(e);
-        } catch (NullPointerException e) {
-            log.error("Unexpected null value while processing X500Name: " + LogRedactionUtils.getRedactedMessage(requestX500Name.toString()));
-            throw LogRedactionUtils.getRedactedException(e);
-        }
     }
 
     /**
@@ -454,13 +416,13 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             // see KeyStoreCreateSessionBean.finishProcessingAndStoreKeys
             keyRecoverySession.addKeyRecoveryData(admin, EJBTools.wrap(cert), userData.getUsername(), EJBTools.wrap(keyPairToArchive));
         }
-        if (!"X.509".equals(cert.getType()) && (responseType == CertificateConstants.CERT_RES_TYPE_PKCS7 || 
+        if (!"X.509".equals(cert.getType()) && (responseType == CertificateConstants.CERT_RES_TYPE_PKCS7 ||
                 responseType == CertificateConstants.CERT_RES_TYPE_PKCS7WITHCHAIN ||
                 responseType == CertificateConstants.CERT_RES_TYPE_CMCFULLPKI)) {
             log.info("Certificate response type PKCS7/PKCS7withChain/CMC can only be used with X.509 certificates, not " + cert.getType());
         }
         if (responseType == CertificateConstants.CERT_RES_TYPE_CMCFULLPKI) {
-            retval = signSession.createCmcFullPkiResponse(admin, userData.getCAId(), (X509Certificate)cert, 
+            retval = signSession.createCmcFullPkiResponse(admin, userData.getCAId(), (X509Certificate)cert,
                                                                                 (MsKeyArchivalRequestMessage) msg);
         }
         if (responseType == CertificateConstants.CERT_RES_TYPE_PKCS7) {
@@ -509,17 +471,12 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             String username = userdata.getUsername();
             int caid = userdata.getCAId();
             KeyStore keyStore = keyStoreCreateSession.generateOrKeyRecoverToken(admin, username, password, caid, keyspec, keyalg, null, null,
-                    createJKS ? SecConst.TOKEN_SOFT_JKS : SecConst.TOKEN_SOFT_P12, loadkeys, savekeys,
+                    createJKS ? EndEntityConstants.TOKEN_SOFT_JKS : EndEntityConstants.TOKEN_SOFT_P12, loadkeys, savekeys,
                     reusecertificate, endEntityProfileId);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            keyStore.store(baos, password.toCharArray());
-            ret = baos.toByteArray();
+            ret = KeyStoreTools.getAsByteArray(keyStore, password);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidAlgorithmParameterException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
-        } catch (IOException e) {
-            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw new IllegalStateException(LogRedactionUtils.getRedactedException(e));
         } catch (CertificateException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw LogRedactionUtils.getRedactedException(e);

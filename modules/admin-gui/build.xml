@@ -51,6 +51,8 @@
 		<path location="${mod.statedump-common.lib}"/>
 		<path location="${mod.acme-common.jar}"/>
 		<path refid="lib.cryptotokens.classpath"/>
+		<path refid="lib.json-simple.classpath"/>
+		<path refid="lib.hc.classpath"/>
 	</path>
 	
     <path id="test.classpath">

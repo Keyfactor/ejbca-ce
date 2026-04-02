@@ -64,6 +64,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
@@ -90,7 +91,6 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.junit.After;
 import org.junit.Before;
@@ -115,7 +115,7 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
 
     /** Test user. */
     private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(
-            new UsernamePrincipal(ROLE_NAME + "-Admin"));
+            new UsernamePrincipal(ROLE_NAME + "-Admin" + generateReallyBigAdminName()));
 
     private static final String TEST_CA_NAME = ROLE_NAME + "-TestCA";
 
@@ -154,6 +154,14 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
     private X509CA testCA;
     private CertificateProfile testCertificateProfile;
     private EndEntityInformation testUser;
+    
+    private static String generateReallyBigAdminName() {
+        StringBuilder sb = new StringBuilder();
+        for(int i=0; i <27; i++) {
+            sb.append("0123456789");
+        }
+        return sb.toString();
+    }
 
     @Before
     public void setUp() throws Exception {
@@ -587,10 +595,10 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
             EndEntityProfile endEntityProfile = new EndEntityProfile();
             endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileId));
             endEntityProfile.addField(DnComponents.DNSNAME);
-            endEntityProfile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+            endEntityProfile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(CAConstants.ALLCAS));
             int endEntityProfileId = endEntityProfileSession.addEndEntityProfile(internalAdmin, endEntityProfileName, endEntityProfile);
             EndEntityInformation endEntityInformation = new EndEntityInformation(username, "CN=" + username, testCA.getCAId(), eeSan, null,
-                    EndEntityTypes.ENDUSER.toEndEntityType(), endEntityProfileId, certificateProfileId, SecConst.TOKEN_SOFT_P12, null);
+                    EndEntityTypes.ENDUSER.toEndEntityType(), endEntityProfileId, certificateProfileId, EndEntityConstants.TOKEN_SOFT_P12, null);
             endEntityInformation.setPassword("foo123");
             endEntityManagementSessionRemote.addUser(internalAdmin, endEntityInformation, false);
             KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -660,10 +668,10 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
             EndEntityProfile endEntityProfile = new EndEntityProfile();
             endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileId));
             endEntityProfile.addField(DnComponents.DNSNAME);
-            endEntityProfile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+            endEntityProfile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(CAConstants.ALLCAS));
             int endEntityProfileId = endEntityProfileSession.addEndEntityProfile(internalAdmin, endEntityProfileName, endEntityProfile);
             EndEntityInformation endEntityInformation = new EndEntityInformation(username, "CN=" + username, testCA.getCAId(), eeSan, null,
-                    EndEntityTypes.ENDUSER.toEndEntityType(), endEntityProfileId, certificateProfileId, SecConst.TOKEN_SOFT_P12, null);
+                    EndEntityTypes.ENDUSER.toEndEntityType(), endEntityProfileId, certificateProfileId, EndEntityConstants.TOKEN_SOFT_P12, null);
             endEntityInformation.setPassword("foo123");
             endEntityManagementSessionRemote.addUser(internalAdmin, endEntityInformation, false);
             KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -703,6 +711,195 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
         }
         log.trace("<testValidateDnsNamesFromRequest()");
     }
+    
+    @Test
+    public void testValidateDnsNamesWithRfc822Name() throws Exception {
+        log.trace(">testValidateDnsNamesWithRfc822Name()");
+        final String eeDomainPermitted = "permitted.com";
+        final String eeDomainForbidden = "forbidden.com";
+        final String eeSanPermitted = "dNSName=" + eeDomainPermitted + ",rfc822name=xyz@" + eeDomainPermitted;
+        final String eeSanForbidden = "dNSName=" + eeDomainForbidden + ",rfc822name=xyz@" + eeDomainForbidden;
+        final String eeSanOnlyEmailForbidden = "dNSName=" + eeDomainPermitted + ",rfc822name=xyz@" + eeDomainForbidden;
+        DnsNameValidatorMock keyValidator = new DnsNameValidatorMock("testValidateDnsNamesWithRfc822Name", true, eeDomainPermitted);
+        keyValidator.setAllCertificateProfileIds(true);
+        List<Integer> conflicts = keyValidatorProxySession.getConflictingKeyValidatorIds(keyValidator);
+        for (Integer id : conflicts) {
+            removeKeyValidatorsIfExist(id);
+        }
+        int validatorId = addValidator(keyValidator);
+        keyValidator.setProfileId(validatorId);
+        final String username = "testValidateDnsNamesWithRfc822Name";
+        final String certificateProfileName = username;
+        final String endEntityProfileName = username;
+        try {
+            CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_SERVER);
+            certificateProfile.setAllowExtensionOverride(false);
+            int certificateProfileId = certificateProfileSession.addCertificateProfile(internalAdmin, certificateProfileName, certificateProfile);
+            EndEntityProfile endEntityProfile = new EndEntityProfile();
+            endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileId));
+            endEntityProfile.addField(DnComponents.DNSNAME);
+            endEntityProfile.addField(DnComponents.RFC822NAME);
+            endEntityProfile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(CAConstants.ALLCAS));
+            int endEntityProfileId = endEntityProfileSession.addEndEntityProfile(internalAdmin, endEntityProfileName, endEntityProfile);
+            
+            EndEntityInformation endEntityInformationAllPermitted = new EndEntityInformation(username, "CN=" + username, testCA.getCAId(), eeSanPermitted, null,
+                    EndEntityTypes.ENDUSER.toEndEntityType(), endEntityProfileId, certificateProfileId, EndEntityConstants.TOKEN_SOFT_P12, null);
+            endEntityInformationAllPermitted.setPassword("foo123");
+            endEntityManagementSessionRemote.addUser(internalAdmin, endEntityInformationAllPermitted, false);
+            
+            EndEntityInformation endEntityInformationEmailForbidden = new EndEntityInformation("x"+username, "CN=x" + username, testCA.getCAId(), eeSanOnlyEmailForbidden, null,
+                    EndEntityTypes.ENDUSER.toEndEntityType(), endEntityProfileId, certificateProfileId, EndEntityConstants.TOKEN_SOFT_P12, null);
+            endEntityInformationEmailForbidden.setPassword("foo123");
+            endEntityManagementSessionRemote.addUser(internalAdmin, endEntityInformationEmailForbidden, false);
+            
+            EndEntityInformation endEntityInformationDnsNameForbidden = new EndEntityInformation("xy"+username, "CN=xy" + username, testCA.getCAId(), eeSanForbidden, null,
+                    EndEntityTypes.ENDUSER.toEndEntityType(), endEntityProfileId, certificateProfileId, EndEntityConstants.TOKEN_SOFT_P12, null);
+            endEntityInformationDnsNameForbidden.setPassword("foo123");
+            endEntityManagementSessionRemote.addUser(internalAdmin, endEntityInformationDnsNameForbidden, false);
+            
+            PKCS10RequestMessage requestMessageAllPermitted = createCsrWithSubjectDnAndSan("CN=" + username, eeSanPermitted);
+            PKCS10RequestMessage requestMessageEmailForbidden = createCsrWithSubjectDnAndSan("CN=" + username, eeSanOnlyEmailForbidden);
+            PKCS10RequestMessage requestMessageDnsNameForbidden = createCsrWithSubjectDnAndSan("CN=" + username, eeSanForbidden);
+
+            setKeyValidatorsForCa(testCA, validatorId);
+            
+            // end entity with forbidden DNS Name
+            try {
+                keyValidatorProxySession.validateDnsNames(internalAdmin, IssuancePhase.DATA_VALIDATION, testCA, endEntityInformationEmailForbidden, requestMessageAllPermitted);
+                fail("Forbidden email domain should have been detected by Validator");
+            } catch(ValidationException e) {
+                // expected
+            } catch (Exception e) {
+                log.error(e);
+                fail(e.getMessage());
+            }
+            
+            // both EE and csr ok
+            try {
+                keyValidatorProxySession.validateDnsNames(internalAdmin, IssuancePhase.DATA_VALIDATION, testCA, endEntityInformationAllPermitted, requestMessageAllPermitted);
+            } catch(ValidationException e) {
+                throw e;
+            } catch (Exception e) {
+                fail(e.getMessage());
+            }
+            
+            // SAN from CSR now
+            certificateProfile.setAllowExtensionOverride(true);
+            certificateProfileSession.changeCertificateProfile(internalAdmin, certificateProfileName, certificateProfile);
+            
+            // CSR has forbidden dnsName, EE ok
+            try {
+                keyValidatorProxySession.validateDnsNames(internalAdmin, IssuancePhase.DATA_VALIDATION, testCA, endEntityInformationEmailForbidden, requestMessageDnsNameForbidden);
+                fail("Forbidden email domain in CSR should have been detected by Validator");
+            } catch(ValidationException e) {
+                // expected
+            } catch (Exception e) {
+                fail(e.getMessage());
+            }
+            
+            // CSR has forbidden email, EE ok
+            certificateProfile.setAllowExtensionOverride(true);
+            certificateProfileSession.changeCertificateProfile(internalAdmin, certificateProfileName, certificateProfile);
+            try {
+                keyValidatorProxySession.validateDnsNames(internalAdmin, IssuancePhase.DATA_VALIDATION, testCA, endEntityInformationEmailForbidden, requestMessageEmailForbidden);
+                fail("Forbidden email domain in CSR should have been detected by Validator");
+            } catch(ValidationException e) {
+                // expected
+            } catch (Exception e) {
+                fail(e.getMessage());
+            }
+            
+            // keyValidator only validate DNSName and ignore Rfc822Name/email
+            keyValidator.setValidateEmailDomains(false);
+            keyValidatorProxySession.changeKeyValidator(internalAdmin, keyValidator);
+            
+            // CSR has forbidden email, EE ok
+            try {
+                keyValidatorProxySession.validateDnsNames(internalAdmin, IssuancePhase.DATA_VALIDATION, testCA, endEntityInformationEmailForbidden, requestMessageEmailForbidden);
+            } catch(ValidationException e) {
+                throw e;
+            } catch (Exception e) {
+                fail(e.getMessage());
+            }
+            
+            // CSR has forbidden dnsName(still blocks), EE ok
+            try {
+                keyValidatorProxySession.validateDnsNames(internalAdmin, IssuancePhase.DATA_VALIDATION, testCA, endEntityInformationEmailForbidden, requestMessageDnsNameForbidden);
+                fail("Forbidden email domain in CSR should have been detected by Validator");
+            } catch(ValidationException e) {
+                // expected
+            } catch (Exception e) {
+                fail(e.getMessage());
+            }
+            
+            // SAN from EE now
+            certificateProfile.setAllowExtensionOverride(false);
+            certificateProfileSession.changeCertificateProfile(internalAdmin, certificateProfileName, certificateProfile);
+            
+            // EE has forbidden email
+            try {
+                keyValidatorProxySession.validateDnsNames(internalAdmin, IssuancePhase.DATA_VALIDATION, testCA, endEntityInformationEmailForbidden, requestMessageAllPermitted);
+            } catch(ValidationException e) {
+                throw e;
+            } catch (Exception e) {
+                fail(e.getMessage());
+            }
+            
+            // EE has forbidden DNS Name
+            try {
+                keyValidatorProxySession.validateDnsNames(internalAdmin, IssuancePhase.DATA_VALIDATION, testCA, endEntityInformationDnsNameForbidden, requestMessageAllPermitted);
+                fail("Forbidden DNSName should have been detected by Validator");
+            } catch(ValidationException e) {
+                // expected
+            } catch (Exception e) {
+                fail(e.getMessage());
+            }            
+            
+        } finally {
+            CaTestUtils.removeCa(internalAdmin, testCA.getCAInfo());
+            keyValidatorProxySession.removeKeyValidator(internalAdmin, validatorId);
+            try {
+                endEntityManagementSessionRemote.deleteUser(internalAdmin, username);
+            } catch(NoSuchEndEntityException e) {
+                // NOPMD: Ignore.
+            }
+            try {
+                endEntityManagementSessionRemote.deleteUser(internalAdmin, "x"+username);
+            } catch(NoSuchEndEntityException e) {
+                // NOPMD: Ignore.
+            }
+            try {
+                endEntityManagementSessionRemote.deleteUser(internalAdmin, "xy"+username);
+            } catch(NoSuchEndEntityException e) {
+                // NOPMD: Ignore.
+            }
+            internalCertificateStoreSession.removeCertificatesByUsername(username);
+            endEntityProfileSession.removeEndEntityProfile(internalAdmin, endEntityProfileName);
+            certificateProfileSession.removeCertificateProfile(internalAdmin, certificateProfileName);
+        }
+        log.trace("<testValidateDnsNamesWithRfc822Name()");
+    }
+    
+    private PKCS10RequestMessage createCsrWithSubjectDnAndSan(String subjectDn, String sanToUse) throws Exception {
+        KeyPair keyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
+        X500Name x509dn = DnComponents.stringToBcX500Name(subjectDn);
+        ASN1EncodableVector v = new ASN1EncodableVector();
+        ASN1EncodableVector altnameattr = new ASN1EncodableVector();
+        altnameattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+        log.error("sanToUse: " + sanToUse);
+        GeneralNames san = DnComponents.getGeneralNamesFromAltName(sanToUse);
+        log.error("san: " + san.toString());
+        ExtensionsGenerator extgen = new ExtensionsGenerator();
+        extgen.addExtension(Extension.subjectAlternativeName, false, san);
+        Extensions exts = extgen.generate();
+        altnameattr.add(new DERSet(exts));
+        v.add(new DERSequence(altnameattr));
+        DERSet attributes = new DERSet(v);
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, x509dn,
+                keyPair.getPublic(), attributes, keyPair.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
+        PKCS10RequestMessage requestMessage = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(req));
+        return requestMessage;
+    }
 
     /**
      * This test uses a mock DnsNameValidator to verify that emails are properly sourced.
@@ -732,10 +929,10 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
             EndEntityProfile endEntityProfile = new EndEntityProfile();
             endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileId));
             endEntityProfile.addField(DnComponents.RFC822NAME);
-            endEntityProfile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+            endEntityProfile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(CAConstants.ALLCAS));
             int endEntityProfileId = endEntityProfileSession.addEndEntityProfile(internalAdmin, endEntityProfileName, endEntityProfile);
             EndEntityInformation endEntityInformation = new EndEntityInformation(username, "CN=" + username, testCA.getCAId(), eeSan, null,
-                    EndEntityTypes.ENDUSER.toEndEntityType(), endEntityProfileId, certificateProfileId, SecConst.TOKEN_SOFT_P12, null);
+                    EndEntityTypes.ENDUSER.toEndEntityType(), endEntityProfileId, certificateProfileId, EndEntityConstants.TOKEN_SOFT_P12, null);
             endEntityInformation.setPassword("foo123");
             endEntityManagementSessionRemote.addUser(internalAdmin, endEntityInformation, false);
             KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);

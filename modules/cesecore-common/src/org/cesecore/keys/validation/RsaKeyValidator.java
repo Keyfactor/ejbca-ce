@@ -248,7 +248,7 @@ public class RsaKeyValidator extends KeyValidatorBase {
         }
     }
 
-    @SuppressWarnings({ "serial", "unchecked" })
+    @SuppressWarnings({ "unchecked" })
     public void initDynamicUiModel() {
         super.initDynamicUiModel();
         final DynamicUiProperty<Integer> settingsTemplate = new DynamicUiProperty<>(Integer.class, SETTINGS_TEMPLATE, getSettingsTemplate(), KeyValidatorSettingsTemplate.types());

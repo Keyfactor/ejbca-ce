@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:f="jakarta.faces.core"
       xmlns:h="jakarta.faces.html"
-      xmlns:ui="jakarta.faces.facelets">
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
 <ui:remove>
     <!--
     /*************************************************************************
@@ -31,15 +32,13 @@
         </h2>
 
         <h:form id="estconfiguration">
-            <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-                         cellpadding="3" border="0" width="100%"
-                         columnClasses="editColumnSystem1,editColumn2" rowClasses="Row0,Row1">
+            <h:panelGrid columns="2" styleClass="edit-top ui-md-12" columnClasses="editColumnSystem1,editColumn2" rowClasses="Row0,Row1">
                 <h:panelGroup>&nbsp;</h:panelGroup>
                 <h:outputLink value="estconfigurations.xhtml" style="float: left;">
                     <h:outputText value="#{web.text.ESTBACKTOALIASES}"/>
                 </h:outputLink>
                 <h:panelGroup>
-                    <h:outputText styleClass="titles" value="#{web.text.NAME}"/>
+                    <h:outputText  value="#{web.text.NAME}"/>
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:inputText id="estName" disabled="#{editEstConfigMBean.viewOnly}"
@@ -50,7 +49,7 @@
                     </h:inputText>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:outputText value="#{web.text.ESTOPERATIONALMODE}" styleClass="titles"/>
+                    <h:outputText value="#{web.text.ESTOPERATIONALMODE}" />
                     <br/>
                     <h:outputText value="#{web.text.ESTOPERATIONALMODE_HELP}" styleClass="help"/>
                 </h:panelGroup>
@@ -69,8 +68,7 @@
 
             <!-- Client Mode -->
             <h:panelGroup id="clientmode">
-                <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-                             cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+                <h:panelGrid columns="2" styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                              columnClasses="editColumnSystem1,editColumn2"
                              rendered="#{!editEstConfigMBean.raMode}">
                     <h:panelGroup>
@@ -78,7 +76,7 @@
                     </h:panelGroup>
                     <h:panelGroup>&nbsp;</h:panelGroup>
                     <h:panelGroup>
-                        <h:outputText value="#{web.text.CMPEXTRCTUSERNAMECOMPONENT}" styleClass="titles"/>
+                        <h:outputText value="#{web.text.CMPEXTRCTUSERNAMECOMPONENT}" />
                         <br/>
                         <h:outputText value="#{web.text.CMPEXTRCTUSERNAMECOMPONENT_HELP}" styleClass="help"/>
                         <br/>
@@ -95,34 +93,31 @@
                     </h:selectOneMenu>
 
                     <h:panelGroup>
-                        <h:outputText value="#{web.text.ESTAUTHENTICATIONMODULE}" styleClass="titles"/>
+                        <h:outputText value="#{web.text.ESTAUTHENTICATIONMODULE}" />
                         <br/>
                         <h:outputText value="#{web.text.ESTAUTHENTICATIONMODULE_HELP}" styleClass="help"/>
                     </h:panelGroup>
                     <h:panelGroup id="authmodule">
-                        <h:selectBooleanCheckbox id="httpBasicAuthCheckbox"
+                        <p:selectBooleanCheckbox id="httpBasicAuthCheckbox"
                                                  value="#{editEstConfigMBean.estAlias.httpBasicAuthSelected}"
                                                  rendered="#{!editEstConfigMBean.raMode}"
-                                                 disabled="#{editEstConfigMBean.viewOnly}">
+                                                 disabled="#{editEstConfigMBean.viewOnly}" itemLabel="HttpBasicAuth">
                             <f:ajax render="authmodule vendormode"/>
-                        </h:selectBooleanCheckbox>
-                        <h:outputText value="HttpBasicAuth" rendered="#{!editEstConfigMBean.raMode}"/>
-                        <br/>
-                        <h:selectBooleanCheckbox id="challengepwdcheckbox"
+                        </p:selectBooleanCheckbox>
+                        <p:divider rendered="#{!editEstConfigMBean.raMode}"/>
+                        <p:selectBooleanCheckbox id="challengepwdcheckbox"
                                                  value="#{editEstConfigMBean.estAlias.challengePwdSelected}"
                                                  rendered="#{!editEstConfigMBean.raMode}"
-                                                 disabled="#{editEstConfigMBean.viewOnly}">
+                                                 disabled="#{editEstConfigMBean.viewOnly}" itemLabel="ChallengePwd">
                             <f:ajax render="authmodule vendormode"/>
-                        </h:selectBooleanCheckbox>
-                        <h:outputText value="ChallengePwd" rendered="#{!editEstConfigMBean.raMode}"/>
-                        <br/>
-                        <h:selectBooleanCheckbox id="dnpartpwdcheckbox"
+                        </p:selectBooleanCheckbox>
+                        <p:divider rendered="#{!editEstConfigMBean.raMode}"/>
+                        <p:selectBooleanCheckbox id="dnpartpwdcheckbox"
                                                  value="#{editEstConfigMBean.estAlias.dnPartPwdSelected}"
                                                  rendered="#{!editEstConfigMBean.raMode}"
-                                                 disabled="#{editEstConfigMBean.viewOnly}">
+                                                 disabled="#{editEstConfigMBean.viewOnly}" itemLabel="DnPartPwd">
                             <f:ajax render="authmodule vendormode"/>
-                        </h:selectBooleanCheckbox>
-                        <h:outputText value="DnPartPwd" rendered="#{!editEstConfigMBean.raMode}"/>
+                        </p:selectBooleanCheckbox>
                         &nbsp;
                         <h:outputText value="#{web.text.CMPAUTHSUBJECTDNPART}"
                                       rendered="#{!editEstConfigMBean.raMode}"/>
@@ -140,7 +135,7 @@
                           -->
                     <h:panelGroup>
                         <h:outputLabel for="listestdefaultcaclient"
-                                       value="#{web.text.ESTDEFAULTCA_CLIENT}" styleClass="titles"/>
+                                       value="#{web.text.ESTDEFAULTCA_CLIENT}" />
                         <br/>
                         <h:outputText value="#{web.text.ESTDEFAULTCA_CLIENT_HELP}" escape="false"
                                       styleClass="help"/>
@@ -156,8 +151,7 @@
 
             <!-- RA Mode -->
             <h:panelGroup id="ramode">
-                <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-                             cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+                <h:panelGrid columns="2" styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                              columnClasses="editColumnSystem1,editColumn2"
                              rendered="#{editEstConfigMBean.raMode}">
                     <h:panelGroup>
@@ -165,7 +159,7 @@
                     </h:panelGroup>
                     <h:panelGroup>&nbsp;</h:panelGroup>
                     <h:panelGroup>
-                        <h:outputText value="#{web.text.ESTRANAMEGENERATIONSCHEME}" styleClass="titles"/>
+                        <h:outputText value="#{web.text.ESTRANAMEGENERATIONSCHEME}" />
                         <br/>
                         <h:outputText value="#{web.text.ESTRANAMEGENERATIONSCHEME_HELP}" styleClass="help"/>
                         <br/>
@@ -194,6 +188,7 @@
                                      disabled="#{editEstconfigMBean.viewOnly}"/>
                         <h:panelGroup id="ranameschemednpart"
                                       rendered="#{editEstConfigMBean.estAlias.raNameGenScheme eq 'DN'}">
+                            <br />
                             <h:selectOneMenu id="ranameschemednpartselectmenu"
                                              value="#{editEstConfigMBean.selectedRaNameSchemeDnPart}"
                                              disabled="#{editEstConfigMBean.viewOnly}">
@@ -217,14 +212,14 @@
                                         disabled="#{editEstConfigMBean.viewOnly}"/>
                             </h:commandButton>
                         </h:panelGroup>
-                        <br/>
+                        <br /><br />
                         <h:outputText id="selectedranameschemednparts"
                                       value="#{editEstConfigMBean.estAlias.raNameGenParams}"
                                       rendered="#{editEstConfigMBean.estAlias.raNameGenScheme eq 'DN'}"/>
                     </h:panelGroup>
                     <h:panelGroup>
                         <h:outputText value="#{web.text.ESTRANAMEGENERATIONPREFIX}"
-                                      styleClass="titles"/>
+                                      />
                         <br/>
                         <h:outputText value="#{web.text.ESTRANAMEGENERATIONPREFIX_HELP}"
                                       styleClass="help"/>
@@ -233,7 +228,7 @@
                                  disabled="#{editEstConfigMBean.viewOnly}"/>
                     <h:panelGroup>
                         <h:outputText value="#{web.text.ESTRANAMEGENERATIONPOSTFIX}"
-                                      styleClass="titles"/>
+                                      />
                         <br/>
                         <h:outputText value="#{web.text.ESTRANAMEGENERATIONPOSTFIX_HELP}"
                                       styleClass="help"/>
@@ -245,7 +240,7 @@
                           to add/edit end entities with as they are created
                           -->
                     <h:panelGroup>
-                        <h:outputLabel for="listestdefaultca" value="#{web.text.ESTDEFAULTCA}" styleClass="titles"/>
+                        <h:outputLabel for="listestdefaultca" value="#{web.text.ESTDEFAULTCA}" />
                         <br/>
                         <h:outputText value="#{web.text.ESTDEFAULTCA_HELP}" escape="false" styleClass="help"/>
                     </h:panelGroup>
@@ -261,19 +256,18 @@
             </h:panelGroup>
             
             <h:panelGroup id="ramode2">
-                <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-                             cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+                <h:panelGrid columns="2" styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                              columnClasses="editColumnSystem1,editColumn2"
                              rendered="#{editEstConfigMBean.raMode}">
                              
                     <h:panelGroup>
-                        <h:outputLabel value="#{web.text.CMPRAMODE} Enrollment Settings" styleClass="titles"/>
+                        <h:outputLabel value="#{web.text.CMPRAMODE} Enrollment Settings" />
                     </h:panelGroup>
                     <h:panelGroup>&nbsp;</h:panelGroup>
 
                     <!-- KF Template -->
                     <h:panelGroup id="kf-template-label" rendered="#{editEstConfigMBean.estAlias.usesProxyCa}">
-                        <h:outputLabel for="kf-template" value="#{web.text.EST_KF_TEMPLATE}" styleClass="titles"/>
+                        <h:outputLabel for="kf-template" value="#{web.text.EST_KF_TEMPLATE}" />
                     </h:panelGroup>
                     <h:panelGroup  id="kf-template-value" rendered="#{editEstConfigMBean.estAlias.usesProxyCa}">
                         <h:inputText id="kf-template" value="#{editEstConfigMBean.estAlias.keyfactorTemplate}"/>
@@ -281,7 +275,7 @@
                     <!-- KF Template -->
 
                     <h:panelGroup rendered="#{not editEstConfigMBean.estAlias.usesProxyCa}">
-                        <h:outputLabel for="listesteeprofile" value="#{web.text.ESTEEPROFILE}" styleClass="titles"/>
+                        <h:outputLabel for="listesteeprofile" value="#{web.text.ESTEEPROFILE}" />
                         <br/>
                         <h:outputText value="#{web.text.ESTEEPROFILE_HELP}" escape="false" styleClass="help"/>
                     </h:panelGroup>
@@ -296,7 +290,7 @@
 
                     <h:panelGroup rendered="#{not editEstConfigMBean.estAlias.usesProxyCa}">
                         <h:outputLabel for="listestcertprofiles" value="#{web.text.ESTCERTPROFILE}"
-                                       styleClass="titles"/>
+                                       />
                         <br/>
                         <h:outputText value="#{web.text.ESTCERTPROFILE_HELP}" escape="false" styleClass="help"/>
                         <br/>
@@ -312,33 +306,31 @@
             </h:panelGroup>
             
             <h:panelGroup id="ramode3">
-                <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-                             cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+                <h:panelGrid columns="2" styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                              columnClasses="editColumnSystem1,editColumn2"
                              rendered="#{editEstConfigMBean.raMode}">
                              
                     <h:panelGroup>
-                        <h:outputLabel value="#{web.text.CMPRAMODE} Authenication" styleClass="titles"/>
+                        <h:outputLabel value="#{web.text.CMPRAMODE} Authenication" />
                     </h:panelGroup>
                     <h:panelGroup>&nbsp;</h:panelGroup>
 
                     <h:panelGroup>
                         <h:outputLabel for="checkboxrequirecert" value="#{web.text.ESTREQUIRECERT}"
-                                       styleClass="titles"/>
+                                       />
                         <br/>
                         <h:outputText value="#{web.text.ESTREQUIRECERT_HELP}" escape="false" styleClass="help"/>
                     </h:panelGroup>
                     <h:panelGroup>
-                        <h:selectBooleanCheckbox id="checkboxrequirecert"
+                        <p:selectBooleanCheckbox id="checkboxrequirecert"
                                                  value="#{editEstConfigMBean.estAlias.certificateRequired}"
-                                                 disabled="#{editEstConfigMBean.viewOnly}">
-                        </h:selectBooleanCheckbox>
-                        <h:outputText value="#{web.text.YES}"/>
+                                                 disabled="#{editEstConfigMBean.viewOnly}" itemLabel="#{web.text.YES}">
+                        </p:selectBooleanCheckbox>
                     </h:panelGroup>
 
                     <h:panelGroup>
                         <h:outputLabel for="textfieldrequireusername" value="#{web.text.ESTREQUIREUSERNAME}"
-                                       styleClass="titles"/>
+                                       />
                         <br/>
                         <h:outputText value="#{web.text.ESTREQUIREUSERNAME_HELP}"
                                       escape="false" styleClass="help"/>
@@ -351,7 +343,7 @@
 
                     <h:panelGroup>
                         <h:outputLabel for="textfieldrequirepassword" value="#{web.text.ESTREQUIREPASSWORD}"
-                                       styleClass="titles"/>
+                                       />
                         <br/>
                         <h:outputText value="#{web.text.ESTREQUIREPASSWORD_HELP}" escape="false" styleClass="help"/>
                     </h:panelGroup>
@@ -371,8 +363,7 @@
             
             <!-- Vendor Mode -->
             <h:panelGroup id="vendormode">
-                <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-                             cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+                <h:panelGrid columns="2" styleClass="edit-top ui-md-12" rowClasses="Row0,Row1"
                              columnClasses="editColumnSystem1,editColumn2">
                     <h:panelGroup>
                         <h:outputLabel value="#{web.text.CMPVENDORCERT}" style="font-weight: bold;"/>
@@ -380,7 +371,7 @@
                     <h:panelGroup>&nbsp;</h:panelGroup>
 
                     <h:panelGroup>
-                        <h:outputText value="#{web.text.CMPVENDORCERT}" styleClass="titles"/>
+                        <h:outputText value="#{web.text.CMPVENDORCERT}" />
                         <br/>
                         <h:outputText value="#{web.text.ESTVENDORCERT_USE_HELP}" styleClass="help"/>
                         <br/>
@@ -389,16 +380,16 @@
                         <h:outputText value="#{web.text.ESTVENDORCERT_USE_HELP2}" styleClass="help"/>
                     </h:panelGroup>
                     <h:panelGroup>
-                        <h:selectBooleanCheckbox id="usevendorcertcheckbox"
+                        <p:selectBooleanCheckbox id="usevendorcertcheckbox"
                                                  value="#{editEstConfigMBean.estAlias.vendorMode}"
-                                                 disabled="#{editEstConfigMBean.viewOnly or editEstConfigMBean.estAlias.dnPartPwdSelected or editEstConfigMBean.estAlias.challengePwdSelected or editEstConfigMBean.estAlias.httpBasicAuthSelected}">
+                                                 disabled="#{editEstConfigMBean.viewOnly or editEstConfigMBean.estAlias.dnPartPwdSelected or editEstConfigMBean.estAlias.challengePwdSelected or editEstConfigMBean.estAlias.httpBasicAuthSelected}"
+                                                 itemLabel="#{web.text.USE}">
                             <f:ajax render="estconfiguration:vendorcas usevendorcertcheckbox allowchangesubjectnamecheckbox"/>
-                        </h:selectBooleanCheckbox>
-                        <h:outputText value="#{web.text.USE}"/>
+                        </p:selectBooleanCheckbox>
                     </h:panelGroup>
 
                     <h:panelGroup>
-                        <h:outputText value="#{web.text.CMPVENDORCERT_VENDORCAS}" styleClass="titles"/>
+                        <h:outputText value="#{web.text.CMPVENDORCERT_VENDORCAS}" />
                         <br/>
                         <h:outputText value="#{web.text.ESTVENDORCERT_VENDORCAS_HELP}" styleClass="help"/>
                     </h:panelGroup>
@@ -426,28 +417,25 @@
                     </h:panelGroup>
 
                     <h:panelGroup>
-                        <h:outputText value="#{web.text.ESTALLOWCHANGESUBJECTNAME}" styleClass="titles"/>
+                        <h:outputText value="#{web.text.ESTALLOWCHANGESUBJECTNAME}" />
                         <br/>
                         <h:outputText value="#{web.text.ESTALLOWCHANGESUBJECTNAME_HELP}" styleClass="help"/>
                         <br/>
                         <h:outputText value="#{web.text.ESTALLOWCHANGESUBJECTNAME_HELP1}" styleClass="help"/>
                     </h:panelGroup>
                     <h:panelGroup>
-                        <h:selectBooleanCheckbox id="allowchangesubjectnamecheckbox"
+                        <p:selectBooleanCheckbox id="allowchangesubjectnamecheckbox"
                                                  value="#{editEstConfigMBean.estAlias.allowChangeSubjectName}"
-                                                 disabled="#{!editEstConfigMBean.vendorMode or editEstConfigMBean.viewOnly}">
+                                                 disabled="#{!editEstConfigMBean.vendorMode or editEstConfigMBean.viewOnly}" itemLabel="#{web.text.ALLOW}">
                             <f:ajax render="estconfiguration:vendorcas allowchangesubjectnamecheckbox"/>
-                        </h:selectBooleanCheckbox>
-                        <h:outputText value="#{web.text.ALLOW}"/>
+                        </p:selectBooleanCheckbox>
                     </h:panelGroup>
                 </h:panelGrid>
             </h:panelGroup>
             <!-- End Vendor Mode -->
 
             <h:panelGroup id="general">
-                <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-                             cellpadding="3" border="0" width="100%"
-                             columnClasses="editColumnSystem1,editColumn2"
+                <h:panelGrid columns="2" styleClass="edit-top ui-md-12" columnClasses="editColumnSystem1,editColumn2"
                              rowClasses="Row0,Row1">
                     <h:panelGroup>
                         <h:outputLabel value="#{web.text.CMPKEYUPDATEREQUEST}"
@@ -456,25 +444,22 @@
                     <h:panelGroup>&nbsp;</h:panelGroup>
                     <h:panelGroup>
                         <h:outputLabel for="checkboxkurusesamekeys"
-                                       value="#{web.text.ESTALLOWKURWITHSAMEKEY}" styleClass="titles"/>
+                                       value="#{web.text.ESTALLOWKURWITHSAMEKEY}" />
                         <br/>
                         <h:outputText value="#{web.text.ESTALLOWKURWITHSAMEKEY_HELP}"
                                       escape="false" styleClass="help"/>
                     </h:panelGroup>
                     <h:panelGroup>
-                        <h:selectBooleanCheckbox id="checkboxkurusesamekeys"
+                        <p:selectBooleanCheckbox id="checkboxkurusesamekeys"
                                                  value="#{editEstConfigMBean.estAlias.allowSameKey}"
-                                                 disabled="#{editEstConfigMBean.viewOnly}">
-                        </h:selectBooleanCheckbox>
-                        <h:outputText value="#{web.text.ALLOW}"/>
+                                                 disabled="#{editEstConfigMBean.viewOnly}" itemLabel="#{web.text.ALLOW}">
+                        </p:selectBooleanCheckbox>
                     </h:panelGroup>
                 </h:panelGrid>
             </h:panelGroup>
 
             <h:panelGroup id="general2">
-                <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-                             cellpadding="3" border="0" width="100%"
-                             columnClasses="editColumnSystem1,editColumn2"
+                <h:panelGrid columns="2" styleClass="edit-top ui-md-12" columnClasses="editColumnSystem1,editColumn2"
                              rowClasses="Row0,Row1">
                     <h:panelGroup>
                         <h:outputLabel value="#{web.text.ESTSERVERSIDEKEYGENERATION}"
@@ -483,17 +468,16 @@
                     <h:panelGroup>&nbsp;</h:panelGroup>
                     <h:panelGroup>
                         <h:outputLabel for="checkboxserverkeygen"
-                                       value="#{web.text.ESTENABLESERVERSIDEKEYGENERATION}" styleClass="titles"/>
+                                       value="#{web.text.ESTENABLESERVERSIDEKEYGENERATION}" />
                         <br/>
                         <h:outputText value="#{web.text.ESTENABLESERVERSIDEKEYGENERATION_HELP}"
                                       escape="false" styleClass="help"/>
                     </h:panelGroup>
                     <h:panelGroup>
-                        <h:selectBooleanCheckbox id="checkboxserverkeygen"
+                        <p:selectBooleanCheckbox id="checkboxserverkeygen"
                                                  value="#{editEstConfigMBean.estAlias.serverKeyGenEnabled}"
-                                                 disabled="#{editEstConfigMBean.viewOnly}">
-                        </h:selectBooleanCheckbox>
-                        <h:outputText value="#{web.text.ALLOW}"/>
+                                                 disabled="#{editEstConfigMBean.viewOnly}" itemLabel="#{web.text.ALLOW}">
+                        </p:selectBooleanCheckbox>
                     </h:panelGroup>
                     <h:panelGroup>&nbsp;</h:panelGroup>
                     <h:panelGroup>

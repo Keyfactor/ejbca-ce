@@ -123,6 +123,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     private boolean useMaxValidityForExpiration;
     private long requestSignerCertificateRevocationCacheTime;
     private long signingCertificateCacheTime;
+    private long warningBeforeExpiryTime;
 
     private String currentOcspExtension = null;
     
@@ -187,6 +188,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         ocspCleanupSchedule = globalConfiguration.getOcspCleanupSchedule();
         ocspCleanupScheduleUnit = globalConfiguration.getOcspCleanupScheduleUnit();
         signingCertificateCacheTime = globalConfiguration.getSigningCertificateValidityTimeMilliseconds();
+        warningBeforeExpiryTime = globalConfiguration.getWarningBeforeExpiryTimeSeconds();
     }
 
     @Override
@@ -356,6 +358,15 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         if(signingCertificateCacheTime != globalConfiguration.getSigningCertificateValidityTimeMilliseconds()) {
             try {
                 globalConfiguration.setSigningCertificateValidityTimeMilliseconds(signingCertificateCacheTime);
+            } catch (InvalidConfigurationException e) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+            }
+            modified = true;
+        }
+        
+        if(warningBeforeExpiryTime != globalConfiguration.getWarningBeforeExpiryTimeSeconds()) {
+            try { 
+                globalConfiguration.setWarningBeforeExpiryTimeSeconds(warningBeforeExpiryTime);
             } catch (InvalidConfigurationException e) {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
             }
@@ -585,8 +596,8 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
 
     @Override
     /** Invoked when the user wants to disable an InternalKeyBinding */
-    public void commandDisable() {
-        super.commandDisable();
+    public void commandDisable(final GuiInfo guiInfo) {
+        super.commandDisable(guiInfo);
         ocspResponseGeneratorSession.reloadOcspSigningCache(); // Force a reload of OcspSigningCache to make disable take effect immediately.
     }
 
@@ -943,8 +954,8 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         ocspExtensions.setWrappedData(ocspExtensionsList);
     }
 
-    public void removeOcspExtension() {
-        ocspExtensionsList.remove(getOcspExtensions().getRowData());
+    public void removeOcspExtension(final String extensionEntry) {
+        ocspExtensionsList.remove(extensionEntry);
         ocspExtensions.setWrappedData(ocspExtensionsList);
     }
 
@@ -952,12 +963,12 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         return ocspExtensionOidNameMap.get(oid) == null ? "" : ocspExtensionOidNameMap.get(oid);
     }
     
-    public String getOcspExtensionDisplayName() {
-        return getOcspExtensionNameFromOid(getOcspExtensionOid());
+    public String getOcspExtensionDisplayName(final String oid) {
+        return getOcspExtensionNameFromOid(oid);
     }
-    
-    public String getOcspExtensionOid() {
-        return getOcspExtensions().getRowData();
+
+    public String getOcspExtensionOid(final String oid) {
+        return oid;
     }
     
     public String getCurrentTrustEntryDescriptionOcspRespToSign() {
@@ -996,8 +1007,8 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         this.currentGlobalUnknownResponse = ocspNonExistingBehavior;
     }
     
-    public String getSignOcspResponseForCasCaName() {
-        return caSession.getCAIdToNameMap().get(getSignOcspResponseForCas().getRowData().getCaId());
+    public String getSignOcspResponseForCasCaName(final InternalKeyBindingTrustEntry otherCa) {
+        return getCaSession().getCAIdToNameMap().get(otherCa.getCaId());
     }
     
 
@@ -1039,8 +1050,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
 
     /** Invoked when the user wants to remove an entry to the list of OCSP signed recipient certificate references */
     @SuppressWarnings("unchecked")
-    public void removeCaToSignOcspResponse() {
-        final InternalKeyBindingTrustEntry trustEntry = (getSignOcspResponseForCas().getRowData());
+    public void removeCaToSignOcspResponse(final InternalKeyBindingTrustEntry trustEntry) {
         final List<InternalKeyBindingTrustEntry> caIssuedCertsToSign = 
                 (List<InternalKeyBindingTrustEntry>) getSignOcspResponseForCas().getWrappedData();
         caIssuedCertsToSign.remove(trustEntry);
@@ -1274,5 +1284,13 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     public void setSigningCertificateCacheTime(long signingCertificateCacheTime) {
         //Convert from s to ms
         this.signingCertificateCacheTime = signingCertificateCacheTime*1000;
+    }
+    
+    public long getWarningBeforeExpiryTime() {
+        return this.warningBeforeExpiryTime;
+    }
+    
+    public void setWarningBeforeExpiryTime(long warningBeforeExpiryTime) {
+        this.warningBeforeExpiryTime = warningBeforeExpiryTime;
     }
 }

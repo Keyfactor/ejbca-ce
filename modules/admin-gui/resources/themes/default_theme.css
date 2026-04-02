@@ -18,14 +18,14 @@
 html, body {
     /* push down footer to bottom of page when there is too little content. */
     height: 100%;
-    font-size: 11pt;
+    font-size: 14px;
 }
 body {
 	margin: 0;
 	padding: 0;
 	background-color: #FFF;
 	color: #000;
-	font-size: 11pt;
+	font-size: 14px;
 }
 code, code *, pre, pre *, .monospace {
 	font-family: "DejaVu Sans Mono", "Liberation Mono", Consolas, "Courier New", Courier, monospace;
@@ -35,17 +35,13 @@ a img {
 }
 
 /* Help Text */
-p.help {
-	font-size: 0.70em;
-	line-height: 0.70em;
-}
-p.help, .helpNormal {
+.help {
+	font-size: 0.80rem;
+	line-height: 0.80rem;
 	white-space: normal;
 	color: #606060;		/* Keep it, for old web browsers */
 	color: rgba(0,0,0,.6);
-}
-.helpNotWide {
-	max-width: 40em;
+	vertical-align: middle;
 }
 
 /* Used in template.xhtml */
@@ -95,104 +91,6 @@ p.help, .helpNormal {
 }
 
 /*--------------------------------------------------------------------------*/
-/* TOP BANNER */
-#topFrame {
-	display: block;
-	height: 100px;
-	width: 100%;
-	margin: 0;
-	padding: 0;
-	border: none;
-}
-
-/*--------------------------------------------------------------------------*/
-/* NAVIGATION */
-
-body#menu {
-	margin: 0em;
-	padding: 0em;
-	background-color: #FFF;
-	color: #000;
-}
-
-#navigation {
-	margin: 0em;
-	padding: .75em .75em .75em 1.25em;
-	box-sizing: content-box;
-	background-color: #EEE;
-	font-family: Verdana, Arial, Helvetica, Geneva, sans-serif;
-	font-size: 9pt;
-	font-weight: bold;
-	border-radius: 0em 1em 1em 0em;
-	-o-border-radius: 0em 1em 1em 0em;
-	-moz-border-radius: 0em 1em 1em 0em;
-	-khtml-border-radius: 0em 1em 1em 0em;
-	-webkit-border-radius: 0em 1em 1em 0em;
-	width: 18em;
-	float: left;
-}
-
-#navigation ul {
-	margin: 0em;
-	padding: 0em;
-}
-#navigation li {
-	list-style-type: none;
-}
-
-#navigation .section {
-	margin: .5em 0em .75em 0em;
-}
-#navigation li.section strong, #navigation .section-header {
-	font-size: 11pt;
-	text-shadow: .1em .1em .2em rgba(0,0,0,.2);
-	-o-text-shadow: .1em .1em .2em #BBB;
-	-moz-text-shadow: .1em .1em .2em rgba(0,0,0,.2);
-	-khtml-text-shadow: .1em .1em .2em #BBB;
-	-webkit-text-shadow: .1em .1em .2em rgba(0,0,0,.2);
-}
-#navigation li.section ul, #navigation .section-content {
-	margin-top: .25em;
-}
-
-#navigation a {
-	display: block;
-	padding: .15em .25em .15em .4em;
-	margin-left: -.3em;
-	padding-left: .4em;
-	border-left: 0px none transparent;
-    text-decoration: none;
-}
-#navigation ul ul a, #navigation .section-content a {
-	margin-left: 0em;
-	padding-left: 1em;
-	border-left: .5em solid transparent;
-}
-#navigation .misc-section-header {
-	display: none;
-}
-
-#navigation a:link,
-#navigation a:visited {
-	background-color: transparent;
-	border-color: transparent;
-	color: #00A;
-}
-#navigation a:hover,
-#navigation a:focus,
-#navigation a:active {
-	background-color: #FFF;
-	border-color: #E77;
-	color: #A00;
-	box-shadow: .15em .15em .45em rgba(0,0,0,.2);
-	-o-box-shadow: .15em .15em .45em #BBB;
-	-moz-box-shadow: .15em .15em .45em rgba(0,0,0,.2);
-	-khtml-box-shadow: .15em .15em .45em #BBB;
-	-webkit-box-shadow: .15em .15em .45em rgba(0,0,0,.2);
-}
-
-
-/*--------------------------------------------------------------------------*/
 /* HEADER & FOOTER */
 
 /* --- Header */
@@ -226,24 +124,6 @@ body#header {
 	font-size: .8em;
 }
 
-/* --- Footer */
-div#footer {
-	margin-top: 1.5em;
-	text-align: center;
-}
-#footer a:link,
-#footer a:visited {
-	color: #00A;
-	text-decoration: none;
-}
-#footer a:hover,
-#footer a:focus,
-#footer a:active {
-	color: #A00;
-	text-decoration: underline;
-}
-
-
 /*--------------------------------------------------------------------------*/
 /* CONTENT */
 #page-content-wrapper {
@@ -260,7 +140,7 @@ h1 {
 	margin-top: 0;
 	margin-bottom: 1em;
 	text-align: left;
-	font-size: 2em;
+	font-size: 2rem;
 	color: #284E81;
 	text-shadow: .05em .05em 0em rgba(0,0,0,.1);
 	-o-text-shadow: .05em .05em 0em #DDD;
@@ -272,38 +152,39 @@ h2 {
 	margin-top: .5em;
 	margin-bottom: .5em;
 	text-align: left;
-	font-size: 1.5em;
+	font-size: 1.6rem;
 	color: #284E81;
 }
 h3 {
 	margin-top: .5em;
 	margin-bottom: 0em;
 	text-align: left;
-	font-size: 1.2em;
+	font-size: 1.2rem;
 	color: #000;
 }
 h4 {
 	margin-top: .5em;
 	margin-bottom: 0em;
 	text-align: left;
-	font-size: 1em;
+	font-size: 1rem;
 	color: #000;
 }
 h4.margin-bottom {
 	margin:0 0 .5em 0;
 }
 a {
+	color:#000000;
 	background-color: transparent;
 	text-decoration: none;
 }
 a:link,
 a:visited {
-	color: #00A;
+	color: #000000;
 }
 a:hover,
 a:focus,
 a:active {
-	color: #A00;
+	color: #284E81;
 }
 input,
 textarea,
@@ -351,7 +232,7 @@ input.selectButton.disabled {
 }
 input.selectButton.selected {
 	border: 2px solid #666;
-	padding: 0px 4px;
+	padding: .5rem .5rem;
 	background: #66c;
 	color: #fff;
 	/* Parsed if supported by the browser */
@@ -381,13 +262,12 @@ div.message {
 
 /* --- Tables */
 table {
-	font-size: 1em;
+	font-size: 1rem;
 }
 table th,
 table td {
 	margin: 0px;
-	padding: 2px 3px;
-	border: none;
+	padding: .5rem .5rem;
 	vertical-align: top;
 }
 table h3 {
@@ -441,24 +321,27 @@ form table fieldset {
 
 /* --- Forms: System Configurations titles */
 table .titles {
-	font-size: 1.05em;
+	font-size: 1rem;
 	font-weight: bold;
 }
 
 /* --- Forms: Help */
 table .help {
-/*	display: none;		/* Hide all in-line help */
 	line-height: 1.40em;
 	white-space: normal;
-/*	font-size: .9em;	/* Smaller font size */
-	color: #606060;		/* Keep it, for old web browsers */
+	font-size: .8rem;
+	font-weight:normal;
+	margin: .2em .1em;
+
+	color: #606060;
 	color: rgba(0,0,0,.6);
 }
-table p.help {
-	margin: .2em .1em;
+
+table label {
+	font-size: .9rem;
+	vertical-align: middle;
 }
-table span.help {
-}
+
 /* Add End-Entity */
 table#addendentity .help {
 	font-size: .8em;
@@ -486,22 +369,8 @@ table.grid tfoot tr:active {
 }
 
 /* Columns */
-.gridColumn1 {
-	white-space: nowrap;
-}
-.gridColumn2 {
-	white-space: nowrap;
-}
 .gridCenter {
 	text-align: center;
-}
-.gridColumnRight {
-	text-align: right;
-	width: 50%;
-}
-.gridColumnLeft {
-	text-align: left;
-	vertical-align: middle;
 }
 
 /* --- Forms: List/Actions */
@@ -531,7 +400,7 @@ table.edit-bottom,
 table.edit-ctnd,
 table.edit {
 	margin: .75em -2px 0em -2px;
-	border-spacing: 3px 1px;
+	border-spacing: 3px 3px;
 }
 table.subsection,
 table.edit-bottom {
@@ -544,16 +413,18 @@ table.edit-top tr td,
 table.edit-ctnd tr td,
 table.edit-bottom tr td,
 table.edit tr td {
-	padding: .25em .5em;
-	line-height: 1.60em;
+	border: 1px solid rgba(0, 0, 0, .08);
+	padding: .6rem .6rem;
 }
 /* Columns */
 .editColumn1 {
 	width: 35%;
 	text-align: right;
+	font-weight: 700;
 }
 .editColumnEE1 {
 	width: 45%;
+	font-weight: 700;
 	text-align: right;
 	word-wrap: break-word;
 	word-break: break-all;
@@ -566,6 +437,7 @@ table.edit tr td {
 }
 .viewEeColumn1 {
 	width: 50%;
+	font-weight: 700;
 	text-align: right;
 	word-wrap: break-word;
 	word-break: break-all;
@@ -578,7 +450,8 @@ table.edit tr td {
 }
 .editColumnSystem1 {
 	width: 35%;
-	text-align: left;
+	text-align: right;
+	font-weight: 700;
 }
 .editColumn2 {
 	width: 65%;
@@ -615,39 +488,12 @@ table.edit tr td {
 	width: 50%;
 	text-align: left;
 }
-.column1-cafunctions {
-	width: 15%;
-	text-align: center;
-	vertical-align: middle;
-}
-.column2-cafunctions {
-	width: 30%;
-	text-align: center;
-	vertical-align: middle;
-}
-.column3-cafunctions {
-	width: 55%;
-	text-align: left;
-}
-.fixEditColumn1 {
-	width: 360px;
-	min-width: 360px;
-	text-align: left
-}
-.fixEditColumn2 {
-	width: auto;
-	text-align: left
-}
-
 .column-checkbox1 {
 	width: 3%;
 	text-align: left;
 }
 .column-checkbox2 {
 	width: 15%;
-	text-align: left;
-}
-.column-checkbox3 {
 	text-align: left;
 }
 .column-align-right {
@@ -657,7 +503,6 @@ table.edit tr td {
 	width: 16.5%;
 	text-align: left;
 }
-
 
 /* Titles (and Sections) */
 table tr.section td,
@@ -681,9 +526,9 @@ table.edit-top tr:first-child td,
 table.edit tr:first-child td,
 table.edit-bottom tr.section td,
 table.edit tr.section td {
-	background-color: #FEEECD;
-	border-top: 3px solid #FEDD9A;
-	color: #A00;
+	background-color: #f8f9fa;
+	border: 1px solid #e9ecef;
+	color: #284E81;
 }
 table.edit-top tr:first-child td.field,		/* For JSF */
 table.edit tr:first-child td.field {
@@ -691,9 +536,9 @@ table.edit tr:first-child td.field {
 }
 table.edit-bottom tr:last-child td,
 table.edit tr:last-child td {
-	background-color: #FEEECD;
-	border-bottom: 3px solid #FEDD9A;
-	color: #A00;
+	background-color: #f8f9fa;
+	border: 1px solid #e9ecef;
+	color: #495057;
 }
 /* Titles */
 table.edit-top tr.title td,
@@ -734,7 +579,7 @@ table.view-top {
 
 table.view tr td,
 table.view-top tr td {
-	padding: .15em .5em !important;
+	padding: .5em .5em !important;
 	line-height: 1.4em;
 }
 
@@ -786,6 +631,39 @@ table.edit table tr td {
 	color: #000 !important;
 }
 
+table tr td table tbody tr:nth-child(n+2) td input,
+table tr td table tbody tr:nth-child(n+2) input,
+table tr td table tbody tr:nth-child(n+2) td select,
+table tr td table tbody tr:nth-child(n+2) select {
+	margin-top:5px !important;
+}
+
+table tr td table tbody tr td {
+	vertical-align: middle;
+}
+
+table tr td table tbody tr td input:nth-child(n+2) {
+	margin-left:5px !important;
+}
+
+table.action tr td select,
+table.action tr td input,
+table.action tr td textarea,
+table.edit-top tr td select,
+table.edit-top tr td input,
+table.edit-top tr td textarea,
+table.edit-bottom tr td select,
+table.edit-bottom tr td input,
+table.edit-bottom tr td textarea,
+table.edit tr td select,
+table.edit tr td input,
+table.edit tr td textarea {
+	font-size: .9rem !important;
+}
+
+table.hideEmpty tr td:empty {
+	display: none;
+}
 
 /* --- Forms: Search/Results */
 table.search tr td {
@@ -1266,16 +1144,24 @@ table#config tr td:first-child {
 /*--------------------------------------------------------------------------*/
 /* TABLES */
 
-.Row0, #Row0 { color: black; font-size: 9pt; background-color: #F7F9FF; }
-.Row1, #Row1 { color: black; font-size: 9pt; background-color: #E5ECFF; }
+.Row0, #Row0 {
+	color: #495057;
+	font-size: .9rem;
+	background-color: #fbfcfc;
+}
 
-.RowAlt0, #RowAlt0 { color: black; font-size: 9pt; background-color: #F8F0FA; }
-.RowAlt1, #RowAlt1 { color: black; font-size: 9pt; background-color: #E6E6FA; }
+.Row1, #Row1 {
+	color: #495057;
+	font-size: .9rem;
+	background-color: #FFFFFF;
+}
+
+.RowAlt0, #RowAlt0 { color: black; font-size: .9rem; background-color: #F8F0FA; }
+.RowAlt1, #RowAlt1 { color: black; font-size: .9rem; background-color: #E6E6FA; }
 
 .label { vertical-align: top; text-align: right; }
 .field { vertical-align: top; text-align: left; }
 
-.listCaption { font-weight: bold; font-size: 1.2em; text-align: left; background-color: #5B8CCD; color: #FFF; padding-left: .25em; }
 .listHeader { color: #777; font-size: 1.1em; font-weight: bold; text-align: left; }
 
 .subheader { color: #777; font-size: 0.7em; font-weight: bold; text-align: left; }
@@ -1377,9 +1263,6 @@ body.popup {
 	width: 100%;
 	border: 0px none;
 }
-.popup table tr td {
-	padding: .1em .3em;
-}
 /* Titles (and Sections) */
 .popup table tr.section td,
 .popup table tr.title td {
@@ -1443,12 +1326,12 @@ body.popup {
 }
 
 .mandatory {
-	border:2px solid #FFC300 !important;
+	border:2px solid #D32F2F !important;
 }
 
 .smallHelp {
 	line-height: 1.4em;
-	font-size: 0.70em;
+	font-size: 0.7rem;
 	white-space: normal;
 	color: #606060;		/* Keep it, for old web browsers */
 	color: rgba(0,0,0,.6);
@@ -1578,25 +1461,6 @@ a.button:active {
 .expandOnClick:focus { width: 100%; display: inline; overflow: auto; color:#000000; white-space: pre-wrap; cursor: pointer; }
 .expandOnClick:focus:after { content: ""; }
 
-/* 
- * Cards for the EJBCA Configuration Checker. Based on the CSS template from WC3.
- * https://www.w3schools.com/howto/howto_css_cards.asp
- */
-.card {
-    box-shadow: 0 2px 4px 0 rgba(0,0,0,0.2);
-    transition: 0.3s;
-    border-radius: 3px;
-    margin-top: 10px;
-    padding: 10px;
-    width: 250px;
-    font-size: 0.8em;
-}
-
-.card:hover { box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2); }
-.card.prio-info { background-color: #b3ecff; }
-.card.prio-warn { background-color: #ffcc00; }
-.card.prio-error { background-color: #ff8566; }
-
 /* Line break stack traces */
 .preformatted {
     white-space: pre-wrap;
@@ -1619,6 +1483,18 @@ a.button:active {
 	border: 0;
 	max-width: 16px;
 	max-height: 16px;
+}
+
+.ui-datatable table td a, .ui-panelgrid-cell a {
+	color: #000000;
+}
+
+.ui-datatable table td a:hover, .ui-panelgrid-cell a:hover{
+	text-decoration: underline;
+}
+
+.no-header thead {
+	display: none;
 }
 
 /* Remove cell focus borders */
@@ -1725,6 +1601,14 @@ body .ui-datatable .ui-datatable-footer {
 	display:block;
 }
 
+.ui-chkbox .ui-chkbox-label {
+	font-size: .9rem;
+}
+
+table.ui-md-1, table.ui-md-2, table.ui-md-3, table.ui-md-4, table.ui-md-5, table.ui-md-6, table.ui-md-7, table.ui-md-8, table.ui-md-9, table.ui-md-10, table.ui-md-11, table.ui-md-12 {
+	padding: 0 !important;
+}
+
 /* PrimeFaces class adjustments: END */
 
 .table-layout-auto {
@@ -1739,7 +1623,7 @@ body .ui-datatable .ui-datatable-footer {
     font-weight: bold;
     max-width: 35vw;
     min-width: 3rem;
-    word-break: break-all;
+    word-break: break-word;
 }
 
 .vertical-padding-1 {
@@ -1757,6 +1641,10 @@ body .ui-datatable .ui-datatable-footer {
 
 .text-align-left {
 	text-align: left !important;
+}
+
+.text-align-right {
+	text-align: right !important;
 }
 
 .action-buttons {
@@ -1814,6 +1702,18 @@ table.row-padding-bottom-1-rem tr td {
     margin-top: 1rem;
 }
 
+.margin-top-half-rem {
+	margin-top: .5rem;
+}
+
+.margin-left-half-rem {
+	margin-left: .5rem;
+}
+
+.margin-right-half-rem {
+	margin-right: .5rem;
+}
+
 .cell-padding-right-1-rem,
 .cell-padding-right-1-rem table tr td {
     padding-right: 1rem;
@@ -1837,6 +1737,36 @@ label.align-label > span.ui-outputlabel-label {
     display: flex;
     align-items: center;
     height: 100%;
+}
+
+.form-vertical-align {
+	table-layout: auto !important;
+}
+
+.form-vertical-align td {
+	vertical-align: middle !important;
+	padding: .5rem .5rem .5rem 0 !important;
+}
+
+.form-vertical-align td:first-child {
+	vertical-align: middle !important;
+}
+
+.form-label-col {
+	width: 1%;
+	white-space: nowrap;
+}
+
+.form-label-col label {
+	font-size: 1rem;
+}
+
+p.compositeText {
+	line-height:1.8rem;
+}
+
+.compositeKeyColor {
+	color:#284E81;
 }
 
 /*--------------------------------------------------------------------------*/

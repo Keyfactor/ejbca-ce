@@ -38,8 +38,8 @@
         <delete dir="${dist.dir}" />
     	<delete dir="${reports.base.dir}" />
         <delete dir="${apidoc}" />
-	<delete dir="${tmp}"/>
-	<delete>
+        <delete dir="${tmp}"/>
+        <delete>
           <fileset dir="." includes="**/jacoco.exec"/>
         </delete>
         <ant antfile="modules/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
@@ -982,6 +982,8 @@
 				<exclude name=".github/" />
 				<exclude name=".gitlab/" />
 				<exclude name=".gitlab-ci.yml" />
+				<exclude name=".aiassistant/" />
+				<exclude name=".junie/" />
 				<exclude name="src/ci/" />
 				<exclude name="src/package/" />
 				<exclude name="lib/coverage/**" />
@@ -1450,7 +1452,7 @@ SHA-256 checksum: ${cesecorebinSHA256}
     	<ant dir="modules" target="ejbca-ws-wsdl"/>
     </target>
 	
-    <target name="ejbca-ws-generate-client" depends="deprecated:check" description="Generate the EJBCA Web Services client source code files (used by developers of new WS API calls)">
+    <target name="ejbca-ws-generate-client" depends="deprecated:check" description="Generate the EJBCA Web Services client source code files (used by developers of new WS API calls). NOTE: must run 'ant clean' first to avoid redundant classes in jar.">
     	<ant dir="modules" target="ejbca-ws-generate"/>
     </target>
 

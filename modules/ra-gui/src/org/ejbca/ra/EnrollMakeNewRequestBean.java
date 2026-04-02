@@ -60,6 +60,7 @@ import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.ApprovalRequestType;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -90,7 +91,6 @@ import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.TokenDownloadType;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -403,7 +403,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return false;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_JKS))
+        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(EndEntityConstants.TOKEN_SOFT_JKS))
                 && getSelectedKeyPairGenerationEnum() != null && KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())
                 && !isApprovalRequired();
     }
@@ -417,7 +417,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return false;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_P12))
+        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(EndEntityConstants.TOKEN_SOFT_P12))
                 && getSelectedKeyPairGenerationEnum() != null && KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())
                 && !isApprovalRequired();
     }
@@ -431,7 +431,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return false;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_BCFKS))
+        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(EndEntityConstants.TOKEN_SOFT_BCFKS))
                 && getSelectedKeyPairGenerationEnum() != null && KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())
                 && !isApprovalRequired();
     }
@@ -445,7 +445,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return false;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_PEM))
+        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(EndEntityConstants.TOKEN_SOFT_PEM))
                 && getSelectedKeyPairGenerationEnum() != null && KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())
                 && !isApprovalRequired();
     }
@@ -475,6 +475,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * @return true if approvals are required as determined by state of dependencies by checking the RA API.
      */
     private boolean isApprovalRequired() {
+
+        final CAInfo caInfo = getCAInfo();
+
+        if (caInfo == null) {
+            throw new IllegalStateException("No authorized CAs are available for the selected certificate profile of current admin user.");
+        }
+
         try {
             return raMasterApiProxyBean.getApprovalProfileForAction(raAuthenticationBean.getAuthenticationToken(),
                     ApprovalRequestType.ADDEDITENDENTITY, getCAInfo().getCAId(),
@@ -937,7 +944,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (getSelectedKeyPairGenerationEnum() != null && KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum()) && algorithmFromCsr != null) {
             final RequestMessage certRequest = RequestMessageUtils.parseRequestMessage(getCertificateRequest().getBytes(StandardCharsets.UTF_8));
             if (certRequest.getRequestX500Name() != null) {
-                populateRequestFields(RequestFieldType.DN, certRequest.getRequestX500Name().toString(), getSubjectDn().getFieldInstances());
+                populateRequestFields(DnComponentsHelper.RequestFieldType.DN, certRequest.getRequestX500Name().toString(), getSubjectDn().getFieldInstances());
                 getSubjectDn().update();
             }
             this.subjectAlternativeName = null;
@@ -947,7 +954,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             if (pkcs10CertificateRequest != null) {
                 final Extension sanExtension = CertTools.getExtension(pkcs10CertificateRequest, Extension.subjectAlternativeName.getId());
                 if (sanExtension != null) {
-                    populateRequestFields(RequestFieldType.AN, DnComponents.getAltNameStringFromExtension(sanExtension), getSubjectAlternativeName().getFieldInstances());
+                    populateRequestFields(DnComponentsHelper.RequestFieldType.AN, DnComponents.getAltNameStringFromExtension(sanExtension), getSubjectAlternativeName().getFieldInstances());
                     getSubjectAlternativeName().update();
                 }
                 final Extension subjectDirectoryAttributes = CertTools.getExtension(pkcs10CertificateRequest, Extension.subjectDirectoryAttributes.getId());
@@ -955,7 +962,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     ASN1Primitive parsedValue = (ASN1Primitive) subjectDirectoryAttributes.getParsedValue();
                     try {
                         final String subjectDirectoryAttributeString = SubjectDirAttrExtension.getSubjectDirectoryAttribute(parsedValue);
-                        populateRequestFields(RequestFieldType.DIRATTR, subjectDirectoryAttributeString, getSubjectDirectoryAttributes().getFieldInstances());
+                        populateRequestFields(DnComponentsHelper.RequestFieldType.DIRATTR, subjectDirectoryAttributeString, getSubjectDirectoryAttributes().getFieldInstances());
                         getSubjectDirectoryAttributes().update();
                     } catch (ParseException | IllegalArgumentException e) {
                         log.debug("Invalid Subject Directory Attributes Extension: " + e.getMessage());
@@ -967,17 +974,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
     }
 
-    // enum to make type selection for populateRequestFields easy and fixed, with good toString() value for debug log
-    enum RequestFieldType {
-        DN,
-        AN,
-        DIRATTR
-    }
-
     /**
      * Populate the fieldInstances parameter with values from the CSR when the instances are modifiable
      */
-    private void populateRequestFields(final RequestFieldType type, final String subject, final Collection<FieldInstance> fieldInstances) {
+    private void populateRequestFields(final DnComponentsHelper.RequestFieldType type,
+                                       final String subject,
+                                       final Collection<FieldInstance> fieldInstances) {
         final List<String> subjectFieldsFromParsedCsr = DnComponents.getX500NameComponents(subject);
 
         final int eepId = getEndEntityInformation().getEndEntityProfileId();
@@ -985,9 +987,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
         bothLoops:
         for (final String subjectField : subjectFieldsFromParsedCsr) {
             if (log.isDebugEnabled()) {
-                if (RequestFieldType.DN.equals(type)) {
+                if (DnComponentsHelper.RequestFieldType.DN.equals(type)) {
                     log.debug("Parsing the subject " + type + " field '" + LogRedactionUtils.getSubjectDnLogSafe(subjectField, eepId) + "'...");
-                } else if (RequestFieldType.AN.equals(type)) {
+                } else if (DnComponentsHelper.RequestFieldType.AN.equals(type)) {
                     log.debug("Parsing the subject " + type + " field '" + LogRedactionUtils.getSubjectAltNameLogSafe(subjectField, eepId) + "'...");
                 } else {
                     log.debug("Parsing the subject " + type + " field '" + subjectField + "'...");
@@ -996,18 +998,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
             // Fields may contain equal signs, so treat everything after the first one as the value
             final String[] nameValue = subjectField.split("=", 2);
             if (nameValue != null && nameValue.length >= 2) {
-                Integer dnId = null;
-                switch (type) {
-                    case DN:
-                        dnId = DnComponents.getDnIdFromDnName(nameValue[0]);
-                        break;
-                    case AN:
-                        dnId = DnComponents.getDnIdFromAltName(nameValue[0]);
-                        break;
-                    case DIRATTR:
-                        dnId = DnComponents.getDnIdFromDirAttr(nameValue[0]);
-                        break;
-                }
+                final String name = nameValue[0];
+                final Integer dnId =
+                        DnComponentsHelper.getDnIdFromTypeAndName(type, name);
+
                 if (log.isDebugEnabled()) {
                     log.debug(" dnId=" + dnId);
                 }
@@ -1020,12 +1014,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
                                     logRedactedInfo(type, eepId, fieldInstance);
                                 }
                                 if (StringUtils.isEmpty(fieldInstance.getValue()) || fieldInstance.getValue().equals(fieldInstance.getDefaultValue())) {
-                                    fieldInstance.setValue(nameValue[1]);
-                                    if (log.isDebugEnabled()) {
-                                        log.debug("Modifiable subject field '" + LogRedactionUtils.getSubjectDnLogSafe(subjectField, eepId)
-                                                + "' successfully parsed from CSR");
-                                    }
-                                    continue bothLoops;
+                                    if (!fieldInstance.isCopyDns() && !fieldInstance.isCopyUpn()) {
+										fieldInstance.setValue(nameValue[1]);
+										if (log.isDebugEnabled()) {
+											log.debug("Modifiable subject field '" + LogRedactionUtils.getSubjectDnLogSafe(subjectField, eepId)
+													+ "' successfully parsed from CSR");
+										}
+										continue bothLoops;
+									}
                                 }
                             } else if (fieldInstance.isSelectable()) {
                                 if (log.isDebugEnabled()) {
@@ -1045,10 +1041,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 }
             }
             if (log.isDebugEnabled()) {
-                if (RequestFieldType.DN.equals(type)) {
+                if (DnComponentsHelper.RequestFieldType.DN.equals(type)) {
                     log.debug("Unparsable subject " + type + " field '" + LogRedactionUtils.getSubjectDnLogSafe(subjectField, eepId)
                             + "' from CSR, field is invalid or not a modifiable option in the end entity profile.");
-                } else if (RequestFieldType.AN.equals(type)) {
+                } else if (DnComponentsHelper.RequestFieldType.AN.equals(type)) {
                     log.debug("Unparsable subject " + type + " field '" + LogRedactionUtils.getSubjectAltNameLogSafe(subjectField, eepId)
                             + "' from CSR, field is invalid or not a modifiable option in the end entity profile.");
                 } else {
@@ -1059,11 +1055,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
     }
 
-    private void logRedactedInfo(final RequestFieldType type, final int eepId, final FieldInstance fieldInstance) {
-        if (RequestFieldType.DN.equals(type)) {
+    private void logRedactedInfo(final DnComponentsHelper.RequestFieldType type, final int eepId, final FieldInstance fieldInstance) {
+        if (DnComponentsHelper.RequestFieldType.DN.equals(type)) {
             log.debug(" fieldInstance.value=" + LogRedactionUtils.getSubjectDnLogSafe(fieldInstance.getValue(), eepId)
                     + " fieldInstance.defaultValue=" + LogRedactionUtils.getSubjectDnLogSafe(fieldInstance.getDefaultValue(), eepId));
-        } else if (RequestFieldType.AN.equals(type)) {
+        } else if (DnComponentsHelper.RequestFieldType.AN.equals(type)) {
             log.debug(" fieldInstance.value=" + LogRedactionUtils.getSubjectAltNameLogSafe(fieldInstance.getValue(), eepId)
                     + " fieldInstance.defaultValue=" + LogRedactionUtils.getSubjectAltNameLogSafe(fieldInstance.getDefaultValue(), eepId));
         } else {
@@ -1365,6 +1361,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 random.nextBytes(randomData);
                 autousername = new String(Hex.encode(randomData));
             }
+            if (StringUtils.isNoneBlank(endEntityInformation.getUsernamePrefix())) {
+                autousername = endEntityInformation.getUsernamePrefix() + autousername;
+            }
+            if (StringUtils.isNoneBlank(endEntityInformation.getUsernameSuffix())) {
+                autousername = autousername + endEntityInformation.getUsernameSuffix();
+            }
             if (log.isDebugEnabled()) {
                 log.debug("Unique username '" + autousername + "' has been generated");
             }
@@ -1439,8 +1441,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
             } else if (KeyPairGeneration.POSTPONE.equals(getSelectedKeyPairGenerationEnum())) {
                 endEntityInformation.setTokenType(selectedTokenType);
                 boolean canUseClearPwd = useClearPassword;
-                log.info("canUseClearPwd: " + canUseClearPwd + ", " + selectedTokenType + ", " + getEndEntityProfile().useAutoGeneratedPasswd());
-                if (selectedTokenType < 2 || getEndEntityProfile().useAutoGeneratedPasswd()) { // for clearPwd: selected token type and not generated by user
+                log.debug("canUseClearPwd: " + canUseClearPwd + ", " + selectedTokenType + ", " + getEndEntityProfile().useAutoGeneratedPasswd());
+                if (getEndEntityProfile().useAutoGeneratedPasswd()) {
                     canUseClearPwd = false;
                 }
                 raMasterApiProxyBean.addUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, canUseClearPwd);
@@ -2154,13 +2156,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
             final String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
             if (this.authorizedCertificateProfiles.getValue(Integer.parseInt(getSelectedCertificateProfile()))
                     .getType() != CertificateConstants.CERTTYPE_SSH) {
-                if (availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_P12))
-                        || availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_JKS))
-                        || availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_PEM))) {
+                if (availableKeyStores.contains(String.valueOf(EndEntityConstants.TOKEN_SOFT_P12))
+                        || availableKeyStores.contains(String.valueOf(EndEntityConstants.TOKEN_SOFT_JKS))
+                        || availableKeyStores.contains(String.valueOf(EndEntityConstants.TOKEN_SOFT_PEM))) {
                     ret.add(KeyPairGeneration.ON_SERVER);
                 }
             }
-            if (availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_BROWSERGEN))) {
+            if (availableKeyStores.contains(String.valueOf(EndEntityConstants.TOKEN_USERGEN))) {
                 ret.add(KeyPairGeneration.PROVIDED_BY_USER);
             }
             ret.add(KeyPairGeneration.POSTPONE);
@@ -2268,7 +2270,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         final EndEntityProfile endEntityProfile = getEndEntityProfile();
         if (endEntityProfile != null) {
             final String[] availableCAsFromEEPArray = endEntityProfile.getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
-            final boolean anyCAAvailableFromEEP = availableCAsFromEEPArray.length == 1 && availableCAsFromEEPArray[0].equalsIgnoreCase(String.valueOf(SecConst.ALLCAS));
+            final boolean anyCAAvailableFromEEP = availableCAsFromEEPArray.length == 1 && availableCAsFromEEPArray[0].equalsIgnoreCase(String.valueOf(CAConstants.ALLCAS));
             // Get all available CAs from the selected CP
             final CertificateProfile certificateProfile = getCertificateProfile();
             if (certificateProfile != null) {
@@ -2434,6 +2436,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
             if (!StringUtils.isBlank(getEndEntityProfile().getUsernameDefault()) && !getEndEntityProfile().isAutoGeneratedUsername()) {
                 endEntityInformation.setUsername(getEndEntityProfile().getUsernameDefault());
             }
+
+            if (getEndEntityProfile().isAutoGeneratedUsername()) {
+                endEntityInformation.setUsernamePrefix(getEndEntityProfile().getUsernamePrefix());
+                endEntityInformation.setUsernameSuffix(getEndEntityProfile().getUsernameSuffix());
+            }
+
         }
         return endEntityInformation;
     }
@@ -2738,7 +2746,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public boolean isClearPasswordAllowed() {
         EndEntityProfile profile = getEndEntityProfile();
         if (profile != null) {
-            boolean allowClearPwd = profile.isClearTextPasswordUsed() && (selectedTokenType > 1);
+            boolean allowClearPwd = profile.isClearTextPasswordUsed();
             if (!clearPasswordDirty) {
                 if (!allowClearPwd) {
                     useClearPassword = false;
@@ -3463,7 +3471,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityInformation.setType(new EndEntityType(EndEntityTypes.ENDUSER));
         endEntityInformation.setSshEndEntity(true);
-        endEntityInformation.setTokenType(SecConst.TOKEN_SOFT_BROWSERGEN);
+        endEntityInformation.setTokenType(EndEntityConstants.TOKEN_USERGEN);
         endEntityInformation.setTimeCreated(new Date());
         endEntityInformation.setTimeModified(new Date());
 

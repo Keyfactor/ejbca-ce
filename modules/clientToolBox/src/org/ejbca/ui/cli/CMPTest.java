@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
-import java.net.Socket;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -748,7 +747,6 @@ class CMPTest extends ClientToolBox {
             private int lastNextInt = 0;
             private X500Name userDN;
             private int reqId;
-            Socket socket;
             final private static int howOftenToGenerateSameUsername = 3;	// 0 = never, 1 = 100% chance, 2=50% chance etc..
             SessionData() {
                 super();

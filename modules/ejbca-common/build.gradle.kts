@@ -30,6 +30,7 @@ dependencies {
     testImplementation(libs.bundles.cryptotokens)
     testRuntimeOnly(libs.cert.cvc)
     testRuntimeOnly(libs.bundles.xmlpull)
+    testRuntimeOnly(libs.slf4j.api)
 }
 
 sourceSets {

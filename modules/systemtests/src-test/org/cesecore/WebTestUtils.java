@@ -12,10 +12,6 @@
  *************************************************************************/
 package org.cesecore;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,6 +33,12 @@ import java.util.List;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
+
+import com.keyfactor.CesecoreException;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyStoreTools;
+import com.keyfactor.util.keys.KeyTools;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.Strings;
@@ -86,10 +88,9 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
-import com.keyfactor.CesecoreException;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.KeyTools;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Utility methods to send HTTP requests
@@ -97,12 +98,12 @@ import com.keyfactor.util.keys.KeyTools;
 public final class WebTestUtils {
 
     private static final Logger log = Logger.getLogger(WebTestUtils.class);
-    
+
     public final static String USER_AGENT = "EJBCA-Test/1.0";
     public final static int DEFAULT_TIMEOUT = 30000;
-    
+
     private WebTestUtils() {}
-    
+
     /**
      * Sends a HTTP request
      * @param request HttpGet or HttpPost object describing the request to send.
@@ -171,7 +172,7 @@ public final class WebTestUtils {
         get.setHeader("User-Agent", USER_AGENT);
         return sendRequest(get, DEFAULT_TIMEOUT, serverCertificate, clientCertificate, clientKeyPair);
     }
-    
+
     public static HttpResponse sendGetRequest(final String url) throws IOException {
         return sendGetRequest(url, DEFAULT_TIMEOUT);
     }
@@ -260,7 +261,7 @@ public final class WebTestUtils {
 
     /**
      * Returns the certificate of the 'target.servercert.ca' CA, that is, the CA that issued the TLS server certificate
-     * 
+     *
      * @return the X.509 certificate.
      */
     public static X509Certificate getServerCertificate() {
@@ -269,14 +270,14 @@ public final class WebTestUtils {
         final List<Certificate> chain = serverCaInfo.getCertificateChain();
         return (X509Certificate) chain.get(0);
     }
-    
+
     /**
      * Loads the keystore with the given path, or creates a new keystore and stores it under the given path.
-     * 
+     *
      * @param path the absolute file path of the keystore.
      * @param pwd the keystore password.
      * @return the keystore.
-     * 
+     *
      * @throws KeyStoreException any.
      * @throws IOException any.
      * @throws CertificateException any.
@@ -289,14 +290,14 @@ public final class WebTestUtils {
             keyStore.load(new FileInputStream(file), pwd.toCharArray());
         } else {
             keyStore.load(null, null);
-            keyStore.store(new FileOutputStream(file), pwd.toCharArray());
+            KeyStoreTools.storeKeyStore(keyStore, new FileOutputStream(file), pwd.toCharArray());
         }
         return keyStore;
     }
-    
+
     /**
      * Inserts the CA certificate and the key pair and user certificate (if present) into the keystore with the given alias.
-     * 
+     *
      * @param path the absolute file path of the keystore.
      * @param pwd the keystore password.
      * @param keystore the keystore.
@@ -304,7 +305,7 @@ public final class WebTestUtils {
      * @param issuerCertificateBytes the CA certificate to be inserted.
      * @param keyPair the key pair to be inserted.
      * @param certificateBytes the certificate to be inserted.
-     * 
+     *
      * @throws IOException any.
      * @throws CertificateException any.
      * @throws KeyStoreException any.
@@ -313,7 +314,7 @@ public final class WebTestUtils {
     public static void importDataIntoJksKeystore(final String path, final String pwd, final KeyStore keystore, final String alias,
         final byte[] issuerCertificateBytes, final KeyPair keyPair, final byte[] certificateBytes
     ) throws IOException, CertificateException, KeyStoreException, NoSuchAlgorithmException {
-        // Add the certificate.  
+        // Add the certificate.
         keystore.setCertificateEntry(alias, CertTools.getCertfromByteArray(issuerCertificateBytes, X509Certificate.class));
         // Add the key if it exists.
         if(keyPair != null) {
@@ -322,28 +323,28 @@ public final class WebTestUtils {
         }
         // Save the new keystore contents.
         final FileOutputStream fileOutputStream = new FileOutputStream(path);
-        keystore.store(fileOutputStream, pwd.toCharArray());
+        KeyStoreTools.storeKeyStore(keystore, fileOutputStream, pwd.toCharArray());
         fileOutputStream.close();
     }
-    
+
     /**
-     * Returns a new trust manager factory with the keystore stored under the given path. If the keystore 
-     * does not exists, a new keystore is generated and stored. The first CA certificate in the issuers 
+     * Returns a new trust manager factory with the keystore stored under the given path. If the keystore
+     * does not exists, a new keystore is generated and stored. The first CA certificate in the issuers
      * CA chain found (for test usually self-signed ManagementCA) is added to the keystore.
-     * 
+     *
      * TODO: Fix for CA chains > 1.
-     * 
+     *
      * @param path the absolute file path of the keystore.
      * @param pwd the keystore password.
      * @param caInfo the CA info object of the CA certificate to be inserted (for test usually self-signed ManagementCA).
      * @return the trust manager factory.
-     * 
+     *
      * @throws KeyStoreException any.
      * @throws CertificateException any.
      * @throws NoSuchAlgorithmException any.
      * @throws IOException any.
      */
-    public static TrustManagerFactory createTrustManagerFactory(final String path, final String pwd, final CAInfo caInfo) 
+    public static TrustManagerFactory createTrustManagerFactory(final String path, final String pwd, final CAInfo caInfo)
             throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
         final KeyStore keystore = initJksKeyStore(path, pwd);
         importDataIntoJksKeystore(path, pwd, keystore, caInfo.getName().toLowerCase(), caInfo.getCertificateChain().get(0).getEncoded(), null, null);
@@ -351,14 +352,14 @@ public final class WebTestUtils {
         result.init(keystore);
         return result;
     }
-    
+
     /**
-     * Returns a new key manager factory with the keystore stored under the given path. If the keystore does not exists, a new keystore is generated and stored. 
-     * 
+     * Returns a new key manager factory with the keystore stored under the given path. If the keystore does not exists, a new keystore is generated and stored.
+     *
      * @param path the absolute file path of the keystore.
      * @param pwd the keystore password.
      * @return the key manager factory.
-     * 
+     *
      * @throws KeyStoreException any.
      * @throws CertificateException any.
      * @throws NoSuchAlgorithmException any.
@@ -371,14 +372,14 @@ public final class WebTestUtils {
         result.init(keyStore, pwd.toCharArray());
         return result;
     }
-    
+
     /**
      * Returns a new SSL context object for TLSv1.2 using the given trust manager and key manager factories.
-     *  
+     *
      * @param trustManagerFactory the trust manager factory.
      * @param keyManagerFactory the key manager factory.
      * @return the SSL context object.
-     * 
+     *
      * @throws NoSuchAlgorithmException any.
      * @throws KeyManagementException any.
      */
@@ -387,15 +388,15 @@ public final class WebTestUtils {
         result.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
         return result;
     }
-    
+
     /**
      * Returns a new end entity information for type {@link EndEntityTypes#ENDUSER} with token type {@link EndEntityConstants#TOKEN_SOFT_P12}.
-     * 
+     *
      * @param caId the ID of the issuing CA.
      * @param username the name of the end entity
      * @param subjectDN the subjectDN of the end entity.
      * @param pwd the password.
-     * 
+     *
      * @return the end entity information object.
      */
     public static EndEntityInformation createEndEntityInformation(final int caId, final String username, final String subjectDN, final String pwd) {
@@ -413,17 +414,17 @@ public final class WebTestUtils {
         endEntityInformation.setPassword(pwd);
         return endEntityInformation;
     }
-    
+
     /**
      * Binds an end entity certificate to a role by it's subjectDN CN attribute.
-     * 
+     *
      * @param roleMemberSession the role member session bean.
      * @param token the administrator token.
      * @param username the username of the end entity.
      * @param description the description text of the role binding.
      * @param caId the ID of the CA which has issued the end entity certificate.
      * @param roleId the ID of the role.
-     * 
+     *
      * @return the role member object.
      * @throws AuthorizationDeniedException if the administrator has insufficient access rules.
      */
@@ -441,10 +442,10 @@ public final class WebTestUtils {
             )
         );
     }
-    
+
     /**
      * Issues and stores a client certificate in JSK format.
-     * 
+     *
      * @param admin the administrator token.
      * @param path the absolute file path of the keystore.
      * @param username the name of the end entity.
@@ -453,7 +454,7 @@ public final class WebTestUtils {
      * @param caId the ID of the issuing CA.
      * @param caChain the CA chain of the issuing CA.
      * @return the X.509 certificate of the newly generated keystore.
-     * 
+     *
      * @throws Exception any.
      */
     public static X509Certificate issueAndStoreClientCert(final AuthenticationToken admin, final String path, final String username, final String subjectDn, final String pwd, final int caId, final List<Certificate> caChain) throws Exception {
@@ -469,12 +470,12 @@ public final class WebTestUtils {
         importDataIntoJksKeystore(path, pwd, keyStore, username.toLowerCase(), caChain.get(0).getEncoded(), keyPair, result.getEncoded());
         return result;
     }
-    
+
     /**
      * Encapsulates the HTTP(s) client configuration.
      */
     public static class HttpClientConfig {
-        
+
         AuthenticationToken admin;
         String username;
         String subjectDn;
@@ -490,59 +491,59 @@ public final class WebTestUtils {
         X509Certificate clientCertificate;
         CloseableHttpClient httpClient;
         RoleMember roleMember;
-        
+
         public HttpClientConfig(final AuthenticationToken admin) {
             this.admin = admin;
-        } 
-                
+        }
+
         public HttpClientConfig build() throws Exception {
-            trustManagerFactory = createTrustManagerFactory(trustStorePath, trustStorePwd, serverCaInfo);            
+            trustManagerFactory = createTrustManagerFactory(trustStorePath, trustStorePwd, serverCaInfo);
             clientCertificate = issueAndStoreClientCert(admin, keyStorePath, username, subjectDn, keyStorePwd, clientCaInfo.getCAId(), serverCaInfo.getCertificateChain());
             keyManagerFactory = createKeyManagerFactory(keyStorePath, keyStorePwd);
             sslContext = WebTestUtils.createSslContext(trustManagerFactory, keyManagerFactory);
             return this;
         }
-        
+
         public HttpClientConfig withUsername(final String name) {
             this.username = name;
             return this;
         }
-        
+
         public HttpClientConfig withSubjectDn(final String dn) {
             this.subjectDn = dn;
             return this;
         }
-        
+
         public HttpClientConfig withTruststorePath(final String path) {
             this.trustStorePath = path;
             return this;
         }
-        
+
         public HttpClientConfig withTruststorePwd(final String pwd) {
             this.trustStorePwd = pwd;
             return this;
         }
-        
+
         public HttpClientConfig withServerCa(final CAInfo caInfo) {
             this.serverCaInfo = caInfo;
             return this;
         }
-        
+
         public HttpClientConfig withKeystorePath(final String path) {
             this.keyStorePath = path;
             return this;
         }
-        
+
         public HttpClientConfig withKeystorePwd(final String pwd) {
             this.keyStorePwd = pwd;
             return this;
         }
-        
+
         public HttpClientConfig withClientCa(final CAInfo caInfo) {
             this.clientCaInfo = caInfo;
             return this;
         }
-        
+
         public String getUsername() {
             return username;
         }

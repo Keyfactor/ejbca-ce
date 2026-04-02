@@ -94,7 +94,7 @@
                         </div>
                     </p:column>
                 </p:dataTable>
-                <h:panelGrid rendered="#{ejbcawebbean.runningBuildWithCA and manageCAsMBean.canAddAndEditResource}"
+                <h:panelGrid rendered="#{manageCAsMBean.canAddAndEditResource}"
                              styleClass="no-border no-padding row-padding-bottom-1-rem">
                     <h:outputText value="#{web.text.CAS_NOT_CONFIGURED }"
                                   rendered="#{manageCAsMBean.caListEmpty}"
@@ -104,14 +104,14 @@
                             <h:panelGroup>
                                 <h:commandButton id="buttoncreateca"
                                                  value="#{web.text.ADD}" ajax="false"
-                                                 rendered="#{manageCAsMBean.canAddResource}"
+                                                 rendered="#{ejbcawebbean.runningBuildWithCA and manageCAsMBean.canAddResource}"
                                                  action="#{manageCAsMBean.createCaPage}"/>
                             </h:panelGroup>
                             <h:panelGroup rendered="#{ejbcawebbean.runningBuildWithCA}">
                                 <h:commandButton
                                         id="buttonimportca" ajax="false"
                                         value="#{manageCAsMBean.importKeystoreText}"
-                                        rendered="#{manageCAsMBean.canAddResource}"
+                                        rendered="#{ejbcawebbean.runningBuildWithCA and manageCAsMBean.canAddResource}"
                                         action="importca"/>
                             </h:panelGroup>
                             <h:panelGroup>
@@ -140,14 +140,14 @@
         </p:tab>
         <p:tab title="#{web.text.CONFIGURATION}" >
             <h:form id="globalCaSettings" style="display: block;">
-                <h:panelGrid columns="3" columnClasses="ui-md-4,ui-md-4,ui-md-4">
+                <h:panelGrid columns="3" columnClasses="form-label-col,ui-md-4,ui-md-4" styleClass="form-vertical-align">
                     <!-- ICAO Name Change -->
 	                <h:panelGroup>
 	                    <h:outputText value="#{web.text.ENABLEICAOCANAMECHANGE}"/>              
                     </h:panelGroup>
-                    <h:selectBooleanCheckbox id="enableicaocanamechange" value="#{manageCAsMBean.globalCaConfiguration.enableIcaoCANameChange}"
+                    <p:selectBooleanCheckbox id="enableicaocanamechange" value="#{manageCAsMBean.globalCaConfiguration.enableIcaoCANameChange}"
                         disabled="#{!manageCAsMBean.allowedToEditSystemConfiguration}">
-                    </h:selectBooleanCheckbox>
+                    </p:selectBooleanCheckbox>
                     <h:outputText value="#{web.text.CA_ICAO_NAME_CHANGE_HELP}" styleClass="smallHelp"/>
                     
                    

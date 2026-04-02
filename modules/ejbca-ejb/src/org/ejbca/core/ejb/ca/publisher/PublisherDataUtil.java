@@ -29,17 +29,16 @@ import org.cesecore.dto.PublisherData;
 
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
-@SuppressWarnings("unchecked")
 public class PublisherDataUtil {
 
     private static final Logger log = Logger.getLogger(PublisherDataUtil.class);
 
-    @SuppressWarnings("deprecation")
     static BasePublisher constructPublisher(final int publisherType) {
         switch (publisherType) {
             case PublisherConst.TYPE_LDAPPUBLISHER:
@@ -57,7 +56,6 @@ public class PublisherDataUtil {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private static HashMap<?, ?> parseDataMapFromPublisher(final PublisherData dto) {
         final var bean = new PublisherDataBean();
         bean.init(dto);
@@ -75,7 +73,6 @@ public class PublisherDataUtil {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public static BasePublisher getPublisher(final PublisherData dto) {
         HashMap<?, ?> h = parseDataMapFromPublisher(dto);
         // Handle Base64 encoded string values
@@ -89,11 +86,12 @@ public class PublisherDataUtil {
         return publisher;
     }
 
+    @SuppressWarnings("unchecked")
     public static String toString(final BasePublisher publisher) {
         // We must base64 encode string for UTF safety
-        HashMap a = new Base64PutHashMap();
-        a.putAll((HashMap)publisher.saveData());
-        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+        HashMap<Object, Object> a = new Base64PutHashMap();
+        a.putAll((HashMap<Object, Object>) publisher.saveData());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (XMLEncoder encoder = new XMLEncoder(baos)) {
             encoder.writeObject(a);
         }
@@ -107,7 +105,6 @@ public class PublisherDataUtil {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public static PublisherData setPublisher(final PublisherData dto, BasePublisher publisher) {
         final var bean = new PublisherDataBean();
         bean.init(dto);
@@ -116,7 +113,6 @@ public class PublisherDataUtil {
         return bean.toDto();
     }
 
-    @SuppressWarnings("unchecked")
     public static void setPublisher(final PublisherDataBean bean, BasePublisher publisher) {
         bean.setData(toString(publisher));
         bean.setUpdateCounter(bean.getUpdateCounter()+1);

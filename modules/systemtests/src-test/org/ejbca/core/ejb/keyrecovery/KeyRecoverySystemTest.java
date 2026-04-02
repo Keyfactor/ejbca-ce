@@ -13,12 +13,6 @@
 
 package org.ejbca.core.ejb.keyrecovery;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
@@ -37,6 +31,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.IndefiniteLengthDetectorStream;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -99,7 +103,6 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.KeyStoreCreateSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -118,14 +121,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests the key recovery modules.
@@ -153,10 +153,10 @@ public class KeyRecoverySystemTest extends CaTestCase {
     private static final InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private static final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private static final GlobalConfigurationProxySessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    
+
     private final static String DEVICE_NAME = IntegrityProtectedDevice.class.getSimpleName();
     private static final EjbcaAuditorTestSessionRemote ejbcaAuditorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EjbcaAuditorTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    
+
     private AuthenticationToken admin;
     private static long allTestsStartTime;
 
@@ -165,18 +165,18 @@ public class KeyRecoverySystemTest extends CaTestCase {
         allTestsStartTime = System.currentTimeMillis();
         CryptoProviderTools.installBCProvider();
     }
-    
+
     @AfterClass
     public static void checkNoPiiLogged() throws Exception {
         final List<Object> parameters = new ArrayList<>();
         parameters.add(allTestsStartTime);
         parameters.add("%KEYRECOVERY%");
-        List<? extends AuditLogEntry> auditLogsGenerated = 
-                ejbcaAuditorSession.selectAuditLog(internalAdmin, DEVICE_NAME, 0, 1000, 
+        List<? extends AuditLogEntry> auditLogsGenerated =
+                ejbcaAuditorSession.selectAuditLog(internalAdmin, DEVICE_NAME, 0, 1000,
                         "a.timeStamp > ?1" +
                         " and a.eventType LIKE ?2", null, parameters);
-        
-        boolean foundPii = false; 
+
+        boolean foundPii = false;
         StringBuilder matchString = new StringBuilder();
         for(AuditLogEntry x: auditLogsGenerated) {
             String auditLogEntry = getAsString(x.getMapAdditionalDetails()).toLowerCase();
@@ -246,8 +246,8 @@ public class KeyRecoverySystemTest extends CaTestCase {
                 if (!endEntityManagementSession.existsUser(userrsa)) {
                     keypair1 = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
                     final EndEntityInformation ee = new EndEntityInformation(userrsa, "CN=TESTKEYRECRSA" + new Random().nextLong(), getTestCAId(), "rfc822name=" + TEST_EMAIL, TEST_EMAIL,
-                            EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
-                            SecConst.TOKEN_SOFT_P12, null);
+                            EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                            EndEntityConstants.TOKEN_SOFT_P12, null);
                     ee.setPassword("foo123");
                     endEntityManagementSession.addUser(internalAdmin, ee, false);
                     cert1 = (X509Certificate) signSession.createCertificate(internalAdmin, userrsa, "foo123", new PublicKeyWrapper(keypair1.getPublic()));
@@ -257,7 +257,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
                 log.error("Exception generating keys/cert: ", e);
                 fail("Exception generating keys/cert");
             }
-            // Save the keys as key recovery data in the database 
+            // Save the keys as key recovery data in the database
             assertTrue("Key recovery data already exists in database.", keyRecoverySession.addKeyRecoveryData(internalAdmin, EJBTools.wrap(cert1), user, EJBTools.wrap(keypair1)));
             assertTrue("Couldn't save keys in database", keyRecoverySession.existsKeys(EJBTools.wrap(cert1)));
             assertFalse("User should not be marked for recovery in database", keyRecoverySession.isUserMarked(user));
@@ -287,7 +287,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
         //Create a new CA with a EC crypto token
         final String caName = TEST_CA_NAME_PREFIX + "RSA_OAEP";
         final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, "foo123".toCharArray(), true, false, caName, "RSA1024", "RSA1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
-        
+
         CAToken caToken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         X509CAInfo caInfo = X509CAInfo.getDefaultX509CAInfo("CN="+caName, caName, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d",
                 CAInfo.SELFSIGNED, null, caToken);
@@ -312,7 +312,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
                     final EndEntityInformation ee = new EndEntityInformation(username, "CN="+username, caInfo.getCAId(),
                             "rfc822name=" + TEST_EMAIL, TEST_EMAIL, EndEntityTypes.ENDUSER.toEndEntityType(),
                             EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                            SecConst.TOKEN_SOFT_P12, null);
+                            EndEntityConstants.TOKEN_SOFT_P12, null);
                     ee.setPassword("foo123");
                     endEntityManagementSession.addUser(internalAdmin, ee, false);
                     endEntityCertificate = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123",
@@ -363,8 +363,8 @@ public class KeyRecoverySystemTest extends CaTestCase {
                 if (!endEntityManagementSession.existsUser(userec)) {
                     keypair1 = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
                     final EndEntityInformation ee = new EndEntityInformation(userec, "CN=TESTKEYRECEC" + new Random().nextLong(), getTestCAId(), "rfc822name=" + TEST_EMAIL, TEST_EMAIL,
-                            EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
-                            SecConst.TOKEN_SOFT_P12, null);
+                            EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                            EndEntityConstants.TOKEN_SOFT_P12, null);
                     ee.setPassword("foo123");
                     endEntityManagementSession.addUser(internalAdmin, ee, false);
                     cert1 = (X509Certificate) signSession.createCertificate(internalAdmin, userec, "foo123", new PublicKeyWrapper(keypair1.getPublic()));
@@ -374,7 +374,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
                 log.error("Exception generating keys/cert: ", e);
                 fail("Exception generating keys/cert");
             }
-            // Save the keys as key recovery data in the database 
+            // Save the keys as key recovery data in the database
             assertTrue("Key recovery data already exists in database.", keyRecoverySession.addKeyRecoveryData(internalAdmin, EJBTools.wrap(cert1), user, EJBTools.wrap(keypair1)));
             assertTrue("Couldn't save keys in database", keyRecoverySession.existsKeys(EJBTools.wrap(cert1)));
             assertFalse("User should not be marked for recovery in database", keyRecoverySession.isUserMarked(user));
@@ -394,9 +394,9 @@ public class KeyRecoverySystemTest extends CaTestCase {
         }
         log.trace("<testAddAndRemoveKeyPairEC()");
     }
-    
+
     /**
-     * Test key archival with ECCDH, using a non-covariant curve, which should fail. 
+     * Test key archival with ECCDH, using a non-covariant curve, which should fail.
      */
     @Test
     public void testECCDHNonCovariant() throws Exception {
@@ -418,7 +418,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
         }
         X509Certificate endEntityCertificate = null;
         String certificateFingerprint = null;
-        final String username = "testAddAndRemoveKeyPairECEncryptWithECCDH";      
+        final String username = "testAddAndRemoveKeyPairECEncryptWithECCDH";
         try {
           KeyPair endEntityKeypair = null;
             try {
@@ -427,7 +427,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
                     final EndEntityInformation ee = new EndEntityInformation(username, "CN="+username, caInfo.getCAId(),
                             "rfc822name=" + TEST_EMAIL, TEST_EMAIL, EndEntityTypes.ENDUSER.toEndEntityType(),
                             EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                            SecConst.TOKEN_SOFT_P12, null);
+                            EndEntityConstants.TOKEN_SOFT_P12, null);
                     ee.setPassword("foo123");
                     endEntityManagementSession.addUser(internalAdmin, ee, false);
                     endEntityCertificate = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123",
@@ -437,11 +437,11 @@ public class KeyRecoverySystemTest extends CaTestCase {
             } catch (Exception e) {
                 log.error("Exception generating keys/cert: ", e);
                 fail("Exception generating keys/cert");
-            }    
-            // Save the keys as key recovery data in the database 
+            }
+            // Save the keys as key recovery data in the database
             assertFalse("Operation should have failed due to incorrect curve.",
                     keyRecoverySession.addKeyRecoveryData(internalAdmin, EJBTools.wrap(endEntityCertificate), username, EJBTools.wrap(endEntityKeypair)));
-            
+
         } finally {
             // Only clean up left.
             if (endEntityCertificate != null) {
@@ -453,10 +453,10 @@ public class KeyRecoverySystemTest extends CaTestCase {
             CaTestUtils.removeCa(internalAdmin, caName, caName);
         }
     }
-    
-    
+
+
     /**
-     * Tests adding a EC keypair and checks if it can be read again, but on a CA running EC keys 
+     * Tests adding a EC keypair and checks if it can be read again, but on a CA running EC keys
      */
     @Test
     public void testAddAndRemoveKeyPairECEncryptWithECCDH() throws Exception {
@@ -477,7 +477,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
         }
         X509Certificate endEntityCertificate = null;
         String certificateFingerprint = null;
-        final String username = "testAddAndRemoveKeyPairECEncryptWithECCDH";      
+        final String username = "testAddAndRemoveKeyPairECEncryptWithECCDH";
         try {
           KeyPair endEntityKeypair = null;
             try {
@@ -486,7 +486,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
                     final EndEntityInformation ee = new EndEntityInformation(username, "CN="+username, caInfo.getCAId(),
                             "rfc822name=" + TEST_EMAIL, TEST_EMAIL, EndEntityTypes.ENDUSER.toEndEntityType(),
                             EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                            SecConst.TOKEN_SOFT_P12, null);
+                            EndEntityConstants.TOKEN_SOFT_P12, null);
                     ee.setPassword("foo123");
                     endEntityManagementSession.addUser(internalAdmin, ee, false);
                     endEntityCertificate = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123",
@@ -496,8 +496,8 @@ public class KeyRecoverySystemTest extends CaTestCase {
             } catch (Exception e) {
                 log.error("Exception generating keys/cert: ", e);
                 fail("Exception generating keys/cert");
-            }    
-            // Save the keys as key recovery data in the database 
+            }
+            // Save the keys as key recovery data in the database
             assertTrue("Key recovery data could not be added to database.",
                     keyRecoverySession.addKeyRecoveryData(internalAdmin, EJBTools.wrap(endEntityCertificate), username, EJBTools.wrap(endEntityKeypair)));
             assertTrue("Couldn't save keys in database", keyRecoverySession.existsKeys(EJBTools.wrap(endEntityCertificate)));
@@ -508,7 +508,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
             KeyRecoveryInformation data = keyRecoverySession.recoverKeys(internalAdmin, username, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
             assertNotNull("Couldn't recover keys from database", data);
             assertTrue("Couldn't recover keys from database",
-                    Arrays.equals(data.getKeyPair().getPrivate().getEncoded(), endEntityKeypair.getPrivate().getEncoded()));                   
+                    Arrays.equals(data.getKeyPair().getPrivate().getEncoded(), endEntityKeypair.getPrivate().getEncoded()));
         } finally {
             // Only clean up left.
             if (endEntityCertificate != null) {
@@ -537,8 +537,8 @@ public class KeyRecoverySystemTest extends CaTestCase {
                 if (!endEntityManagementSession.existsUser(userec)) {
                     keypair1 = KeyTools.genKeys("Ed25519", AlgorithmConstants.KEYALGORITHM_ED25519);
                     final EndEntityInformation ee = new EndEntityInformation(userec, "CN=TESTKEYRECED25519" + new Random().nextLong(), getTestCAId(), "rfc822name=" + TEST_EMAIL, TEST_EMAIL,
-                            EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
-                            SecConst.TOKEN_SOFT_P12, null);
+                            EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                            EndEntityConstants.TOKEN_SOFT_P12, null);
                     ee.setPassword("foo123");
                     endEntityManagementSession.addUser(internalAdmin, ee, false);
                     cert1 = (X509Certificate) signSession.createCertificate(internalAdmin, userec, "foo123", new PublicKeyWrapper(keypair1.getPublic()));
@@ -548,7 +548,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
                 log.error("Exception generating keys/cert: ", e);
                 fail("Exception generating keys/cert");
             }
-            // Save the keys as key recovery data in the database 
+            // Save the keys as key recovery data in the database
             assertTrue("Key recovery data already exists in database.", keyRecoverySession.addKeyRecoveryData(internalAdmin, EJBTools.wrap(cert1), user, EJBTools.wrap(keypair1)));
             assertTrue("Couldn't save keys in database", keyRecoverySession.existsKeys(EJBTools.wrap(cert1)));
             assertFalse("User should not be marked for recovery in database", keyRecoverySession.isUserMarked(user));
@@ -586,8 +586,8 @@ public class KeyRecoverySystemTest extends CaTestCase {
                 if (!endEntityManagementSession.existsUser(user)) {
                     keypair1 = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
                     final EndEntityInformation ee = new EndEntityInformation(user, "CN=TESTKEYREC" + new Random().nextLong(), getTestCAId(), "rfc822name=" + TEST_EMAIL, TEST_EMAIL,
-                            EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
-                            SecConst.TOKEN_SOFT_P12, null);
+                            EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                            EndEntityConstants.TOKEN_SOFT_P12, null);
                     ee.setPassword("foo123");
                     endEntityManagementSession.addUser(internalAdmin, ee, false);
                     cert1 = (X509Certificate) signSession.createCertificate(internalAdmin, user, "foo123", new PublicKeyWrapper(keypair1.getPublic()));
@@ -599,7 +599,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
             }
             assertTrue("Key recovery data already exists in database.", keyRecoverySession.addKeyRecoveryData(internalAdmin, EJBTools.wrap(cert1), user, EJBTools.wrap(keypair1)));
             assertTrue("Couldn't save keys in database", keyRecoverySession.existsKeys(EJBTools.wrap(cert1)));
-            // Try again, now it exists and should return 
+            // Try again, now it exists and should return
             assertFalse("Key recovery data already exists in database, but adding return true instead of false.", keyRecoverySession.addKeyRecoveryData(internalAdmin, EJBTools.wrap(cert1), user, EJBTools.wrap(keypair1)));
             log.trace("<test01AddKeyPair()");
             log.trace(">test02MarkAndRecoverKeyPair()");
@@ -611,9 +611,9 @@ public class KeyRecoverySystemTest extends CaTestCase {
             assertTrue("Couldn't recover keys from database",
                     Arrays.equals(data.getKeyPair().getPrivate().getEncoded(), keypair1.getPrivate().getEncoded()));
             log.trace("<test02MarkAndRecoverKeyPair()");
-            
+
             log.trace(">test03KeyEncryptKeyRollOver()");
-            // So we have successfully stored and retrieved key recovery data for a user. 
+            // So we have successfully stored and retrieved key recovery data for a user.
             // Lets move on to something more advanced, changing the CAs keys used to protect the key recovery data
             // Generate a new key on CA crypto token
             final CAInfo cainfo = caSession.getCAInfo(internalAdmin, getTestCAId());
@@ -642,7 +642,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
             assertTrue("Couldn't recover keys from database",
                     Arrays.equals(data.getKeyPair().getPrivate().getEncoded(), keypair1.getPrivate().getEncoded()));
             keyRecoverySession.unmarkUser(admin, user);
-            // Recover the new key pair 
+            // Recover the new key pair
             endEntityManagementSession.prepareForKeyRecovery(internalAdmin, user, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, cert2);
             assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(user));
             data = keyRecoverySession.recoverKeys(admin, user, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
@@ -680,22 +680,23 @@ public class KeyRecoverySystemTest extends CaTestCase {
             internalCertStoreSession.removeCertificate(fp2);
             endEntityManagementSession.deleteUser(internalAdmin, user);
         }
-        log.trace("<testAddAndRemoveKeyPairWithKeyRollOver()");            
+        log.trace("<testAddAndRemoveKeyPairWithKeyRollOver()");
     }
-    
+
     /**
      * Tests the authorization rights required to mark an end entity for key recovery. Proper rights should be:
-     * 
+     *
      * /ra_functionality/keyrecovery
      * /endentityprofilesrules/<x>/keyrecovery
      * /ca/<y>
-     * 
-     * where <x> is the EEP for the end entity, and <y> is the CA ID for the issuing CA. 
-     * @throws CADoesntExistsException 
+     *
+     * where <x> is the EEP for the end entity, and <y> is the CA ID for the issuing CA.
+     * @throws CADoesntExistsException
+     * @throws CertificateCreateException 
      */
     @Test
     public void testAuthorizationForKeyRecovery()
-            throws ApprovalException, WaitingForApprovalException, AuthorizationDeniedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException, CADoesntExistsException {
+            throws ApprovalException, WaitingForApprovalException, AuthorizationDeniedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException, CADoesntExistsException, CertificateCreateException {
         X509Certificate cert1 = null;
         String fp1 = null;
         KeyPair keypair1 = null;
@@ -704,8 +705,8 @@ public class KeyRecoverySystemTest extends CaTestCase {
                 try {
                     keypair1 = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
                     final EndEntityInformation ee = new EndEntityInformation(user, "CN=TESTKEYREC" + new Random().nextLong(), getTestCAId(), "rfc822name=" + TEST_EMAIL, TEST_EMAIL,
-                            EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
-                            SecConst.TOKEN_SOFT_P12, null);
+                            EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                            EndEntityConstants.TOKEN_SOFT_P12, null);
                     ee.setPassword("foo123");
                     endEntityManagementSession.addUser(internalAdmin, ee, false);
                     cert1 = (X509Certificate) signSession.createCertificate(internalAdmin, user, "foo123",
@@ -741,7 +742,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
         }
 
     }
-    
+
     /**
      * Test that uses CertificateRequestSession for key recovery.
      * During the test the end-entity CA is changed, which should not cause any problems.
@@ -760,9 +761,9 @@ public class KeyRecoverySystemTest extends CaTestCase {
             createTestCA(TESTCA2);
             final int caId1 = caSession.getCAInfo(internalAdmin, TESTCA1).getCAId();
             final int caId2 = caSession.getCAInfo(internalAdmin, TESTCA2).getCAId();
-            
+
             // Create a new end-entity profile with key recovery enabled with the "reuse old certificate" option
-            final Collection<Integer> availcas = new ArrayList<Integer>();
+            final Collection<Integer> availcas = new ArrayList<>();
             availcas.add(caId1);
             availcas.add(caId2);
             final EndEntityProfile eeprofile = new EndEntityProfile();
@@ -771,41 +772,57 @@ public class KeyRecoverySystemTest extends CaTestCase {
             eeprofile.setAvailableCAs(availcas);
             endEntityProfileSession.addEndEntityProfile(internalAdmin, KEYRECOVERY_EEP, eeprofile);
             final int eeProfileId = endEntityProfileSession.getEndEntityProfileId(KEYRECOVERY_EEP);
-            
+
             // Create an end entity which is initially using CA 1
             EndEntityInformation eeinfo = new EndEntityInformation(testuser, "CN=TEST_KEYREC_CACHANGE" + new Random().nextLong(),
                     caId1, "", null, EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
                     eeProfileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+                    new Date(), new Date(), EndEntityConstants.TOKEN_SOFT_P12, null);
             eeinfo.setPassword("foo123");
             endEntityManagementSession.addUser(internalAdmin, eeinfo, false);
             endEntityManagementSession.setPassword(internalAdmin, testuser, "foo123");
-            
+
             // Issue a certificate + keystore
             eeinfo = eeAccessSession.findUser(internalAdmin, testuser);
             assertNotNull("Could not find test user", testuser);
             eeinfo.setPassword("foo123");
-            final byte[] ks1 = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, testuser, "foo123", caId1, "1024", AlgorithmConstants.KEYALGORITHM_RSA, SecConst.TOKEN_SOFT_P12, false, true, eeprofile.getReUseKeyRecoveredCertificate(), eeProfileId);
+            final byte[] ks1 = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, testuser, "foo123", caId1, "1024", AlgorithmConstants.KEYALGORITHM_RSA, EndEntityConstants.TOKEN_SOFT_P12, false, true, eeprofile.getReUseKeyRecoveredCertificate(), eeProfileId);
             KeyStore keystore1 = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
             keystore1.load(new ByteArrayInputStream(ks1), "foo123".toCharArray());
+            // Verify that keystore returned from server has definite length encoding
+            ByteArrayInputStream in1 = new ByteArrayInputStream(ks1);
+            try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(in1)) {
+                while (ildStream.readValue() != null) {
+                    ;
+                }
+                assertFalse("ks.store() with PKCS12StoreParameter(true) is expected to not have indefinitlength encoding", ildStream.isIndefiniteLength());
+            }
             usercert = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(testuser)).get(0);
             fp1 = CertTools.getFingerprintAsString(usercert);
             assertNotNull("Could not find user's certificate in keystore", keystore1.getCertificateAlias(usercert));
-            
+
             // Now change the CA of the end-entity the CA 2
             eeinfo = eeAccessSession.findUser(internalAdmin, testuser);
             assertNotNull("Could not find test user", testuser);
             eeinfo.setCAId(caId2);
             endEntityManagementSession.changeUser(internalAdmin, eeinfo, false);
             endEntityManagementSession.setPassword(internalAdmin, testuser, "foo123");
-            
+
             // Now try to perform key recovery
             assertTrue("markAsRecoverable failed",endEntityManagementSession.prepareForKeyRecovery(internalAdmin, testuser, eeProfileId, usercert));
-            final byte[] ks2 = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, testuser, "foo123", caId2, "1024", AlgorithmConstants.KEYALGORITHM_RSA, SecConst.TOKEN_SOFT_P12, true, false, eeprofile.getReUseKeyRecoveredCertificate(), eeProfileId);
+            final byte[] ks2 = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, testuser, "foo123", caId2, "1024", AlgorithmConstants.KEYALGORITHM_RSA, EndEntityConstants.TOKEN_SOFT_P12, true, false, eeprofile.getReUseKeyRecoveredCertificate(), eeProfileId);
             KeyStore keystore2 = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
             keystore2.load(new ByteArrayInputStream(ks2), "foo123".toCharArray());
+            // Verify that keystore returned from server has definite length encoding
+            ByteArrayInputStream in2 = new ByteArrayInputStream(ks2);
+            try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(in2)) {
+                while (ildStream.readValue() != null) {
+                    ;
+                }
+                assertFalse("ks.store() with PKCS12StoreParameter(true) is expected to not have indefinitlength encoding", ildStream.isIndefiniteLength());
+            }
             assertFalse("Users should have been unmarked for key recovery", keyRecoverySession.isUserMarked(testuser));
-            
+
             // Certificate should not have changed
             assertNotNull("Could not find user's certificate in key-recovered keystore", keystore2.getCertificateAlias(usercert));
         } finally {
@@ -825,7 +842,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
             log.trace("<testRecoveryWithChangedCA");
         }
     }
-    
+
     private int setUpKeyRecoveryTest(final String testCaName, final String username, final String password, final String endEntityProfileName)
             throws CADoesntExistsException, CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
             AuthorizationDeniedException, EndEntityExistsException, IllegalNameException, CustomFieldException, ApprovalException,
@@ -834,7 +851,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
         createTestCA(testCaName);
         final int caId = caSession.getCAInfo(internalAdmin, testCaName).getCAId();
         // Create a new end-entity profile with key recovery enabled with the "reuse old certificate" option
-        Collection<Integer> availcas = new ArrayList<Integer>();
+        Collection<Integer> availcas = new ArrayList<>();
         availcas.add(caId);
         final EndEntityProfile eeprofile = new EndEntityProfile();
         eeprofile.setUse(EndEntityProfile.KEYRECOVERABLE, 0, true);
@@ -842,22 +859,22 @@ public class KeyRecoverySystemTest extends CaTestCase {
         eeprofile.setAvailableCAs(availcas);
         endEntityProfileSession.addEndEntityProfile(internalAdmin, endEntityProfileName, eeprofile);
         final int eeProfileId = endEntityProfileSession.getEndEntityProfileId(endEntityProfileName);
-        
+
         // Create an end entity.
         EndEntityInformation eeinfo = new EndEntityInformation(username, "CN=" + username,
                 caId, "", null, EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
                 eeProfileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+                new Date(), new Date(), EndEntityConstants.TOKEN_SOFT_P12, null);
         eeinfo.setPassword(password);
         eeinfo.setKeyRecoverable(true);
         endEntityManagementSession.addUser(internalAdmin, eeinfo, false);
         return eeProfileId;
     }
-    
+
     /**
      * Tests generation or recovery of keystores for an existing user.
-     * @throws CouldNotRemoveEndEntityException 
-     * @throws NoSuchEndEntityException 
+     * @throws CouldNotRemoveEndEntityException
+     * @throws NoSuchEndEntityException
      */
     @Test
     public void testGenerateOrRecoverKeystore() throws AuthorizationDeniedException, CADoesntExistsException, CAExistsException,
@@ -877,7 +894,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
             setGlobalConfigurationEnableKeyRecovery(true);
 
             int eeProfileId = setUpKeyRecoveryTest(testCaName, username, password, eeProfileName);
-            
+
             // 1. Create or recover keystores.
             // 1.1 Create new keystore and issue a certificate.
             EndEntityInformation eeinfo = eeAccessSession.findUser(internalAdmin, username);
@@ -889,10 +906,10 @@ public class KeyRecoverySystemTest extends CaTestCase {
             usercert = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username)).get(0);
             fingerprint = CertTools.getFingerprintAsString(usercert);
             assertNotNull("Could not find user's certificate in keystore", keystore.getCertificateAlias(usercert));
-            
+
             // 1.2 Recover keystore and certificate.
             eeinfo = eeAccessSession.findUser(internalAdmin, username);
-            
+
             assertTrue("markAsRecoverable failed",endEntityManagementSession.prepareForKeyRecovery(internalAdmin, username, eeProfileId, usercert));
             // Generate keystore.
             keystoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, username, password, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -901,7 +918,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
             assertFalse("Users should have been unmarked for key recovery", keyRecoverySession.isUserMarked(username));
             // Certificate should not have changed
             assertNotNull("Could not find user's certificate in key-recovered keystore", keystore.getCertificateAlias(usercert));
-            
+
             // 1.3 Recover keystore and issue new certificate.
             eeinfo = eeAccessSession.findUser(internalAdmin, username);
             endEntityManagementSession.setPassword(internalAdmin, username, password);
@@ -918,7 +935,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
             assertFalse("Users should have been unmarked for key recovery", keyRecoverySession.isUserMarked(username));
             // Certificate should not have changed
             assertNull("Could not find user's certificate in key-recovered keystore", keystore.getCertificateAlias(usercert));
-            
+
         } finally {
             setGlobalConfigurationEnableKeyRecovery(false);
             if (usercert != null) {
@@ -952,7 +969,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
         try {
             setGlobalConfigurationEnableKeyRecovery(true);
             setUpKeyRecoveryTest(testCaName, username, password, eeProfileName);
-            
+
             final String notExistingUsername = username + "_NOT_EXISTS";
             assertFalse("This user should not exists: " + notExistingUsername, endEntityManagementSession.existsUser(notExistingUsername));
             keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, username + notExistingUsername, password, "1024",
@@ -975,7 +992,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
             log.trace("<testGenerateOrRecoverKeystore");
         }
     }
-    
+
     @Test(expected = AuthLoginException.class)
     public void testEndEntityWrongPassword()
             throws EndEntityExistsException, CADoesntExistsException, IllegalNameException, CertificateSerialNumberException,
@@ -992,11 +1009,11 @@ public class KeyRecoverySystemTest extends CaTestCase {
             setGlobalConfigurationEnableKeyRecovery(true);
 
             setUpKeyRecoveryTest(testCaName, username, password, eeProfileName);
-            
+
             keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, username, password + "_not_exists", "1024",
                     AlgorithmConstants.KEYALGORITHM_RSA);
             fail("Requesting a key recovery for a wrong user/password combination should throw an exception.");
-   
+
         } finally {
             setGlobalConfigurationEnableKeyRecovery(false);
             if (usercert != null) {
@@ -1014,8 +1031,8 @@ public class KeyRecoverySystemTest extends CaTestCase {
             log.trace("<testGenerateOrRecoverKeystore");
         }
     }
-    
-    
+
+
     @Test(expected = AuthorizationDeniedException.class)
     public void testUnauthorized()
             throws EndEntityExistsException, CADoesntExistsException, IllegalNameException, CertificateSerialNumberException,
@@ -1032,10 +1049,10 @@ public class KeyRecoverySystemTest extends CaTestCase {
             setGlobalConfigurationEnableKeyRecovery(true);
 
             setUpKeyRecoveryTest(testCaName, username, password, eeProfileName);
-            
+
             keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(admin, username, password, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
             fail("Requesting a key recovery for a CA with no authorization should throw an exception.");
-            
+
         } finally {
             setGlobalConfigurationEnableKeyRecovery(false);
             if (usercert != null) {
@@ -1053,7 +1070,7 @@ public class KeyRecoverySystemTest extends CaTestCase {
             log.trace("<testGenerateOrRecoverKeystore");
         }
     }
-    
+
     private void setGlobalConfigurationEnableKeyRecovery(final boolean enabled) throws AuthorizationDeniedException {
         final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         globalConfig.setEnableKeyRecovery(enabled);

@@ -99,6 +99,7 @@ import org.junit.Test;
 import com.keyfactor.CesecoreException;
 import com.keyfactor.ErrorCode;
 import com.keyfactor.util.Base64;
+import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.CertificateWrapper;
@@ -297,8 +298,7 @@ public class CertificateCreateSessionSystemTest extends RoleUsingTestCase {
                 Certificate cert = resp.getCertificate();
                 finger1 = CertTools.getFingerprintAsString(cert);
                 assertNotNull("Failed to create certificate", cert);
-                //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-                assertEquals("CN=dnoverride,SN=123456,SURNAME=surname,O=AnaTom,C=SE", ((X509Certificate) cert).getSubjectDN().toString());
+                assertEquals("CN=dnoverride,SN=123456,SURNAME=surname,O=AnaTom,C=SE", CertTools.getSubjectDN(cert));
             }
             // Make the call again, now allowing DN override
             certprof.setAllowDNOverride(true);
@@ -306,11 +306,10 @@ public class CertificateCreateSessionSystemTest extends RoleUsingTestCase {
             X509ResponseMessage resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,
                     org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
             assertNotNull("Failed to get response", resp);
-            Certificate cert = resp.getCertificate();
+            X509Certificate cert = (X509Certificate) resp.getCertificate();
             finger2 = CertTools.getFingerprintAsString(cert);
             assertNotNull("Failed to create certificate", cert);
-            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-            assertEquals("C=SE,O=PrimeKey,SN=123456,SURNAME=surname,CN=noUserData", ((X509Certificate) cert).getSubjectDN().toString());
+            assertEquals("C=SE,O=PrimeKey,SN=123456,SURNAME=surname,CN=noUserData", X500Name.getInstance(CeSecoreNameStyle.INSTANCE,  cert.getSubjectX500Principal().getEncoded()).toString());
             // Test reversing DN, should make no difference since we override with requestDN
             certprof.setUseLdapDnOrder(false);
             certProfileSession.changeCertificateProfile(roleMgmgToken, "createCertTest", certprof);
@@ -318,10 +317,10 @@ public class CertificateCreateSessionSystemTest extends RoleUsingTestCase {
             resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,
                     org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
             assertNotNull("Failed to get response", resp);
-            cert = resp.getCertificate();
+            cert = (X509Certificate) resp.getCertificate();
             finger3 = CertTools.getFingerprintAsString(cert);
             assertNotNull("Failed to create certificate", cert);
-            assertEquals("C=SE,O=PrimeKey,SN=123456,SURNAME=surname,CN=noUserData", ((X509Certificate) cert).getSubjectDN().toString());
+            assertEquals("C=SE,O=PrimeKey,SN=123456,SURNAME=surname,CN=noUserData", X500Name.getInstance(CeSecoreNameStyle.INSTANCE,  cert.getSubjectX500Principal().getEncoded()).toString());
         } finally {
             certProfileSession.removeCertificateProfile(roleMgmgToken, "createCertTest");
             internalCertStoreSession.removeCertificate(finger1);
@@ -882,8 +881,7 @@ public class CertificateCreateSessionSystemTest extends RoleUsingTestCase {
                         X509ResponseMessage.class, signSession.fetchCertGenParams());
                 X509Certificate cert = (X509Certificate) resp.getCertificate();
                 fp1 = CertTools.getFingerprintAsString(cert);
-                //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-                assertEquals(failMessage, strippedSubjectDN1, cert.getSubjectDN().toString());
+                assertEquals(failMessage, strippedSubjectDN1, X500Name.getInstance(CeSecoreNameStyle.INSTANCE,  cert.getSubjectX500Principal().getEncoded()).toString());
             } catch (IllegalNameException e) {
                 // NOPMD: This is correct and we ignore it 
             }
@@ -967,8 +965,7 @@ public class CertificateCreateSessionSystemTest extends RoleUsingTestCase {
                     X509ResponseMessage.class, signSession.fetchCertGenParams());
             X509Certificate cert = (X509Certificate) resp.getCertificate();
             fp1 = CertTools.getFingerprintAsString(cert);
-            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-            assertEquals("The DN should have escaped < and >", "CN=\\<script\\>alert('cesecore')\\</script\\>", cert.getSubjectDN().toString());
+            assertEquals("The DN should have escaped < and >", "CN=\\<script\\>alert('cesecore')\\</script\\>", cert.getSubjectX500Principal().getName());
         } finally {
             certProfileSession.removeCertificateProfile(roleMgmgToken, "createCertTest");
             internalCertStoreSession.removeCertificate(fp1);

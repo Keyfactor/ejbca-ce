@@ -222,13 +222,11 @@ public class StartupSingletonBean {
         CryptoProviderTools.removeBCProvider();
         CryptoProviderTools.installBCProvider();
 
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        
         // Register forbidden characters
-        // Using 'instance().getString' instead of 'getString' since an empty String (size 0) must be returned when the property is defined without any value.
-        final String forbiddenCharacters = ConfigurationHolder.instance().getString("forbidden.characters");
-        if (forbiddenCharacters != null) {
-            StringConfigurationCache.INSTANCE.setForbiddenCharacters(forbiddenCharacters.toCharArray());
-        }
-
+        StringConfigurationCache.INSTANCE.setForbiddenCharacters(globalCesecoreConfiguration.getForbiddenCharacters());
+        
         //Register password encryption count
         final String encryptionCount = ConfigurationHolder.getString("password.encryption.count");
         if (StringUtils.isNumeric(encryptionCount)) {
@@ -448,9 +446,9 @@ public class StartupSingletonBean {
                     // create method ProtectedDataConfiguration.getKeyId(String)
                     Method getKeyId = c.getMethod("getKeyId", String.class);
                     // create method ProtectedDataConfiguration.getProtectVersion(int)
-                    Method getProtectVersion = c.getMethod("getProtectVersion", Integer.TYPE);
+                    Method getProtectVersion = c.getMethod("getProtectVersion", Integer.class);
                     // create method ProtectedDataConfiguration.getKeyLabel(int)
-                    Method getKeyLabel = c.getMethod("getKeyLabel", Integer.TYPE);
+                    Method getKeyLabel = c.getMethod("getKeyLabel", Integer.class);
                     // Call ProtectedDataConfiguration.instance().getKeyId
                     final String auditTableName = AuditRecordData.class.getSimpleName();
                     final Integer keyid = (Integer)getKeyId.invoke(config, auditTableName);

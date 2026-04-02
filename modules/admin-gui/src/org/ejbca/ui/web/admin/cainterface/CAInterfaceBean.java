@@ -35,11 +35,6 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import jakarta.ejb.EJBException;
-import jakarta.faces.context.FacesContext;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
@@ -110,6 +105,11 @@ import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.cert.OID;
 
+import jakarta.ejb.EJBException;
+import jakarta.faces.context.FacesContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+
 /**
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  * <p>
@@ -139,7 +139,7 @@ public class CAInterfaceBean implements Serializable {
     /** The certification request in binary format */
     private byte[] request;
     private Certificate processedcert;
-    
+
     /** Creates a new instance of CaInterfaceBean */
     public CAInterfaceBean() { }
 
@@ -354,7 +354,6 @@ public class CAInterfaceBean implements Serializable {
         }
 
         boolean illegaldnoraltname = false;
-
         final List<String> keyPairAliases = getCryptoTokenManagementSession().getKeyPairAliases(getAuthenticationToken(), cryptoTokenId);
         if (!keyPairAliases.contains(caInfoDto.getCryptoTokenDefaultKey())) {
             log.info(getAuthenticationToken().toString() + " attempted to createa a CA with a non-existing defaultKey alias: " + caInfoDto.getCryptoTokenDefaultKey());
@@ -362,7 +361,8 @@ public class CAInterfaceBean implements Serializable {
         }
         final String[] suppliedAliases = {caInfoDto.getCryptoTokenCertSignKey(), caInfoDto.getCryptoTokenAlternativeCertSignKey(), caInfoDto.getCryptoTokenCertSignKey(), caInfoDto.getSelectedKeyEncryptKey(), caInfoDto.getTestKey()};
         for (final String currentSuppliedAlias : suppliedAliases) {
-            if (currentSuppliedAlias.length()>0 && !keyPairAliases.contains(currentSuppliedAlias)) {
+            if (currentSuppliedAlias.length()>0 && !keyPairAliases.contains(currentSuppliedAlias) 
+                    && !currentSuppliedAlias.equals(CATokenConstants.CAKEY_ANY_PURPOSE_NONE_INDICATOR)) {
                 log.info(getAuthenticationToken().toString() + " attempted to create a CA with a non-existing key alias: "+currentSuppliedAlias);
                 throw new IllegalStateException("Invalid key alias!");
             }
@@ -381,7 +381,7 @@ public class CAInterfaceBean implements Serializable {
         if (caInfoDto.getTestKey().length() > 0) {
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, caInfoDto.getTestKey());
         }
-        //Hybrid certs only implemented for X509
+        //Chimera/Catalyst certs only implemented for X509
         if (caInfoDto.isCaTypeX509()) {
             if (!StringUtils.isEmpty(caInfoDto.getCryptoTokenAlternativeCertSignKey())) {
                 caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_ALTERNATIVE_CERTSIGN_STRING,
@@ -390,7 +390,7 @@ public class CAInterfaceBean implements Serializable {
 
         }
         final CAToken caToken = new CAToken(cryptoTokenId, caTokenProperties);
-        //Hybrid certs only implemented for X509
+        //Chimera/Catalyst certs only implemented for X509
         if (caInfoDto.isCaTypeX509()) {
             if (!StringUtils.isEmpty(caInfoDto.getAlternativeSignatureAlgorithmParam())) {
                 caToken.setAlternativeSignatureAlgorithm(caInfoDto.getAlternativeSignatureAlgorithmParam());
@@ -402,9 +402,13 @@ public class CAInterfaceBean implements Serializable {
             throw new InvalidAlgorithmException("No signature algorithm supplied!");
         }
         caToken.setSignatureAlgorithm(caInfoDto.getSignatureAlgorithmParam());
-        PublicKey encryptionKey = getCryptoTokenManagementSession().getCryptoToken(cryptoTokenId).getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
-        caToken.setEncryptionAlgorithm(AlgorithmTools.getEncSigAlgFromSigAlg(caInfoDto.getSignatureAlgorithmParam(), encryptionKey));
-
+        if (caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT)!=null) {
+            PublicKey encryptionKey = getCryptoTokenManagementSession().getCryptoToken(cryptoTokenId).getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
+            caToken.setEncryptionAlgorithm(AlgorithmTools.getEncSigAlgFromSigAlg(caInfoDto.getSignatureAlgorithmParam(), encryptionKey));
+        } else {
+            // for safety, there is no keyEncryptKey
+            caToken.setEncryptionAlgorithm(caInfoDto.getSignatureAlgorithmParam());
+        }
         if (caInfoDto.getKeySequenceFormatAsString() == null) {
             caToken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
         } else {
@@ -461,7 +465,7 @@ public class CAInterfaceBean implements Serializable {
                 final List<CertificatePolicy> policies = parsePolicies(caInfoDto.getPolicyId());
                 for (CertificatePolicy certificatePolicy : policies) {
                     if (!OID.isValidOid(certificatePolicy.getPolicyID())) {
-                        throw new ParameterException(getEjbcawebbean().getText("INVALIDPOLICYOID"));                                              
+                        throw new ParameterException(getEjbcawebbean().getText("INVALIDPOLICYOID"));
                     }
                 }
                 // Certificate policies from the CA and the CertificateProfile will be merged for cert creation in the CAAdminSession.createCA call
@@ -543,6 +547,7 @@ public class CAInterfaceBean implements Serializable {
                             .setDoEnforceKeyRenewal(caInfoDto.isDoEnforceKeyRenewal())
                             .setDoEnforceUniqueDistinguishedName(caInfoDto.isDoEnforceUniqueDN())
                             .setDoEnforceUniqueSubjectDNSerialnumber(caInfoDto.isDoEnforceUniqueSubjectDNSerialnumber())
+                            .setDoEnforceNameConstraints(caInfoDto.isDoEnforceNameConstraints())
                             .setUseCertReqHistory(caInfoDto.isUseCertReqHistory())
                             .setUseUserStorage(caInfoDto.isUseUserStorage())
                             .setUseCertificateStorage(caInfoDto.isUseCertificateStorage())
@@ -617,7 +622,7 @@ public class CAInterfaceBean implements Serializable {
                             caInfoDto.isUseUserStorage(),
                             caInfoDto.isUseCertificateStorage(),
                             caInfoDto.isAddCompromisedKeysToBlockList(),
-                            caInfoDto.isAcceptRevocationsNonExistingEntry());                  
+                            caInfoDto.isAcceptRevocationsNonExistingEntry());
                     if (buttonCreateCa) {
                         getCaadminsession().createCA(getAuthenticationToken(), cvccainfo);
                     } else if (buttonMakeRequest) {
@@ -719,7 +724,6 @@ public class CAInterfaceBean implements Serializable {
                                            .setExpireTime(null)
                                            .setCertificateChain(null)
                                            .setCaToken(caToken)
-                                           .setApprovals(new HashMap<>()) // Approvals not implement yet for citsca
                                            .setExtendedCAServiceInfos(extendedCaServiceInfos)
                                            .setValidators(keyValidators)
                                            .setFinishUser(caInfoDto.isFinishUser())
@@ -751,12 +755,12 @@ public class CAInterfaceBean implements Serializable {
             try {
                 byte[] certreq = null;
                 if (caInfoDto.getCaType() == CAInfo.CATYPE_CITS) {
-                    certreq = getCaadminsession().makeCitsRequest(getAuthenticationToken(), caid, 
+                    certreq = getCaadminsession().makeCitsRequest(getAuthenticationToken(), caid,
                             fileBuffer, caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN),
                             caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN),
                             caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_DEFAULT));
                 } else {
-                    certreq = getCaadminsession().makeRequest(getAuthenticationToken(), caid, 
+                    certreq = getCaadminsession().makeRequest(getAuthenticationToken(), caid,
                                        fileBuffer, caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
                 }
                 saveRequestData(certreq);
@@ -856,12 +860,30 @@ public class CAInterfaceBean implements Serializable {
     }
 
     public CAInfo createCaInfo(CaInfoDto caInfoDto, int caid, String subjectDn, Map<ApprovalRequestType, Integer> approvals,
-            String availablePublisherValues, String availableKeyValidatorValues) throws Exception {
+            String availablePublisherValues, String availableKeyValidatorValues, 
+            String caCryptoTokenKeyEncryptKey) throws Exception {
         // We need to pick up the old CAToken, so we don't overwrite with default values when we save the CA further down
         CAInfo caInfo = getCasession().getCAInfo(getAuthenticationToken(), caid);
         CAToken catoken = caInfo.getCAToken();
         if (catoken == null) {
             catoken = new CAToken(caid, new Properties());
+        }
+        final List<String> keyPairAliases = getCryptoTokenManagementSession().getKeyPairAliases(getAuthenticationToken(), catoken.getCryptoTokenId());
+        if (!keyPairAliases.contains(caInfoDto.getCryptoTokenDefaultKey())) {
+            log.info(getAuthenticationToken().toString() + " attempted to createa a CA with a non-existing defaultKey alias: " + caInfoDto.getCryptoTokenDefaultKey());
+            throw new CryptoTokenOfflineException("Invalid default key alias!");
+        }
+        final String[] suppliedAliases = {caInfoDto.getCryptoTokenCertSignKey(), caInfoDto.getCryptoTokenAlternativeCertSignKey(), caInfoDto.getCryptoTokenCertSignKey(), caInfoDto.getSelectedKeyEncryptKey(), caInfoDto.getTestKey()};
+        for (final String currentSuppliedAlias : suppliedAliases) {
+            if (currentSuppliedAlias.length()>0 && !keyPairAliases.contains(currentSuppliedAlias)
+                    && !currentSuppliedAlias.equals(CATokenConstants.CAKEY_ANY_PURPOSE_NONE_INDICATOR)) {
+                log.info(getAuthenticationToken().toString() + " attempted to create a CA with a non-existing key alias: "+currentSuppliedAlias);
+                throw new IllegalStateException("Invalid key alias!");
+            }
+        }
+        // empty for CA defaultKey
+        if (caInfoDto.getCaType() != CAInfo.CATYPE_CITS) {
+            catoken.setProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING, caCryptoTokenKeyEncryptKey);
         }
         if (caInfoDto.getKeySequenceFormatAsString() == null) {
             catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
@@ -941,10 +963,10 @@ public class CAInterfaceBean implements Serializable {
                final List<CertificatePolicy> policies = parsePolicies(caInfoDto.getPolicyId());
                for (CertificatePolicy certificatePolicy : policies) {
                    if (!OID.isValidOid(certificatePolicy.getPolicyID())) {
-                       throw new ParameterException(getEjbcawebbean().getText("INVALIDPOLICYOID"));                                              
+                       throw new ParameterException(getEjbcawebbean().getText("INVALIDPOLICYOID"));
                    }
                }
-               
+
                // No need to add the Keyrecovery extended service here, because it is only "updated" in EditCA, and there
                // is not need to update it.
                X509CAInfo.X509CAInfoBuilder x509CAInfoBuilder = new X509CAInfo.X509CAInfoBuilder()
@@ -989,6 +1011,7 @@ public class CAInterfaceBean implements Serializable {
                        .setDoEnforceKeyRenewal(caInfoDto.isDoEnforceKeyRenewal())
                        .setDoEnforceUniqueDistinguishedName(caInfoDto.isDoEnforceUniqueDN())
                        .setDoEnforceUniqueSubjectDNSerialnumber(caInfoDto.isDoEnforceUniqueSubjectDNSerialnumber())
+                       .setDoEnforceNameConstraints(caInfoDto.isDoEnforceNameConstraints())
                        .setUseCertReqHistory(caInfoDto.isUseCertReqHistory())
                        .setUseUserStorage(caInfoDto.isUseUserStorage())
                        .setUseCertificateStorage(caInfoDto.isUseCertificateStorage())
@@ -1034,7 +1057,7 @@ public class CAInterfaceBean implements Serializable {
                        caInfoDto.isUseUserStorage(),
                        caInfoDto.isUseCertificateStorage(),
                        caInfoDto.isAddCompromisedKeysToBlockList(),
-                       caInfoDto.isAcceptRevocationsNonExistingEntry(), 
+                       caInfoDto.isAcceptRevocationsNonExistingEntry(),
                        caInfoDto.getDefaultCertProfileId());
             } else if (caInfoDto.getCaType() == CAInfo.CATYPE_SSH) {
                 final int caSerialNumberOctetSize = (caInfoDto.getCaSerialNumberOctetSize() != null)
@@ -1074,7 +1097,6 @@ public class CAInterfaceBean implements Serializable {
                                                                                                    .setExpireTime(null)
                                                                                                    .setCertificateChain(null)
                                                                                                    .setCaToken(catoken)
-                                                                                                   .setApprovals(new HashMap<>()) // Approvals not implement yet for citsca
                                                                                                    .setExtendedCAServiceInfos(extendedCaServiceInfos)
                                                                                                    .setValidators(keyValidators)
                                                                                                    .setFinishUser(caInfoDto.isFinishUser())
@@ -1206,7 +1228,7 @@ public class CAInterfaceBean implements Serializable {
     public List<String> getAvailableCryptoTokenAliases(final List<KeyPairInfo> keyPairInfos, final String caSigningAlgorithm) {
         final List<String> aliases = new ArrayList<>();
         for (final KeyPairInfo cryptoTokenKeyPairInfo : keyPairInfos) {
-            if (AlgorithmTools.getKeyAlgorithmFromSigAlg(caSigningAlgorithm).equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
+            if (AlgorithmTools.getKeyAlgorithmFromSigAlg(caSigningAlgorithm).equalsIgnoreCase(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
                 aliases.add(cryptoTokenKeyPairInfo.getAlias());
             }
         }

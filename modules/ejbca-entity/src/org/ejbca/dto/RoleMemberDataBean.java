@@ -33,6 +33,7 @@ import java.util.Objects;
 @Table(name = "RoleMemberData")
 public final class RoleMemberDataBean implements Serializable, EntityManagerBean<RoleMemberData> {
 
+    private static final long serialVersionUID = 1L;
     private static ProtectedDataImpl protectedDataImpl;
 
     static {

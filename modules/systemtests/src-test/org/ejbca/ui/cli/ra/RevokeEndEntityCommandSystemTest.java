@@ -51,7 +51,6 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
@@ -122,7 +121,7 @@ public class RevokeEndEntityCommandSystemTest extends CaTestCase {
             assertFalse(eeSession.existsUser(USER_NAME));
             final EndEntityInformation userdata = new EndEntityInformation(USER_NAME, "C=SE, O=PrimeKey, CN=" + USER_NAME, caid, null, null,
                     EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), EndEntityConstants.TOKEN_SOFT_P12, null);
             userdata.setPassword("foo123");
             eeSession.addUser(admin, userdata, false);
             assertTrue(eeSession.existsUser(USER_NAME));

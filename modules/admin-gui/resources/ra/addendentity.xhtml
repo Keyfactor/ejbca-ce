@@ -36,13 +36,13 @@
 
   <h:form id="addendentity" enctype="multipart/form-data">
 
-   <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-    cellpadding="3" border="0" width="100%" rowClasses="Row1"
+   <h:panelGrid columns="2" styleClass="edit-top" width="100%" rowClasses="Row0,Row1"
     columnClasses="editColumnSystem1,editColumn2">
-    <h:outputLabel for="header_endentityprofile"
-     value="#{web.text.ENDENTITYPROFILE}"
-     style="font-weight:bold; font-size:1.2em;" />
+    <h:panelGroup/>
+    <h:panelGroup/>
 
+    <h:outputLabel for="header_endentityprofile"
+     value="#{web.text.ENDENTITYPROFILE}"/>
     <h:panelGroup id="endEntityProfile">
      <h:selectOneMenu value="#{resourceBean.selectedEeProfileId}"
       disabled="#{!resourceBean.allowedToAddEndEntity}">
@@ -54,7 +54,7 @@
 
     <h:panelGroup>
      <h:outputLabel id="userNameLabel" for="username"
-      value="#{web.text.USERNAME}" styleClass="titles" />
+      value="#{web.text.USERNAME}"  />
     </h:panelGroup>
 
     <h:panelGroup>
@@ -128,10 +128,9 @@
       id="useClearTextPasswordLabel" value="#{web.text.USEINBATCH}" />
     </h:panelGroup>
     <h:panelGroup rendered="#{resourceBean.useBatchGenerationPassword}">
-     <h:selectBooleanCheckbox id="useClearTextPassword"
+     <p:selectBooleanCheckbox id="useClearTextPassword"
       value="#{resourceBean.useClearTextPasswordStorage}"
-      disabled="#{resourceBean.clearTextPasswordRequired}" />
-     <h:outputLabel value="#{web.text.USE}" for="useClearTextPassword" />
+      disabled="#{resourceBean.clearTextPasswordRequired}" itemLabel="#{web.text.USE}" />
     </h:panelGroup>
 
     <h:panelGroup rendered="#{resourceBean.useEmail}">
@@ -165,11 +164,9 @@
 
    <!-- Subject DN Section -->
 
-   <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-    cellpadding="3" border="0" width="100%" rowClasses="Row1"
+   <h:panelGrid columns="2" styleClass="edit-top" width="100%" rowClasses="Row0, Row1"
     columnClasses="editColumnSystem1,editColumn2">
-    <h:outputLabel value="#{web.text.CERT_SUBJECTDN_ATTRIBUTES}"
-     style="font-weight:bold; font-size:1.2em;" />
+    <h:outputLabel value="#{web.text.CERT_SUBJECTDN_ATTRIBUTES}"/>
 
     <h:panelGroup />
     <c:forEach items="#{resourceBean.subjectDnFieldsAndDatas}"
@@ -223,10 +220,9 @@
 
      <h:panelGroup
       rendered="#{subjectDnFieldAndData.isEmailAndUsesEmailFieldData.left}">
-      <h:selectBooleanCheckbox id="sdnEmail"
+      <p:selectBooleanCheckbox id="sdnEmail"
        value="#{subjectDnFieldAndData.isEmailAndUsesEmailFieldData.right}"
-       disabled="#{subjectDnFieldAndData.required}" />
-      <h:outputLabel value="#{web.text.USESEMAILFIELDDATA}" />
+       disabled="#{subjectDnFieldAndData.required}" itemLabel="#{web.text.USESEMAILFIELDDATA}"/>
      </h:panelGroup>
     </c:forEach>
    </h:panelGrid>
@@ -234,12 +230,10 @@
 
    <!-- Subject Alternative Names Section -->
 
-   <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-    cellpadding="3" border="0" width="100%" rowClasses="Row1"
+   <h:panelGrid columns="2" styleClass="edit-top" width="100%" rowClasses="Row0,Row1"
     columnClasses="editColumnSystem1,editColumn2"
     rendered="#{resourceBean.profileHasSubjectAltNameFields}">
-    <h:outputLabel value="#{web.text.SUBJECTALTNAMES}"
-     style="font-weight:bold; font-size:1.2em;" />
+    <h:outputLabel value="#{web.text.SUBJECTALTNAMES}"/>
 
     <h:panelGroup />
 
@@ -253,10 +247,9 @@
 
      <h:panelGroup
       rendered="#{subjectAltNameFieldAndData.rfc822Name and subjectAltNameFieldAndData.renderDataFromRFC822CheckBox}">
-      <h:selectBooleanCheckbox id="altNameEmail"
+      <p:selectBooleanCheckbox id="altNameEmail"
        value="#{subjectAltNameFieldAndData.useDataFromRFC822NameField}"
-       disabled="#{subjectAltNameFieldAndData.required}" />
-      <h:outputLabel value="#{web.text.USESEMAILFIELDDATA}" />
+       disabled="#{subjectAltNameFieldAndData.required}" itemLabel="#{web.text.USESEMAILFIELDDATA}" />
      </h:panelGroup>
 
      <h:panelGroup
@@ -414,12 +407,10 @@
 
    <!-- Subject Directory Attributes Section -->
 
-   <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-    cellpadding="3" border="0" width="100%" rowClasses="Row1"
+   <h:panelGrid columns="2" styleClass="edit-top" width="100%" rowClasses="Row0,Row1"
     columnClasses="editColumnSystem1,editColumn2"
     rendered="#{resourceBean.profileHasSubjectDirAttrFields}">
-    <h:outputLabel value="#{web.text.SUBJECTDIRATTRIBUTES}"
-     style="font-weight:bold; font-size:1.2em;" />
+    <h:outputLabel value="#{web.text.SUBJECTDIRATTRIBUTES}"/>
 
     <h:panelGroup />
 
@@ -460,16 +451,14 @@
 
    <!--  Main certificate data  -->
 
-   <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-    cellpadding="3" border="0" width="100%" rowClasses="Row1"
+   <h:panelGrid columns="2" styleClass="edit-top" width="100%" rowClasses="Row0,Row1"
     columnClasses="editColumnSystem1,editColumn2">
-    <h:outputLabel value="#{web.text.MAINCERTIFICATEDATA}"
-     style="font-weight:bold; font-size:1.2em;" />
+    <h:outputLabel value="#{web.text.MAINCERTIFICATEDATA}"/>
     <h:panelGroup />
 
     <h:outputLabel for="selectedCertProfile"
      id="selectedCertProfileLabel"
-     value="#{web.text.CERTIFICATEPROFILE}" style="font-size:1.2em;" />
+     value="#{web.text.CERTIFICATEPROFILE}" />
 
     <h:panelGroup id="selectedCertProfile">
      <h:selectOneMenu value="#{resourceBean.selectedCertProfileId}"
@@ -480,7 +469,7 @@
     </h:panelGroup>
 
     <h:outputLabel for="selectedCa" id="selectedCaLabel"
-     value="#{web.text.CA}" style="font-size:1.2em;" />
+     value="#{web.text.CA}" />
 
     <h:panelGroup id="selectedCa">
      <h:selectOneMenu value="#{resourceBean.selectedCaId}"
@@ -489,8 +478,7 @@
      </h:selectOneMenu>
     </h:panelGroup>
 
-    <h:outputLabel id="tokenLabel" value="#{web.text.TOKEN}"
-     style="font-size:1.2em;" />
+    <h:outputLabel id="tokenLabel" value="#{web.text.TOKEN}" />
 
     <h:panelGroup id="token">
      <h:selectOneMenu value="#{resourceBean.selectedTokenId}"
@@ -504,12 +492,10 @@
 
    <!-- Other certificate data -->
 
-   <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-    cellpadding="3" border="0" width="100%" rowClasses="Row1"
+   <h:panelGrid columns="2" styleClass="edit-top" width="100%" rowClasses="Row0,Row1"
     columnClasses="editColumnSystem1,editColumn2"
     rendered="#{resourceBean.renderOtherCertDataSection}">
-    <h:outputLabel value="#{web.text.OTHERCERTIFICATEDATA}"
-     style="font-weight:bold; font-size:1.2em;" />
+    <h:outputLabel value="#{web.text.OTHERCERTIFICATEDATA}"/>
 
     <h:panelGroup />
 
@@ -517,7 +503,7 @@
 
      <h:outputLabel id="customSerialNumberLabel"
       value="#{web.text.CERT_SERIALNUMBER_HEXA}"
-      style="font-size:1.2em;" />
+      />
      <br />
      <h:outputLabel styleClass="help"
       value="(#{web.text.EXAMPLE.toLowerCase()} : 1234567890ABCDEF)" />
@@ -533,7 +519,7 @@
 
     <h:panelGroup rendered="#{resourceBean.validityStartTimeUsed}">
      <h:outputLabel value="#{web.text.TIMEOFSTART}"
-      id="validityStartTimeUsedLabel" style="font-size:1.2em;" />
+      id="validityStartTimeUsedLabel"  />
      <h:outputText
       value="#{web.ejbcaWebBean.getHelpReference('/End_Entity_Profiles.html#Certificate_Validity')}"
       escape="false" styleClass="helpReference" />
@@ -553,7 +539,7 @@
 
     <h:panelGroup rendered="#{resourceBean.validityEndTimeUsed}">
      <h:outputLabel value="#{web.text.TIMEOFEND}"
-      id="validityEndTimeUsedLabel" style="font-size:1.2em;" />
+      id="validityEndTimeUsedLabel" />
      <h:outputText
       value="#{web.ejbcaWebBean.getHelpReference('/End_Entity_Profiles.html#Certificate_Validity')}"
       escape="false" styleClass="helpReference" />
@@ -573,7 +559,7 @@
 
     <h:panelGroup rendered="#{resourceBean.cardNumberUsed}">
      <h:outputLabel id="cardNumberUsedLabel"
-      value="#{web.text.CARDNUMBER}" style="font-size:1.2em;" />
+      value="#{web.text.CARDNUMBER}"/>
     </h:panelGroup>
 
     <h:panelGroup rendered="#{resourceBean.cardNumberUsed}">
@@ -587,7 +573,7 @@
      rendered="#{resourceBean.nameConstraintsPermittedUsed}">
 
      <h:outputLabel id="nameConstraintsPermittedLabel"
-      value="#{web.text.EXT_PKIX_NC_PERMITTED}" style="font-size:1.2em;" />
+      value="#{web.text.EXT_PKIX_NC_PERMITTED}"  />
      <h:outputText
       value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Name_Constraints')}"
       escape="false" styleClass="helpReference" />
@@ -608,7 +594,7 @@
     <h:panelGroup rendered="#{resourceBean.nameConstraintsExcludedUsed}">
 
      <h:outputLabel id="nameConstraintsExcludedLabel"
-      value="#{web.text.EXT_PKIX_NC_EXCLUDED}" style="font-size:1.2em;" />
+      value="#{web.text.EXT_PKIX_NC_EXCLUDED}"  />
      <h:outputText
       value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Name_Constraints')}"
       escape="false" styleClass="helpReference" />
@@ -626,7 +612,7 @@
 
     <h:panelGroup rendered="#{resourceBean.useExtensionData}">
      <h:outputLabel value="#{web.text.CERT_EXTENSIONDATA}"
-      style="font-size:1.2em;" />
+       />
     </h:panelGroup>
 
     <h:panelGroup rendered="#{resourceBean.useExtensionData}">
@@ -637,7 +623,7 @@
 
     <h:panelGroup rendered="#{resourceBean.psd2QcStatementUsed}">
      <h:outputLabel id="psd2NcaNameLabel"
-      value="#{web.text.PSD2_NCANAME}" style="font-size:1.2em;" />
+      value="#{web.text.PSD2_NCANAME}"  />
     </h:panelGroup>
 
     <h:panelGroup rendered="#{resourceBean.psd2QcStatementUsed}">
@@ -648,7 +634,7 @@
 
     <h:panelGroup rendered="#{resourceBean.psd2QcStatementUsed}">
      <h:outputLabel id="psd2NcaIdLabel" value="#{web.text.PSD2_NCAID}"
-      style="font-size:1.2em;" />
+       />
     </h:panelGroup>
 
     <h:panelGroup rendered="#{resourceBean.psd2QcStatementUsed}">
@@ -658,7 +644,7 @@
 
     <h:panelGroup rendered="#{resourceBean.psd2QcStatementUsed}">
      <h:outputLabel id="psd2PspRolesLabel"
-      value="#{web.text.PSD2_PSP_ROLES}" style="font-size:1.2em;" />
+      value="#{web.text.PSD2_PSP_ROLES}"  />
     </h:panelGroup>
 
     <h:panelGroup rendered="#{resourceBean.psd2QcStatementUsed}">
@@ -673,7 +659,7 @@
      rendered="#{resourceBean.cabfOrganizationIdentifierUsed}">
      <h:outputLabel id="cabFOrganizationIdLabel"
       value="#{web.text.EXT_CABF_ORGANIZATION_IDENTIFIER}"
-      style="font-size:1.2em;" />
+       />
     </h:panelGroup>
 
     <h:panelGroup
@@ -692,18 +678,16 @@
 
    <!--  Other data  -->
 
-   <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-    cellpadding="3" border="0" width="100%" rowClasses="Row1"
+   <h:panelGrid columns="2" styleClass="edit-top" width="100%" rowClasses="Row0,Row1"
     columnClasses="editColumnSystem1,editColumn2"
     rendered="#{resourceBean.renderOtherDataSection}">
-    <h:outputLabel value="#{web.text.OTHERDATA}"
-     style="font-weight:bold; font-size:1.2em;" />
+    <h:outputLabel value="#{web.text.OTHERDATA}"/>
 
     <h:panelGroup />
 
     <h:panelGroup rendered="#{resourceBean.allowedRequestsUsed}">
      <h:outputLabel id="allowedRequestsLabel"
-      value="#{web.text.ALLOWEDREQUESTS}" style="font-size:1.2em;" />
+      value="#{web.text.ALLOWEDREQUESTS}"  />
     </h:panelGroup>
     <h:panelGroup rendered="#{resourceBean.allowedRequestsUsed}">
      <h:selectOneMenu id="allowedRequests"
@@ -715,7 +699,7 @@
 
     <h:panelGroup rendered="#{resourceBean.useKeyRecovery}">
      <h:outputLabel id="useKeyRecoveryLabel"
-      value="#{web.text.KEYRECOVERABLE}" style="font-size:1.2em;" />
+      value="#{web.text.KEYRECOVERABLE}"  />
      <h:outputText
       value="#{web.ejbcaWebBean.getHelpReference('/Key_Recovery.html')}"
       escape="false" styleClass="helpReference" />
@@ -730,7 +714,7 @@
     <h:panelGroup rendered="#{resourceBean.useIssuanceRevocationReason}">
      <h:outputLabel id="useIssuanceRevocationReasonLabel"
       value="#{web.text.ISSUANCEREVOCATIONREASON}"
-      style="font-size:1.2em;" />
+       />
     </h:panelGroup>
     <h:panelGroup id="useIssuanceRevocationReason"
      rendered="#{resourceBean.useIssuanceRevocationReason}">
@@ -742,7 +726,7 @@
 
     <h:panelGroup rendered="#{resourceBean.useSendNotification}">
      <h:outputLabel id="useSendNotificationLabel"
-      value="#{web.text.SENDNOTIFICATION}" style="font-size:1.2em;" />
+      value="#{web.text.SENDNOTIFICATION}" />
     </h:panelGroup>
     <h:panelGroup rendered="#{resourceBean.useSendNotification}">
      <h:selectBooleanCheckbox id="useSendNotification"
@@ -754,8 +738,7 @@
    </h:panelGrid>
    <!-- Form buttons  -->
 
-   <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-    cellpadding="3" border="0" width="100%" rowClasses="Row1"
+   <h:panelGrid columns="2" styleClass="edit-top" width="100%" rowClasses="Row1"
     columnClasses="editColumnSystem1,editColumn2">
     <h:panelGroup />
 

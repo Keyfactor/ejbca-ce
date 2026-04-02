@@ -42,6 +42,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DNFieldExtractor;
@@ -50,7 +51,6 @@ import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
@@ -120,6 +120,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     // Field constants, used in the map below. Please use the getters/setters instead when possible!
     private static final String USERNAME           = "USERNAME";
+    private static final String USERNAME_PREFIX      = "USERNAME_PREFIX";
+    private static final String USERNAME_SUFFIX     = "USERNAME_SUFFIX";
     private static final String PASSWORD           = "PASSWORD";
     public static final String CLEARTEXTPASSWORD  = "CLEARTEXTPASSWORD";
     private static final String AUTOGENPASSWORDTYPE   = "AUTOGENPASSWORDTYPE";
@@ -182,6 +184,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	DATA_CONSTANTS.put(AUTOGENPASSWORDTYPE, 95);
     	DATA_CONSTANTS.put(AUTOGENPASSWORDLENGTH, 96);
     	DATA_CONSTANTS.put(PROFILEDESCRIPTION, 110);
+        DATA_CONSTANTS.put(USERNAME_PREFIX, 124);
+        DATA_CONSTANTS.put(USERNAME_SUFFIX, 125);
         // DN components
 
     	DATA_CONSTANTS.put(EMAIL, 26);
@@ -284,18 +288,17 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
      */
     private static final String USEEXTENSIONDATA       = "USEEXTENSIONDATA";
 
+    // Note: Internal profiles (e.g. SSH, SCEPSIGNER, etc.) should NOT be added here
     // String constants that never change, so we can do the String concat/conversion once
     private static final String CONST_DEFAULTCERTPROFILE = Integer.toString(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
     private static final String CONST_AVAILCERTPROFILES1 =
             CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER + ";" +
             CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER + ";" +
-            CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_ENCRYPTOR + ";" +
-            CertificateProfileConstants.CERTPROFILE_FIXED_SCEP_SIGNER + ";" +
             CertificateProfileConstants.CERTPROFILE_FIXED_SERVER;
-    private static final String CONST_DEFKEYSTORE = Integer.toString(SecConst.TOKEN_SOFT_BROWSERGEN);
-    private static final String CONST_AVAILKEYSTORE = SecConst.TOKEN_SOFT_BROWSERGEN + ";"
-            + SecConst.TOKEN_SOFT_P12 +  ";" + SecConst.TOKEN_SOFT_BCFKS + ";" + SecConst.TOKEN_SOFT_JKS + ";" + SecConst.TOKEN_SOFT_PEM;
-    private static final String CONST_AVAILCAS = Integer.toString(SecConst.ALLCAS);
+    private static final String CONST_DEFKEYSTORE = Integer.toString(EndEntityConstants.TOKEN_USERGEN);
+    private static final String CONST_AVAILKEYSTORE = EndEntityConstants.TOKEN_USERGEN + ";"
+            + EndEntityConstants.TOKEN_SOFT_P12 +  ";" + EndEntityConstants.TOKEN_SOFT_BCFKS + ";" + EndEntityConstants.TOKEN_SOFT_JKS + ";" + EndEntityConstants.TOKEN_SOFT_PEM;
+    private static final String CONST_AVAILCAS = Integer.toString(CAConstants.ALLCAS);
     private static final String CONST_ISSUANCEREVOCATIONREASON = Integer.toString(RevokedCertInfo.NOT_REVOKED);
     private static final String CONST_AVAILCERTPROFILES2 =
             CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER + ";" +
@@ -999,7 +1002,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
      * @return One of the SecConst.TOKEN_SOFT_* constants
      */
     public int getDefaultTokenType() {
-        int ret = SecConst.TOKEN_SOFT_BROWSERGEN;
+        int ret = EndEntityConstants.TOKEN_USERGEN;
         final String str = getValue(EndEntityProfile.DEFKEYSTORE, 0);
         if (StringUtils.isNotEmpty(str)) {
             ret = Integer.parseInt(str);
@@ -1030,6 +1033,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public void setUsernameDefault(final String username) {
         setValue(USERNAME, 0, username);
     }
+
+    public String getUsernamePrefix() { return getValue(USERNAME_PREFIX, 0); }
+
+    public void setUsernamePrefix(final String usernamePrefix) { setValue(USERNAME_PREFIX, 0, usernamePrefix); }
+
+    public String getUsernameSuffix() { return getValue(USERNAME_SUFFIX, 0); }
+
+    public void setUsernameSuffix(final String usernameSuffix) { setValue(USERNAME_SUFFIX, 0, usernameSuffix); }
 
     public String getUsernameDefaultValidation() {
         if (null != getValidation(USERNAME, 0)) {
@@ -1773,7 +1784,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     		throw new EndEntityProfileValidationException("Key Recoverable cannot be used.");
     	}
     	if (isRequired(KEYRECOVERABLE, 0) && getValue(KEYRECOVERABLE, 0).equals(TRUE)) {
-    	    if(tokenType == SecConst.TOKEN_SOFT_BROWSERGEN) {
+    	    if(tokenType == EndEntityConstants.TOKEN_USERGEN) {
     	        throw new EndEntityProfileValidationException("Key Recoverable is required, but can't be used for User Generated Tokens.");
     	    }
     		if (getValue(KEYRECOVERABLE, 0).equals(TRUE) && !keyRecoverable) {
@@ -1852,7 +1863,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	boolean caIdFound = false;
     	for (final String currentAvailableCaId : availableCaIds) {
     		final int tmp = Integer.parseInt(currentAvailableCaId);
-    		if (tmp == caId || tmp == SecConst.ALLCAS) {
+    		if (tmp == caId || tmp == CAConstants.ALLCAS) {
     			caIdFound = true;
     			break;
     		}
@@ -2685,12 +2696,20 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     				throw new EndEntityProfileValidationException("Subject DN field '" + currentDnField + "' must exist.");
     			}
     		} else {
-    			final int size = getNumberOfField(currentDnField);
-    			for (int j = 0; j < size; j++) {
-    				if (isRequired(currentDnField, j) && StringUtils.isBlank(subjectDnFields.getField(dnFieldExtractorIds.get(i), j))) {
-    					throw new EndEntityProfileValidationException("Subject DN field '" + currentDnField + "' must exist.");
-    				}
-    			}
+                final int size = getNumberOfField(currentDnField);
+                int numberOfRequiredFields = 0;
+                int numberOfNonBlankFields = 0;
+                for (int j = 0; j < size; j++) {
+                    if (isRequired(currentDnField, j)) {
+                        numberOfRequiredFields++;
+                    }
+                    if (!StringUtils.isBlank(subjectDnFields.getField(dnFieldExtractorIds.get(i), j))) {
+                        numberOfNonBlankFields++;
+                    }
+                }
+                if (numberOfRequiredFields > numberOfNonBlankFields) {
+                    throw new EndEntityProfileValidationException("Subject DN field '" + currentDnField + "' must exist." );
+                }
     		}
     	}
 
@@ -2708,11 +2727,19 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         			}
         		} else {
         			final int size = subjectAltNames.getNumberOfFields(altNameFieldExtractorIds.get(i));
-        			for (int j = 0; j < size; j++) {
-        				if (isRequired(currentAnField, j) && StringUtils.isBlank(subjectAltNames.getField(altNameFieldExtractorIds.get(i), j))) {
-        					throw new EndEntityProfileValidationException("Subject Alterntive Name field '" + currentAnField + "' must exist.");
-        				}
-        			}
+                    int numberOfRequiredFields = 0;
+                    int numberOfNonBlankFields = 0;
+                    for (int j = 0; j < size; j++) {
+                        if (isRequired(currentAnField, j)) {
+                            numberOfRequiredFields++;
+                        }
+                        if (!StringUtils.isBlank(subjectAltNames.getField(altNameFieldExtractorIds.get(i), j))) {
+                            numberOfNonBlankFields++;
+                        }
+                    }
+                    if (numberOfRequiredFields > numberOfNonBlankFields) {
+                        throw new EndEntityProfileValidationException("Subject Alterntive Name field '" + currentAnField + "' must exist.");
+                    }
         		}
         	}
     	}
@@ -2814,7 +2841,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             }
         }
 
-        if(subjectaltnames==null) {
+        if (subjectaltnames == null) {
             return;
         }
         final List<String> sanFields = DnComponents.getAltNameFields();
@@ -2824,15 +2851,20 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             final int profileId = DnComponents.dnIdToProfileId(dnId);
             final String fieldName = sanFields.get(i);
             final int num = subjectaltnames.getNumberOfFields(dnId);
+            int numberOfCopiedFields = 0;
             for (int j = 0; j < num; j++) {
+                final boolean isCopy = getCopy(profileId, j);
                 final Map<String,Serializable> validators = getValidation(profileId, j);
-                if (validators != null) {
-                    final String fieldValue = subjectaltnames.getField(dnId, j);
+                if (!isCopy && validators != null) {
+                    final String fieldValue = subjectaltnames.getField(dnId, j-numberOfCopiedFields);
                     try {
                         EndEntityValidationHelper.checkValue(fieldName, validators, fieldValue);
                     } catch (EndEntityFieldValidatorException e) {
                         throw new EndEntityProfileValidationException("Did not pass validation of field " + fieldName + " (in SAN). " + e.getMessage());
                     }
+                }
+                if (isCopy) {
+                    numberOfCopiedFields++;
                 }
             }
         }

@@ -22,9 +22,9 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.ssh.SshKeyFactory;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.era.KeyToValueHolder;
@@ -292,21 +292,17 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
         final EndEntityProfile endEntityProfile = getEndEntityProfile();
         if (endEntityProfile != null) {
             final String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-            if (availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_P12))
-                    || availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_JKS))
-                    || availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_PEM))) {
+            if (availableKeyStores.contains(String.valueOf(EndEntityConstants.TOKEN_SOFT_P12))
+                    || availableKeyStores.contains(String.valueOf(EndEntityConstants.TOKEN_SOFT_JKS))
+                    || availableKeyStores.contains(String.valueOf(EndEntityConstants.TOKEN_SOFT_PEM))) {
                 ret.add(KeyPairGeneration.ON_SERVER);
             }
-            if (availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_BROWSERGEN))) {
+            if (availableKeyStores.contains(String.valueOf(EndEntityConstants.TOKEN_USERGEN))) {
                 ret.add(KeyPairGeneration.PROVIDED_BY_USER);
             }
             ret.add(KeyPairGeneration.POSTPONE);
         }
         return ret;
-    }
-    
-    public boolean isKeyRecoverable() {
-        return getEndEntityInformation().getKeyRecoverable();
     }
     
     public boolean isRequestIdInfoRendered() {

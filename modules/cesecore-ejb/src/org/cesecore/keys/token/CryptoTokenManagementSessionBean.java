@@ -37,6 +37,22 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.RandomHelper;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyStoreTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.BaseCryptoToken;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
+import com.keyfactor.util.keys.token.KeyGenParams.KeyGenParamsBuilder;
+import com.keyfactor.util.keys.token.KeyGenParams.KeyPairTemplate;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
@@ -58,21 +74,6 @@ import org.cesecore.internal.InternalResources;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.KeyBindingFinder;
 import org.cesecore.keys.util.PublicKeyWrapper;
-
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.RandomHelper;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.BaseCryptoToken;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.KeyGenParams;
-import com.keyfactor.util.keys.token.KeyGenParams.KeyGenParamsBuilder;
-import com.keyfactor.util.keys.token.KeyGenParams.KeyPairTemplate;
-import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -111,7 +112,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     @Override
     public List<Integer> getCryptoTokenIds(final AuthenticationToken authenticationToken) {
         final List<Integer> allCryptoTokenIds = cryptoTokenSession.getCryptoTokenIds();
-        final List<Integer> auhtorizedCryptoTokenIds = new ArrayList<Integer>();
+        final List<Integer> auhtorizedCryptoTokenIds = new ArrayList<>();
         for (final Integer current : allCryptoTokenIds) {
             if (authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.VIEW.resource() + "/" + current.toString())) {
                 auhtorizedCryptoTokenIds.add(current);
@@ -141,7 +142,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<CryptoTokenInfo> getCryptoTokenInfos(final AuthenticationToken authenticationToken) {
-        final List<CryptoTokenInfo> cryptoTokenInfos = new ArrayList<CryptoTokenInfo>();
+        final List<CryptoTokenInfo> cryptoTokenInfos = new ArrayList<>();
         for (final Integer cryptoTokenId : getCryptoTokenIds(authenticationToken)) {
             cryptoTokenInfos.add(getCryptoTokenInfo(cryptoTokenId));
         }
@@ -158,7 +159,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final boolean isActive = cryptoToken.getTokenStatus() == CryptoToken.STATUS_ACTIVE;
         final Properties cryptoTokenProperties = cryptoToken.getProperties();
         final boolean autoActivation = BaseCryptoToken.getAutoActivatePin(cryptoTokenProperties) != null;
-        return new CryptoTokenInfo(cryptoTokenId, cryptoToken.getTokenName(), isActive, autoActivation, cryptoToken.getClass(), cryptoTokenProperties);
+        return new CryptoTokenInfo(cryptoTokenId, cryptoToken.getTokenName(), isActive, autoActivation, cryptoToken.getConcreteClass(), cryptoTokenProperties);
     }
 
     @Override
@@ -172,8 +173,8 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         if (CryptoTokenFactory.instance().getAvailableCryptoToken(className) == null) {
             throw new CryptoTokenClassNotFoundException("Invalid token class name: " + className);
         }
-        // Creating a duplicate P11 crypto token can be destructive, ideally we would check all crypto tokens, 
-        // but we only check the ones the admin has access to in order to not leak information 
+        // Creating a duplicate P11 crypto token can be destructive, ideally we would check all crypto tokens,
+        // but we only check the ones the admin has access to in order to not leak information
         List<CryptoTokenInfo> infos = getCryptoTokenInfos(authenticationToken);
         List<String> providers = new ArrayList<>();
         String tokenP11Lib = properties.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY);
@@ -197,7 +198,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                     }
                 }
             }
-            // Check for database protection crypto tokens as well, these are not stored as crypto tokens in the database, but only 
+            // Check for database protection crypto tokens as well, these are not stored as crypto tokens in the database, but only
             // as parameters in databaseprotection.properties, and thus requires special handling
             Provider[] installedProviders = Security.getProviders();
             if (installedProviders != null) {
@@ -213,13 +214,13 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                             ret.add(installedProviderName+" (database protection?)");
                         }
                     }
-                }                
+                }
             }
         }
         if (log.isTraceEnabled()) {
             log.trace("<isCryptoTokenUsed: " + tokenName + ", " + className + ", " + ret.size());
         }
-        return ret; 
+        return ret;
     }
 
     private boolean isP11SlotSame(String tokenP11Lib, String providerNameToCheck, String ctiP11lib, String ctiProviderName, String ctiName) throws NoSuchSlotException {
@@ -244,11 +245,11 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
 
     private String createProviderName(final String tokenName, final String className, final Properties tokenprops) throws NoSuchSlotException {
         // Make a complete clone of the original properties, as we modify it to be non-addable-provider token properties below
-        // if we did that on the original tokenprops, this method would have a side effect in modifying caller parameters 
+        // if we did that on the original tokenprops, this method would have a side effect in modifying caller parameters
         // (which causes things to break since the provider is not installed)
         Properties properties = new Properties();
         properties.putAll(tokenprops);
-        properties.setProperty(PKCS11CryptoToken.DO_NOT_ADD_P11_PROVIDER, "true");                       
+        properties.setProperty(PKCS11CryptoToken.DO_NOT_ADD_P11_PROVIDER, "true");
         CryptoToken cryptoToken;
         if (className.equals(AzureCryptoToken.class.getName())) {
             cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, null, -1, tokenName, false,
@@ -273,9 +274,9 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         }
         final PrivateKey kakPrivateKey = kakCryptoToken.getPrivateKey(kakTokenKeyAlias);
         final PublicKey kakPublicKey = kakCryptoToken.getPublicKey(kakTokenKeyAlias);
-        final String signProviderName = kakCryptoToken.getSignProviderName(); 
+        final String signProviderName = kakCryptoToken.getSignProviderName();
         final KeyPair kakPair = new KeyPair(kakPublicKey, kakPrivateKey);
-        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        final Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", "Initialized key in CryptoToken " + cryptoTokenId);
         details.put("keyAlias", alias);
         details.put("keyAuthorizationKeyToken", kakTokenid);
@@ -285,7 +286,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         // Audit log immediately. Change has already occurred in HSM.
         securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_INITIALIZE_KEY, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
                 authenticationToken.toString(), null, null, null, details);
-        
+
         // Persist KAK association for this key alias
         final String kakAssociation =  kakTokenid + ";" + kakTokenKeyAlias;
         cryptoToken.getProperties().setProperty(CryptoToken.KAK_ASSOCIATION_PREFIX + alias, kakAssociation);
@@ -295,9 +296,9 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             throw new RuntimeException(e); // We have not changed the name of the CrytpoToken here, so this should never happen
         }
     }
-    
+
     @Override
-    public void keyAuthorize(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias, final int kakTokenid, final String kakTokenKeyAlias, 
+    public void keyAuthorize(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias, final int kakTokenid, final String kakTokenKeyAlias,
             final long maxOperationCount, String selectedPaddingScheme) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
         final CryptoToken kakCryptoToken = cryptoTokenSession.getCryptoToken(kakTokenid);
@@ -308,7 +309,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final PublicKey kakPublicKey = kakCryptoToken.getPublicKey(kakTokenKeyAlias);
         final String signProviderName = kakCryptoToken.getSignProviderName();
         final KeyPair kakPair = new KeyPair(kakPublicKey, kakPrivateKey);
-        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        final Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", "Authorized key in CryptoToken " + cryptoTokenId);
         details.put("keyAlias", alias);
         details.put("keyAuthorizationKeyToken", kakTokenid);
@@ -317,7 +318,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         cryptoToken.keyAuthorize(alias, kakPair, signProviderName, maxOperationCount, selectedPaddingScheme);
         securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_AUTHORIZE_KEY, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
                 authenticationToken.toString(), null, null, null, details);
-        
+
         // Persist KAK association for this key alias if not done already. Will occur e.g. if initiliaze was done "outside of" EJBCA.
         if (StringUtils.isEmpty(cryptoToken.getProperties().getProperty(CryptoToken.KAK_ASSOCIATION_PREFIX + alias))) {
             final String kakAssociation =  kakTokenid + ";" + kakTokenKeyAlias;
@@ -329,10 +330,10 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             }
         }
     }
-    
+
     @Override
-    public void changeAuthData(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias, 
-            final int currentKakTokenId, int newKakTokenId, final String currentKakTokenKeyAlias, 
+    public void changeAuthData(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias,
+            final int currentKakTokenId, int newKakTokenId, final String currentKakTokenKeyAlias,
             final String newKakTokenKeyAlias, final String selectedPaddingScheme) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
         final CryptoToken currentKakCryptoToken = cryptoTokenSession.getCryptoToken(currentKakTokenId);
@@ -347,14 +348,14 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final PrivateKey newKakPrivateKey = newKakCryptoToken.getPrivateKey(newKakTokenKeyAlias);
         final PublicKey newKakPublicKey = newKakCryptoToken.getPublicKey(newKakTokenKeyAlias);
         final KeyPair newKakPair = new KeyPair(newKakPublicKey, newKakPrivateKey);
-        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        final Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", "Changed Authorization key in CryptoToken " + cryptoTokenId);
         details.put("keyAlias", alias);
         details.put("previousKeyAuthorizationKeyToken", currentKakTokenId);
         details.put("previousKeyAuthorizationKeyAlias", currentKakTokenKeyAlias);
         details.put("newKeyAuthorizationKeyToken", newKakTokenId);
         details.put("newKeyAuthorizationKeyAlias", newKakTokenKeyAlias);
-        
+
         // Update authorization data on HSM
         cryptoToken.changeAuthData(alias, currentkakPair, newKakPair, signProviderName, selectedPaddingScheme);
         // Audit log immediately. Change has already occurred in HSM.
@@ -368,20 +369,20 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         } catch (CryptoTokenNameInUseException e) {
             throw new RuntimeException(e); // We have not changed the name of the CrytpoToken here, so this should never happen
         }
-    }    
-    
+    }
+
     @Override
     public boolean isKeyInitialized(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias) {
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
         return cryptoToken.isKeyInitialized(alias);
     }
-    
+
     @Override
     public long maxOperationCount(AuthenticationToken authenticationToken, int cryptoTokenId, final String alias) {
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
         return cryptoToken.maxOperationCount(alias);
     }
-    
+
     @Override
     public void createCryptoToken(final AuthenticationToken authenticationToken, final String tokenName, final Integer cryptoTokenId,
             final String className, final Properties properties, final byte[] data, final char[] authenticationCode)
@@ -419,7 +420,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                 // If we entered the wrong PIN, we may have installed the P11 provider (if it is a P11 token)
                 // In that case, remove it again, so we don't have to warn about already used slot when entering the correct PIN
                 // if it was not already used by anyone else that is
-                if (isSlotUsed.isEmpty() && cryptoToken instanceof PKCS11CryptoToken) {
+                if (isSlotUsed.isEmpty() && cryptoToken.isInstanceOf(PKCS11CryptoToken.class)) {
                     Security.removeProvider(cryptoToken.getSignProviderName());
                 }
                 throw e;
@@ -429,7 +430,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         // This property is used only once during crypto token creation
         properties.remove(CryptoToken.ALLOW_NONEXISTING_SLOT_PROPERTY);
 
-        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        final Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", "Created CryptoToken with id " + cryptoTokenId);
         details.put("name", cryptoToken.getTokenName());
         details.put("encProviderName", cryptoToken.getEncProviderName());
@@ -492,7 +493,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             throw new AuthorizationDeniedException(msg);
         }
         final CryptoToken currentCryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
-        final String className = currentCryptoToken.getClass().getName();
+        final String className = currentCryptoToken.getConcreteClass().getName();
         final byte[] tokendata = currentCryptoToken.getTokenData();
         // Handle presence of auto-activation indicators
         boolean keepAutoActivateIfPresent = Boolean.valueOf(String.valueOf(properties.get(CryptoTokenManagementSession.KEEP_AUTO_ACTIVATION_PIN)));
@@ -520,7 +521,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         try {
             if (className.equals(AzureCryptoToken.class.getName())) {
                 // special case - pass in an object that can find the authentication key binding
-                newCryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, tokendata, cryptoTokenId, tokenName, 
+                newCryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, tokendata, cryptoTokenId, tokenName,
                         new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenManagementSession, caSession));
             } else {
                 newCryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, tokendata, cryptoTokenId, tokenName);
@@ -538,7 +539,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             newCryptoToken.setProperties(properties);
             newCryptoToken.setTokenName(tokenName);
         }
-        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        final Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", "Modified CryptoToken with id " + cryptoTokenId);
         putDelta("name", currentCryptoToken.getTokenName(), newCryptoToken.getTokenName(), details);
         putDelta("encProviderName", currentCryptoToken.getEncProviderName(), newCryptoToken.getEncProviderName(), details);
@@ -571,7 +572,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         properties.setProperty(CryptoToken.KEYPLACEHOLDERS_PROPERTY, newPlaceholders);
         cryptoToken.setProperties(properties);
 
-        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        final Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", "Modified name/placeholders of CryptoToken with id " + cryptoTokenId);
         putDelta("name", oldName, newName, details);
         putDelta("keyPlaceholders", oldPlaceholders, newPlaceholders, details);
@@ -654,10 +655,10 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                         authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, "Reactivated CryptoToken '" + cryptoToken.getTokenName()
                                 + "' with id " + cryptoTokenId);
             }
-        }            
+        }
         catch (CryptoTokenOfflineException e) {
             throw new IllegalStateException(e);
-            
+
         }
     }
 
@@ -681,7 +682,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             // This is a NOOP call that will not lead to any change
             return false;
         }
-        if (SoftCryptoToken.class.getName().equals(cryptoToken.getClass().getName())) {
+        if (SoftCryptoToken.class.getName().equals(cryptoToken.getConcreteClass().getName())) {
             CryptoProviderTools.installBCProviderIfNotAvailable();
             final KeyStore keystore;
             try {
@@ -698,15 +699,17 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                 cryptoToken.setProperties(cryptoTokenProperties);
             } else {
                 try {
-                    final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    keystore.store(baos, newAuthenticationCode);
-                    baos.close();
+                    final byte[] ksBytes;
+                    try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                        KeyStoreTools.storeKeyStore(keystore, baos, newAuthenticationCode);
+                        ksBytes = baos.toByteArray();
+                    }
                     if (oldAutoActivationPin != null || !updateOnly) {
                         BaseCryptoToken.setAutoActivatePin(cryptoTokenProperties, new String(newAuthenticationCode), true);
                     } else {
                         log.debug("Auto-activation will not be used. Only changing pin for soft CryptoToken keystore.");
                     }
-                    cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), cryptoTokenProperties, baos.toByteArray(),
+                    cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), cryptoTokenProperties, ksBytes,
                             cryptoTokenId, cryptoToken.getTokenName());
                 } catch (Exception e) {
                     log.info("Unable to store soft keystore with new PIN: " + e);
@@ -741,7 +744,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             throws CryptoTokenOfflineException, AuthorizationDeniedException {
         assertAuthorizationNoLog(authenticationToken, cryptoTokenId, CryptoTokenRules.VIEW.resource() + "/" + cryptoTokenId);
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
-        final List<KeyPairInfo> ret = new ArrayList<KeyPairInfo>();
+        final List<KeyPairInfo> ret = new ArrayList<>();
         for (final String alias : getKeyPairAliasesInternal(cryptoToken)) {
             final PublicKey publicKey = cryptoToken.getPublicKey(alias);
             if (publicKey != null) {
@@ -761,7 +764,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         }
         return ret;
     }
-    
+
     /*
      CryptoToken.getKeyUsagesFromPrivateKey returns the following PKCS#11 attributes, depending on private key usage:
      CKA_SIGN 0x00000108UL    (dec: 264)
@@ -771,9 +774,9 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     private String getKeyUsageStringForKeyPairInfo(final Set<Long> keyUsage) {
         final long DECRYPT = 261;
         final long SIGN = 264;
-        final Set<Long> ENCRYPT_DECRYPT  = new HashSet<Long>();
-        final Set<Long> SIGN_VERIFY  = new HashSet<Long>();
-        final Set<Long> SIGN_ENCRYPT  = new HashSet<Long>();
+        final Set<Long> ENCRYPT_DECRYPT  = new HashSet<>();
+        final Set<Long> SIGN_VERIFY  = new HashSet<>();
+        final Set<Long> SIGN_ENCRYPT  = new HashSet<>();
         ENCRYPT_DECRYPT.add(DECRYPT);
         SIGN_VERIFY.add(SIGN);
         SIGN_ENCRYPT.add(DECRYPT);
@@ -796,7 +799,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
         PublicKey publicKey = null;
         // The fastest way to see if an key alias exists is to just to to get the public key, if the alias
-        // does not exist, we'll get an error. 
+        // does not exist, we'll get an error.
         // Succeed fast on the expected common case that the key actually exists, don't list all keys on the token which can take time
         try {
             publicKey = cryptoToken.getPublicKey(alias);
@@ -917,14 +920,14 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         // Check if keySpec is valid
         KeyTools.checkValidKeyLength(keySpecification);
         // Audit log before generation. If the token is an HSM the merge will not make a difference.
-        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        final Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", "Generated new keypair in CryptoToken " + cryptoTokenId);
         details.put("keyAlias", alias);
         details.put("keySpecification", keySpecification);
         // Generate key pair
         cryptoToken.generateKeyPair(KeyGenParams.builder(keyGenParams).setKeySpecification(keySpecification).build(), alias);
         // We don't want to test CP5 keys on creation since they're not authorized yet (would fail).
-        if (!cryptoToken.getClass().getName().equals(CryptoTokenFactory.JACKNJI_NAME)) {
+        if (!cryptoToken.getConcreteClass().getName().equals(CryptoTokenFactory.JACKNJI_NAME)) {
             cryptoToken.testKeyPair(alias);
         }
         // Merge is important for soft tokens where the data is persisted in the database, but will also update lastUpdate
@@ -948,7 +951,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final PublicKey publicKey = cryptoToken.getPublicKey(currentAlias);
         final String keySpecification = AlgorithmTools.getKeySpecification(publicKey);
         KeyTools.checkValidKeyLength(keySpecification);
-        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        final Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", "Generated new keypair in CryptoToken " + cryptoTokenId);
         details.put("keyAlias", newAlias);
         details.put("keySpecification", keySpecification);
@@ -977,7 +980,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         createKeyPair(authenticationToken, cryptoTokenId, alias, params);
         removeKeyPairPlaceholder(authenticationToken, cryptoTokenId, alias);
     }
-        
+
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public boolean isAliasUsedInCryptoToken(final int cryptoTokenId, final String alias) {
@@ -1000,22 +1003,22 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         if (!cryptoToken.isAliasUsed(alias)) {
             throw new InvalidKeyException("Alias " + alias + " is not in use");
         }
-        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        final Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", "Deleted key pair from CryptoToken " + cryptoTokenId);
         details.put("keyAlias", alias);
         try {
             cryptoToken.deleteEntry(alias);
         } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
             throw new InvalidKeyException(e);
-        } 
-        
+        }
+
         assertAliasNotInUse(cryptoToken, alias);
 
         // If CP5, remove KAK association from database
-        if (CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(cryptoToken.getClass().getSimpleName())) {
+        if (CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(cryptoToken.getConcreteClass().getSimpleName())) {
             cryptoToken.getProperties().remove(CryptoToken.KAK_ASSOCIATION_PREFIX + alias);
         }
-        
+
         log.debug("cryptoTokenSession.mergeCryptoToken");
         // Merge is important for soft tokens where the data is persisted in the database, but will also update lastUpdate
         try {
@@ -1042,7 +1045,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final Properties props = new Properties();
         props.putAll(cryptoToken.getProperties());
         final String placeholdersString = props.getProperty(CryptoToken.KEYPLACEHOLDERS_PROPERTY, "");
-        final List<String> entries = new ArrayList<String>(Arrays.asList(placeholdersString.split("["+CryptoToken.KEYPLACEHOLDERS_OUTER_SEPARATOR+"]")));
+        final List<String> entries = new ArrayList<>(Arrays.asList(placeholdersString.split("["+CryptoToken.KEYPLACEHOLDERS_OUTER_SEPARATOR+"]")));
         final Iterator<String> iter = entries.iterator();
         while (iter.hasNext()) {
             final String entry = iter.next();
@@ -1069,7 +1072,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             throw new IllegalStateException(e); // We have not changed the name of the CrytpoToken here, so this should never happen
         }
 
-        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        final Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", "Deleted key pair placeholder from CryptoToken " + cryptoTokenId);
         details.put("keyAlias", alias);
         securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DELETE_ENTRY, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
@@ -1092,7 +1095,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             throw new AuthorizationDeniedException(msg);
         }
     }
-    
+
     private void assertAuthorizationNoLog(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String resource)
             throws AuthorizationDeniedException {
         if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, resource)) {
@@ -1101,7 +1104,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         }
     }
 
-    /** @return a CryptoToken for the requested Id if exists. Never returns null. 
+    /** @return a CryptoToken for the requested Id if exists. Never returns null.
      * @throws CryptoTokenOfflineException */
     private CryptoToken getCryptoTokenAndAssertExistence(int cryptoTokenId) throws CryptoTokenOfflineException {
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);

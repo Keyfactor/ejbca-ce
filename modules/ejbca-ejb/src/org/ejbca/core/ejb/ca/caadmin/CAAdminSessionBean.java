@@ -13,7 +13,6 @@
 package org.ejbca.core.ejb.ca.caadmin;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -50,6 +49,26 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyStoreTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.BaseCryptoToken;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.IntegerRange;
@@ -99,7 +118,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CitsCaInfo;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.CvcCABase;
-import org.cesecore.certificates.ca.HybridCa;
+import org.cesecore.certificates.ca.ChimeraCa;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
@@ -198,25 +217,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.util.CAIdTools;
-
-import com.keyfactor.CesecoreException;
-import com.keyfactor.ErrorCode;
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.CertificateWrapper;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.certificate.SimpleCertGenerator;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.BaseCryptoToken;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
@@ -535,7 +535,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         } else if (cainfo.getCAType() == X509CAInfo.CATYPE_CITS) {
             log.info("Creating an CITS CA: " + cainfo.getName());
             CitsCaInfo citsCainfo = (CitsCaInfo) cainfo;
-            
+
             ca = (CA) CAFactory.INSTANCE.getCitsCaImpl(citsCainfo);
             ca.setCAToken(catoken);
             // Set certificate policies in profile object
@@ -635,7 +635,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 throw new IllegalStateException("The CA's test key alias points to an invalid key.", e1);
             }
         }
-        
+
         // Store CA in database, so we can generate keys using the ca token session.
         try {
             caSession.addCA(admin, ca);
@@ -753,8 +753,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         return castatus;
     }
-    
-    private boolean isProhibitedMixedHybridChain(CA signerCa, String aliasAlternativeCertSign) {
+
+    private boolean isProhibitedMixedChimeraChain(CA signerCa, String aliasAlternativeCertSign) {
         String signerCaAltAlg = signerCa.getCAToken().getAlternativeSignatureAlgorithm();
         if (((aliasAlternativeCertSign == null) && (signerCaAltAlg != null) )) {
             return true;
@@ -782,11 +782,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 if (log.isDebugEnabled()) {
                     log.debug("CAAdminSessionBean : " + cainfo.getSubjectDN());
                 }
-                EndEntityInformation cadata = makeEndEntityInformation(cainfo); 
+                EndEntityInformation cadata = makeEndEntityInformation(cainfo);
                 final String aliasAlternativeCertSign = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN);
-                if (ca instanceof HybridCa && aliasAlternativeCertSign != null) {
-                    HybridCa hybridCa = (HybridCa) ca;
-                    cacertificate = hybridCa.generateCertificate(cryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign),
+                if (ca instanceof ChimeraCa && aliasAlternativeCertSign != null) {
+                    ChimeraCa chimeraCa = (ChimeraCa) ca;
+                    cacertificate = chimeraCa.generateCertificate(cryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign),
                             cryptoToken.getPublicKey(aliasAlternativeCertSign), -1, null, cainfo.getEncodedValidity(), certprofile, sequence,
                             cceConfig);
                 } else {
@@ -833,25 +833,25 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 CryptoToken signCryptoToken = cryptoTokenSession.getCryptoToken(signca.getCAToken().getCryptoTokenId());
                 final Certificate cacertificate;
                 final String aliasAlternativeCertSign = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN);
-                // We make sure that the sub CA is hybrid iff root CA is hybrid
-                if (isProhibitedMixedHybridChain(signca, aliasAlternativeCertSign)) {
+                // We make sure that the sub CA is Chimera/Catalyst if root CA is Chimera/Catalyst
+                if (isProhibitedMixedChimeraChain(signca, aliasAlternativeCertSign)) {
+                    final String msg =  "Sub CA '" + cainfo.getName() + "' should be Chimera/Catalyst CA if and only if Root CA is Chimera/Catalyst CA.";
                     logAuditEvent(
                             EventTypes.CA_CREATION, EventStatus.FAILURE,
-                            authenticationToken, caid,
-                            intres.getLocalizedMessage("caadmin.cachainismixedhybrid", cainfo.getName())
+                            authenticationToken, caid, msg                 
                             );
-                    throw new InvalidConfigurationException(intres.getLocalizedMessage("caadmin.cachainismixedhybrid", cainfo.getName()));
+                    throw new InvalidConfigurationException(msg);
                 }
-                if (ca instanceof HybridCa && aliasAlternativeCertSign != null) {
-                    HybridCa hybridCa = (HybridCa) signca;
-                    cacertificate = hybridCa.generateCertificate(signCryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign),
+                if (ca instanceof ChimeraCa && aliasAlternativeCertSign != null) {
+                    ChimeraCa chimeraCa = (ChimeraCa) signca;
+                    cacertificate = chimeraCa.generateCertificate(signCryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign),
                             cryptoToken.getPublicKey(aliasAlternativeCertSign), -1, null, cainfo.getEncodedValidity(), certprofile, sequence,
                             cceConfig);
                 } else {
                     cacertificate = signca.generateCertificate(signCryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign), -1,
                             null, cainfo.getEncodedValidity(), certprofile, sequence, cceConfig);
                 }
-                
+
                 // Build Certificate Chain
                 List<Certificate> rootcachain = signca.getCertificateChain();
                 certificatechain = new ArrayList<>();
@@ -1149,17 +1149,17 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         );
         return returnval;
     }
-    
+
     @Override
-    public void updateCrossCaCertificateChain(AuthenticationToken authenticationToken, CAInfo caInfo, 
-            Collection<?> crossCertificateChain) 
+    public void updateCrossCaCertificateChain(AuthenticationToken authenticationToken, CAInfo caInfo,
+            Collection<?> crossCertificateChain)
            throws AuthorizationDeniedException, CertPathValidatorException, EjbcaException, CesecoreException {
-        
+
         if(caInfo.getCAType()!=CAInfo.CATYPE_X509) {
             log.info("Alternate cross-certificate chain may only be uploaded for X509 CAs.");
             return;
         }
-        
+
         if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAEDIT.resource())) {
             logAuditEvent(
                     EventTypes.ACCESS_CONTROL, EventStatus.FAILURE,
@@ -1168,7 +1168,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             );
             return;
         }
-        
+
         List<Certificate> validatedChain = null;
         try {
             validatedChain = CertTools.createCertChain(crossCertificateChain, new Date());
@@ -1177,7 +1177,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             log.error("Uploaded cross certificate chain validation failed: ", e);
             throw new CertPathValidatorException(e);
         }
-        
+
         // validate leaf certificate chain matches CA
         // subjectDn and public key
         if(!CertTools.getSubjectDN(validatedChain.get(0)).equalsIgnoreCase(caInfo.getSubjectDN())) {
@@ -1185,23 +1185,23 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             log.error(msg);
             throw new CertPathValidatorException(msg);
         }
-        
+
         if(!caInfo.getCertificateChain().get(0).getPublicKey().equals(validatedChain.get(0).getPublicKey())) {
             String msg = "Uploaded cross certificate chain leaf certificate did not match CA public key.";
             log.error(msg);
             throw new CertPathValidatorException(msg);
         }
-        
+
         // for internal CAs, we publish the certificate chain unless future roll over
         // these cross certificates are not stored in CaCertificateCache
         // in case of OCSP or other scenarios verification should still work as the CA public key is same
         for (int i=validatedChain.size()-1; i>=0; i--) {
             String fingerprint = CertTools.getFingerprintAsString(validatedChain.get(i));
-            int signerIndex = i == validatedChain.size()-1 ? i : i+1; 
+            int signerIndex = i == validatedChain.size()-1 ? i : i+1;
             String cafp =  CertTools.getFingerprintAsString(validatedChain.get(signerIndex));
             CertificateDataWrapper certificateDataWrapper = certificateStoreSession.getCertificateData(fingerprint);
             if (certificateDataWrapper == null) {
-                certificateDataWrapper = certificateStoreSession.storeCertificate(authenticationToken, 
+                certificateDataWrapper = certificateStoreSession.storeCertificate(authenticationToken,
                         validatedChain.get(i), CertificateConstants.CERT_USERNAME_SYSTEMCA, cafp,
                         CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_CROSS_CA_CHAIN,
                         CertificateProfileConstants.NO_CERTIFICATE_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE,
@@ -1211,7 +1211,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 publisherSession.storeCertificate(authenticationToken, caInfo.getCRLPublishers(), certificateDataWrapper, null, caInfo.getSubjectDN(), null);
             }
         }
-        
+
         String rootCaSubjectDn = CertTools.getSubjectDN(validatedChain.get(validatedChain.size()-1));
         List<String> fingerprints = new ArrayList<>();
         for(Certificate c: validatedChain) {
@@ -1224,10 +1224,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             ((X509CAInfo)caInfo).setAlternateCertificateChains(alternateChains);
         }
         alternateChains.put(rootCaSubjectDn, fingerprints);
-        
+
         // save CA
         editCA(authenticationToken, caInfo);
-        
+
         // similar audit log message as externally signed CA
         logAuditEvent(
                 EventTypes.CA_EDITING, EventStatus.SUCCESS,
@@ -1277,7 +1277,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 if (!cacertSubjectDN.equals(DnComponents.stringToBCDNString(ca.getSubjectDN()))) {
                     boolean fail = true;
                     if (cacert.getType().equals("CVC") && DnComponents.getPartFromDN(ca.getSubjectDN(), "OU") != null) {
-                        // If this is a CVC certificate, we have the ability to have more DN components in the CA subject DN than in the actual 
+                        // If this is a CVC certificate, we have the ability to have more DN components in the CA subject DN than in the actual
                         // CVC CA certificate (which is limited to C and CN)
                         final String limitedCVCADN = "CN=" + DnComponents.getPartFromDN(ca.getSubjectDN(), "CN") + ",C=" + DnComponents.getPartFromDN(ca.getSubjectDN(), "C");
                         if (log.isDebugEnabled()) {
@@ -1287,7 +1287,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                             // We did have a CVC CA where the database CA DN has an additional OU component, a special case, allow this
                             fail = false;
                         }
-                    } 
+                    }
                     if (fail) {
                         String msg = intres.getLocalizedMessage("caadmin.errorcertrespwrongdn", CertTools.getSubjectDN(cacert), ca.getSubjectDN());
                         log.info(msg);
@@ -1478,7 +1478,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         log.debug(
                                 "The received certificate response does not match the CAs private signing key for purpose CAKEYPURPOSE_CERTSIGN_NEXT either, giving up.");
                         if (e2 instanceof InvalidKeyException) {
-                            String keyAliases = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN) + " and " + 
+                            String keyAliases = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN) + " and " +
                                                         catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
                             throw new IllegalKeyException(getDetailedErrorMessageInvalidKey(e2.getMessage(), keyAliases));
                         }
@@ -1490,7 +1490,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         }
                     }
                     if (currentSignKeyInvalid) {
-                        throw new IllegalKeyException(getDetailedErrorMessageInvalidKey(e1.getMessage(), 
+                        throw new IllegalKeyException(getDetailedErrorMessageInvalidKey(e1.getMessage(),
                                         catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN) ));
                     } else {
                         throw new IllegalKeyException(e2);
@@ -1499,12 +1499,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
         }
     }
-    
+
     private String getDetailedErrorMessageInvalidKey(String message, String keyAlias) {
         if (message.equalsIgnoreCase(KeyTools.ERROR_MESSAGE_SIGNING_FAILED)) {
             return keyAlias + " could not be used to create signature. Suitable algorithm may not be detected or "
                     + "key(s) may not have signing permission.";
-        } 
+        }
         if (message.equalsIgnoreCase(KeyTools.ERROR_MESSAGE_VERIFICATION_FAILED)) {
             return "Verification failed for keys: " + keyAlias + ". "
                     + "Please select the correct key from the 'Signed CA key' "
@@ -1561,7 +1561,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     log.debug(
                             "The received certificate response does not match the CAs private signing key for purpose CAKEYPURPOSE_CERTSIGN_NEXT either, giving up.");
                     if (e2 instanceof InvalidKeyException) {
-                        String keyAliases = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN) + " and " + 
+                        String keyAliases = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN) + " and " +
                                                     catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
                         throw new EjbcaException(ErrorCode.INVALID_KEY, getDetailedErrorMessageInvalidKey(e2.getMessage(), keyAliases));
                     }
@@ -1572,8 +1572,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         log.debug("Error: ", e2);
                     }
                     if (currentSignKeyInvalid) {
-                        throw new EjbcaException(ErrorCode.INVALID_KEY, 
-                                getDetailedErrorMessageInvalidKey(e1.getMessage(), 
+                        throw new EjbcaException(ErrorCode.INVALID_KEY,
+                                getDetailedErrorMessageInvalidKey(e1.getMessage(),
                                         catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN) ));
                     } else {
                         throw new EjbcaException(ErrorCode.INVALID_KEY, e2);
@@ -1627,12 +1627,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         // Set expire time
         ca.setExpireTime(CertTools.getNotAfter(cacert));
-        
+
         // Before editing the CA, check if it is MS compatible and set parameters accordingly
         if (ca instanceof X509CA && ((X509CA)ca).isMsCaCompatible()) {
             setMsCompatCAParams(ca);
         }
-        
+
         // Save CA
         caSession.editCA(authenticationToken, ca, true);
         // Publish CA Certificate
@@ -1855,7 +1855,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         return returnval;
     }
-    
+
     @Override
     public void importCACertificate(AuthenticationToken admin, String caname, Collection<CertificateWrapper> wrappedCerts)
             throws AuthorizationDeniedException, CAExistsException, IllegalCryptoTokenException, CertificateImportException {
@@ -1863,7 +1863,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     @Override
-    public void importExternalCA(AuthenticationToken admin, String caname, 
+    public void importExternalCA(AuthenticationToken admin, String caname,
             Collection<CertificateWrapper> wrappedCerts, CAInfo cainfo)
             throws AuthorizationDeniedException, CAExistsException, IllegalCryptoTokenException, CertificateImportException {
         if (StringUtils.isBlank(caname)) {
@@ -1898,7 +1898,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if (caCertificate instanceof X509Certificate) {
                 X509Certificate x509CaCertificate = (X509Certificate) caCertificate;
                 String subjectaltname = DnComponents.getSubjectAlternativeName(x509CaCertificate);
-    
+
                 // Process certificate policies.
                 ArrayList<CertificatePolicy> policies = new ArrayList<>();
                 CertificateProfile certprof = certificateProfileSession.getCertificateProfile(certprofileid);
@@ -1944,7 +1944,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         caSession.addCA(admin, ca);
         // Persist ("Publish") the CA certificates to the local CertificateData database.
         publishCACertificate(admin, certificates, null, ca.getSubjectDN());
-        
+
     }
 
     @Override
@@ -2099,16 +2099,16 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @Override
     public void renewCA(AuthenticationToken authenticationToken, int caid, boolean regenerateKeys, Date customNotBefore,
-                        final boolean createLinkCertificate) throws AuthorizationDeniedException, CryptoTokenOfflineException {
+                        final boolean createLinkCertificate, final int linkCertificateProfileId) throws AuthorizationDeniedException, CryptoTokenOfflineException {
         try {
-            renewCAInternal(authenticationToken, caid, regenerateKeys, customNotBefore, createLinkCertificate, /*newSubjectDN=*/null);
+            renewCAInternal(authenticationToken, caid, regenerateKeys, customNotBefore, createLinkCertificate, linkCertificateProfileId, /*newSubjectDN=*/null);
         } catch (CANameChangeRenewalException e) {
             throw new IllegalStateException(e);
         }
     }
 
     private void renewCAInternal(AuthenticationToken authenticationToken, int caid, boolean regenerateKeys, Date customNotBefore,
-                                 final boolean createLinkCertificate, String newSubjectDn)
+                                 final boolean createLinkCertificate, final int linkCertificateProfileId, String newSubjectDn)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, CANameChangeRenewalException {
         final CACommon ca = caSession.getCAForEdit(authenticationToken, caid);
         final CAToken caToken = ca.getCAToken();
@@ -2148,14 +2148,14 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         + " and alias=" + nextSignKeyAlias);
             }
         }
-        renewCAInternal(authenticationToken, caid, nextSignKeyAlias, customNotBefore, createLinkCertificate, newSubjectDn);
+        renewCAInternal(authenticationToken, caid, nextSignKeyAlias, customNotBefore, createLinkCertificate, linkCertificateProfileId, newSubjectDn);
     }
 
     @Override
     public void renewCA(final AuthenticationToken authenticationToken, final int caid, final String nextSignKeyAlias, Date customNotBefore,
-                        final boolean createLinkCertificate) throws AuthorizationDeniedException, CryptoTokenOfflineException {
+                        final boolean createLinkCertificate, final int linkCertificateProfileId) throws AuthorizationDeniedException, CryptoTokenOfflineException {
         try {
-            renewCAInternal(authenticationToken, caid, nextSignKeyAlias, customNotBefore, createLinkCertificate, /*newSubjectDN=*/null);
+            renewCAInternal(authenticationToken, caid, nextSignKeyAlias, customNotBefore, createLinkCertificate, linkCertificateProfileId, /*newSubjectDN=*/null);
         } catch (CANameChangeRenewalException e) {
             throw new IllegalStateException(e);
         }
@@ -2163,20 +2163,20 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @Override
     public void renewCANewSubjectDn(AuthenticationToken admin, int caid, boolean regenerateKeys, Date customNotBefore,
-                                    final boolean createLinkCertificate, String newSubjectDn)
+                                    final boolean createLinkCertificate, final int linkCertificateProfileId, String newSubjectDn)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, CANameChangeRenewalException {
-        renewCAInternal(admin, caid, regenerateKeys, customNotBefore, createLinkCertificate, newSubjectDn);
+        renewCAInternal(admin, caid, regenerateKeys, customNotBefore, createLinkCertificate, linkCertificateProfileId, newSubjectDn);
     }
 
     @Override
     public void renewCANewSubjectDn(AuthenticationToken admin, int caid, final String nextSignKeyAlias, Date customNotBefore,
-                                    final boolean createLinkCertificate, String newSubjectDn)
+                                    final boolean createLinkCertificate, final int linkCertificateProfileId, String newSubjectDn)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, CANameChangeRenewalException {
-        renewCAInternal(admin, caid, nextSignKeyAlias, customNotBefore, createLinkCertificate, newSubjectDn);
+        renewCAInternal(admin, caid, nextSignKeyAlias, customNotBefore, createLinkCertificate, linkCertificateProfileId, newSubjectDn);
     }
 
     private void renewCAInternal(final AuthenticationToken authenticationToken, int caid, final String nextSignKeyAlias, Date customNotBefore,
-                                 final boolean createLinkCertificate, String newSubjectDN)
+                                 final boolean createLinkCertificate, final int linkCertificateProfileId, String newSubjectDN)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, CANameChangeRenewalException {
         if (log.isTraceEnabled()) {
             log.trace(">CAAdminSession, renewCA(), caid=" + caid);
@@ -2195,7 +2195,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         // Get CA info.
         try {
-            // Renewal will never be used by an external instance (which rather imports a renewed certificate) --> Safe to cast. 
+            // Renewal will never be used by an external instance (which rather imports a renewed certificate) --> Safe to cast.
             CA ca = (CA) caSession.getCAForEdit(authenticationToken, caid);
 
             String newCAName = null;
@@ -2291,7 +2291,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 setMsCompatCAParams(ca);
                 caSession.editCA(authenticationToken, ca, true);
             }
-            
+
             if (ca.getSignedBy() == CAInfo.SELFSIGNED) {
                 if (subjectDNWillBeChanged) {
                     ca.setSubjectDN(newSubjectDN);
@@ -2343,13 +2343,16 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // Set the new certificate chain that we have created above
             ca.setCertificateChain(cachain);
 
-            // The signature algorithm on a link certificate shall always be from the "old" CA, i.e. the same algorithm as was 
+            // The signature algorithm on a link certificate shall always be from the "old" CA, i.e. the same algorithm as was
             // used to sign the old CA certificate
             final String previousSigAlg = CertTools.getCertSignatureAlgorithmNameAsString(oldCaCertificate);
             if (log.isDebugEnabled()) {
                 log.debug("Signature algorithm for link certificate (if issued) for CA '" + ca.getName() + "' will use the old CA certificate signature algorithm "+previousSigAlg+".");
             }
-            final CertificateProfile linkCertProfile = certprofile.clone();
+            CertificateProfile linkCertProfile = certprofile.clone();
+            if (linkCertificateProfileId!=CertificateProfileConstants.NO_CERTIFICATE_PROFILE) {
+                linkCertProfile = certificateProfileSession.getCertificateProfile(linkCertificateProfileId);
+            }
             linkCertProfile.setSignatureAlgorithm(previousSigAlg);
             // We need to save the CAID, for audit logging that the CA has changed as subjectDN change means a change of CAId
             int caidBeforeNameChange = -1;
@@ -2367,7 +2370,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
             // Publish the new CA certificate
             publishCACertificate(authenticationToken, cachain, ca.getCRLPublishers(), ca.getSubjectDN());
-            
+
             // Generate a new CRL, but not partitions, which could take very long time.
             if (ca.getCAType() == CAInfo.CATYPE_X509) {
                 final CrlCreationParams crlParams = new CrlCreationParams(MAX_CRL_ARCHIVAL_SECS, TimeUnit.SECONDS);
@@ -2656,8 +2659,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             final CAToken currentCaToken = ca.getCAToken();
             final int cryptoTokenId = currentCaToken.getCryptoTokenId();
             CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
-            if (!(cryptoToken instanceof SoftCryptoToken)) {
-                throw new Exception("Cannot export anything but a soft token.");
+            if (cryptoToken == null) {
+                throw new NullPointerException("CA '" + ca.getName() + "' references crypto token with ID " + cryptoTokenId + " which doesn't exist");
+            } else if (!cryptoToken.isInstanceOf(SoftCryptoToken.class)) {
+                throw new IllegalStateException("Cannot export anything but a soft token.");
             }
             cryptoTokenManagementSession.deactivate(admin, cryptoTokenId);
             // Create a new CAToken with the same properties but without the reference to the removed CryptoToken
@@ -2871,7 +2876,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     .setEntityPubKey(publickey)
                     .setSignatureAlgorithm(signatureAlgorithm)
                     .generateCertificate();
-                    
+
             keystore.setKeyEntry(CAToken.SOFTPRIVATESIGNKEYALIAS, privatekey, null, certchain);
 
             final KeyPair enckeys;
@@ -2899,10 +2904,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
 
             // Write the keystore to byte[] that we can feed to crypto token factory
-            final char[] authCode = authenticationCode.toCharArray();
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            keystore.store(baos, authCode);
-
+            byte[] ksBytes = KeyStoreTools.getAsByteArray(keystore, authenticationCode);
             // Now we have the PKCS12 keystore, from this we can create the CAToken
             final Properties cryptoTokenProperties = new Properties();
             if (autoActivate) {
@@ -2911,7 +2913,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             int cryptoTokenId;
             try {
                 cryptoTokenId = createCryptoTokenWithUniqueName(authenticationToken, "ImportedCryptoToken" + caId, SoftCryptoToken.class.getName(),
-                        cryptoTokenProperties, baos.toByteArray(), authCode);
+                        cryptoTokenProperties, ksBytes, authenticationCode.toCharArray());
             } catch (NoSuchSlotException e1) {
                 throw new RuntimeException("Attempte to define a slot for a soft crypto token. This should not happen.");
             }
@@ -2962,7 +2964,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // Get the Id of an existing crypto token
             Integer id = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
             if (id == null) {
-                throw new IllegalCryptoTokenException("Crypto token " + cryptoTokenName + " does not exists when trying to import CA " + caname);                
+                throw new IllegalCryptoTokenException("Crypto token " + cryptoTokenName + " does not exists when trying to import CA " + caname);
             }
             cryptoTokenId = id;
             if (!cryptoTokenManagementSession.isCryptoTokenStatusActive(cryptoTokenId)) {
@@ -3074,7 +3076,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         + ": The last certificate in the certificate chain should be self-signed.");
             }
 
-            // Verify that the certificate chain is valid, i.e. that 
+            // Verify that the certificate chain is valid, i.e. that
             // signatureCertChain[i].signedBy(signatureCertificateChain[i+1]) ∀i, 0 <= i < signatureCertChain.length
             for (int i = 0; i < signatureCertChain.length - 1; i++) {
                 if (!verifyIssuer(signatureCertChain[i], signatureCertChain[i + 1])) {
@@ -3174,7 +3176,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // Make sure we are not trying to export a hard or invalid token
             CAToken thisCAToken = thisCa.getCAToken();
             final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(thisCAToken.getCryptoTokenId());
-            if (!(cryptoToken instanceof SoftCryptoToken)) {
+            if (cryptoToken == null) {
+                throw new NullPointerException("CA '" + thisCa.getName() + "' references crypto token with ID " + thisCAToken.getCryptoTokenId() + " which doesn't exist");
+            } else if (!cryptoToken.isInstanceOf(SoftCryptoToken.class)) {
                 throw new IllegalCryptoTokenException("Cannot export anything but a soft token.");
             }
             // Do not allow export without password protection
@@ -3193,7 +3197,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
             // Fetch keys
             final char[] password = keystorepass.toCharArray();
-            ((SoftCryptoToken) cryptoToken).checkPasswordBeforeExport(password);
+            cryptoToken.getConcreteToken(SoftCryptoToken.class).checkPasswordBeforeExport(password);
             cryptoToken.activate(password);
 
             PrivateKey p12PrivateEncryptionKey = cryptoToken.getPrivateKey(thisCAToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
@@ -3243,15 +3247,13 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 keystore.setKeyEntry(privateSignatureKeyAlias, p12PrivateCertSignKey, privkeypass.toCharArray(), certificateChainSignature);
                 keystore.setKeyEntry(privateEncryptionKeyAlias, p12PrivateEncryptionKey, privkeypass.toCharArray(), certificateChainEncryption);
                 // Return KeyStore as byte array and clean up
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                keystore.store(baos, keystorepass.toCharArray());
+                ret = KeyStoreTools.getAsByteArray(keystore, keystorepass);
                 if (keystore.isKeyEntry(privateSignatureKeyAlias)) {
                     keystore.deleteEntry(privateSignatureKeyAlias);
                 }
                 if (keystore.isKeyEntry(privateEncryptionKeyAlias)) {
                     keystore.deleteEntry(privateEncryptionKeyAlias);
                 }
-                ret = baos.toByteArray();
             }
             logAuditEvent(
                     EjbcaEventTypes.CA_EXPORTTOKEN, EventStatus.SUCCESS,
@@ -3431,8 +3433,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
         }
         final CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(cainfo.getCertificateProfileId());
-        // A CA certificate is published where the CRL is published and if there is a publisher noted in the certificate profile 
-        // (which there is probably not) 
+        // A CA certificate is published where the CRL is published and if there is a publisher noted in the certificate profile
+        // (which there is probably not)
         publishers.addAll(certprofile.getPublisherList());
         publishCACertificate(admin, cainfo.getCertificateChain(), publishers, cainfo.getSubjectDN());
         publishCrl(admin, cainfo, publishers);
@@ -3678,7 +3680,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     public String healthCheck() {
         return healthCheckInternal(caSession.getAllCaIds());
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public String healthCheck(Collection<String> caNames) {
@@ -3686,7 +3688,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         for (String caName : caNames) {
             caNamesSet.add(caName);
         }
-        
+
         //@formatter:off
         List<Integer> caIds = caSession.getCAIdToNameMap()
                 .entrySet().stream()
@@ -3697,7 +3699,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
         return healthCheckInternal(caIds);
     }
-    
+
     private String healthCheckInternal(List<Integer> caIds) {
         final boolean caTokenSignTest = EjbcaConfiguration.getHealthCheckCaTokenSignTest();
         if (log.isDebugEnabled()) {
@@ -3735,11 +3737,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     }
                 }
             }
-        }   
+        }
         return sb.toString();
-    
+
     }
-    
+
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public ExtendedCAServiceResponse extendedService(AuthenticationToken admin, int caid, ExtendedCAServiceRequest request)
@@ -3783,7 +3785,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // SHA1WithECDSA returns as ECDSA for certSigAlg (has been always, don't know why), while keySigAlgs will contain SHA1WithECDSA
             // therefore we need to make a more complex match, checking if keySigAlgs contains the part,
             // ignoring case so that SHA256WITHRSA matches SHA256WithRSA, and ECDSA matches SHA1WithECDSA (or SHA256WithECDSA)
-            // But SHA1WithECDSA, or ECDSA does not match SHA1WithRSA, or Ed448, or... 
+            // But SHA1WithECDSA, or ECDSA does not match SHA1WithRSA, or Ed448, or...
             boolean containsAlg = keySigAlgs.stream().anyMatch(x -> Strings.CI.contains(x, certSigAlg));
             if (certSigAlg == null || !containsAlg) {
                 if (log.isDebugEnabled()) {
@@ -3984,8 +3986,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     @Override
-    public byte[] makeCitsRequest(AuthenticationToken authenticationToken, int caid, byte[] caChainBytes, 
-            String signKeyAlias, String verificationKeyAlias, String encryptKeyAlias) 
+    public byte[] makeCitsRequest(AuthenticationToken authenticationToken, int caid, byte[] caChainBytes,
+            String signKeyAlias, String verificationKeyAlias, String encryptKeyAlias)
             throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException {
         // TODO: currently ignoring cert chain
         if (log.isTraceEnabled()) {
@@ -4001,13 +4003,13 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             );
             throw new AuthorizationDeniedException(detailsMsg);
         }
-        
+
         if(StringUtils.isEmpty(signKeyAlias)) {
             //TODO: support via resource files
             log.debug("ECA CSR can not have empty signKeyAlias.");
             throw new EJBException("ECA CSR can not have empty signKeyAlias.");
         }
-        
+
         try {
             final ECA ca = (ECA) caSession.getCAForEdit(authenticationToken, caid);
 
@@ -4020,7 +4022,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             } catch (Exception e) {
                 throw new EJBException("ECA crypto token test failed.");
             }
-            
+
             // compulsory re-keying: page 21 in 102 941, 3 paragraph below note 1 -> ETSI
             // also canRequestRollover in certificate is absent always as per 103 097 in section 6
             // so change during IEEE
@@ -4028,7 +4030,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 boolean generateNewKeys = caToken.generateNextKeysEcaToken();
                 verificationKeyAlias = caToken.getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_NEXT);
                 encryptKeyAlias = caToken.getProperties().getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING_NEXT);
-                
+
                 if(generateNewKeys && ca.getItsCACertificate()!=null) {
                     try {
                         cryptoTokenManagementSession.createKeyPairWithSameKeySpec(authenticationToken, cryptoTokenId, signKeyAlias,
@@ -4056,15 +4058,15 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         log.info("error on key create", e2);
                         throw new RuntimeException(e2);
                     }
-                } 
+                }
             }
-            
+
             ca.setCAToken(caToken);
             final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(cryptoTokenId);
-            
+
             final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(ca.getCertificateProfileId());
             returnval = ca.createRequest(cryptoToken, signKeyAlias, verificationKeyAlias, encryptKeyAlias, certificateProfile);
-            
+
             caSession.editCA(authenticationToken, ca, true);
             // Log information about the event
             logAuditEvent(
@@ -4092,18 +4094,18 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             log.trace("<makeCitsRequest: " + caid);
         }
         return returnval;
-        
+
     }
 
     @Override
-    public void receiveCitsResponse(AuthenticationToken authenticationToken, int caid, 
+    public void receiveCitsResponse(AuthenticationToken authenticationToken, int caid,
                         byte[] signedCertificate) throws CADoesntExistsException, EjbcaException {
         // TODO: later support certificate chain
-        
+
         if (log.isTraceEnabled()) {
             log.trace(">receiveCitsResponse: " + caid);
         }
-        
+
         if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CARENEW.resource())) {
             logAuditEvent(
                     EventTypes.ACCESS_CONTROL, EventStatus.FAILURE,
@@ -4111,16 +4113,16 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     intres.getLocalizedMessage("caadmin.notauthorizedtocertresp", caid)
             );
         }
-        
+
         // validate signedCertificate is properly formatted
         ITSCertificate certificate =  ECAUtils.parseItsCertificate(signedCertificate);
-        
+
         try {
             ECA ca = (ECA) caSession.getCAForEdit(authenticationToken, caid);
             if (ca == null) {
                 throw new CADoesntExistsException("CA with ID " + caid + " does not exist.");
             }
-            
+
             CertificateId receievedCertificateId = certificate.toASN1Structure().getToBeSigned().getId();
             if(receievedCertificateId.getChoice()!=CertificateId.name) {
                 throw new EjbcaException("CertificateId should be NAME instance.");
@@ -4131,26 +4133,26 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     throw new EjbcaException("CertificateId did not match.");
                 }
             }
-            
+
             final CAToken catoken = ca.getCAToken();
             final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(catoken.getCryptoTokenId());
             PublicKey caCertPublicVerificationKey = ECAUtils.getVerificationKeyFromCertificate(certificate);
             PublicKey caCertPublicEncryptionKey = ECAUtils.getEncryptionKeyFromCertificate(certificate);
-            
+
             String nextVerificationKeyAlias = catoken.getNextEcaSignKeyAlias();
             log.debug("nextVerificationKeyAlias: " + nextVerificationKeyAlias);
-            KeyTools.testKey(cryptoToken.getPrivateKey(nextVerificationKeyAlias), 
+            KeyTools.testKey(cryptoToken.getPrivateKey(nextVerificationKeyAlias),
                     caCertPublicVerificationKey, cryptoToken.getSignProviderName());
-            
+
             if(cryptoToken.getSignProviderName()=="BC") {
                 String nextDefaultKeyAlias = catoken.getNextEcaDefaultKeyAlias();
                 log.debug("nextDefaultKeyAlias: " + nextDefaultKeyAlias);
-                KeyTools.testKey(cryptoToken.getPrivateKey(nextDefaultKeyAlias), 
+                KeyTools.testKey(cryptoToken.getPrivateKey(nextDefaultKeyAlias),
                         caCertPublicEncryptionKey, cryptoToken.getSignProviderName());
             }
             // for PKCS11 key signing permission may not be given
             catoken.activateNextKeysEcaToken();
-            
+
             // Activated the next signing key(s) so generate audit log
             logAuditEvent(
                     EventTypes.CA_KEYACTIVATE, EventStatus.SUCCESS,
@@ -4163,35 +4165,35 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             );
             ca.setCAToken(catoken);
             ca.setItsCaCertificate(certificate);
-    
+
             // Set status to active, so we can sign certificates for the external services below.
             ca.setStatus(CAConstants.CA_ACTIVE);
-    
+
             // TODO: also add expiry time to CA GUI
             ca.setExpireTime(ECAUtils.getExpiryDate(certificate));
-            
+
             // TODO: update geographic region, app/issue permission and SSP family
-            
+
             // create hashedId8 and update subjectDn/certificate id
             // not overwriting id
             ca.setCertificateHash(Hex.toHexString(ECAUtils.generateHash(certificate)));
-       
+
             // Save CA
             caSession.editCA(authenticationToken, ca, true);
-    
+
             logAuditEvent(
                     EventTypes.CA_EDITING, EventStatus.SUCCESS,
                     authenticationToken, caid,
                     intres.getLocalizedMessage("caadmin.certrespreceived", caid)
             );
-            
+
         } catch (AuthorizationDeniedException|CryptoTokenOfflineException|
                 InvalidAlgorithmException|InvalidKeyException e) {
             throw new EJBException(e);
-        } 
-        
+        }
+
     }
-    
+
     @Override
     public void importItsCACertificate(AuthenticationToken admin, String caname, byte[] certificate)
             throws AuthorizationDeniedException, CAExistsException, CertificateImportException, IllegalCryptoTokenException {
@@ -4204,14 +4206,14 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             throw new CertificateImportException(errorMessage);
         }
         //TODO: validate with certificates from ECTL
-        
+
         // using child implementations to avoid casts later on
         // other values are populated to default
-        CitsCaInfo cainfo = CitsCaInfo.getDefaultCitsCaInfo(caname, 
-                "ITS CA created by certificate import.", "0d", null, 
-                CertificateProfileConstants.CERTPROFILE_FIXED_ITS, 
+        CitsCaInfo cainfo = CitsCaInfo.getDefaultCitsCaInfo(caname,
+                "ITS CA created by certificate import.", "0d", null,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ITS,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ITS, null);
-        
+
         cainfo.setSubjectDN(CitsCaInfo.CITS_SUBJECTDN_PREFIX); // otherwise search will fail
         CertificateId caCertificateId = caCertificate.toASN1Structure().getToBeSigned().getId();
         if(caCertificateId==null) {
@@ -4229,21 +4231,21 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             log.info(errorMessage);
             throw new CertificateImportException(errorMessage);
         }
-        
+
         cainfo.setSignedBy(CAInfo.SIGNEDBYEXTERNALCA);
         cainfo.setCAId(cainfo.getSubjectDN().hashCode());
         cainfo.setStatus(CAConstants.CA_EXTERNAL);
         log.info("Preparing to import of CA with Subject DN " + cainfo.getSubjectDN());
         // ignoring certificate policies.
         cainfo.setName(caname);
-        
+
         GeographicRegion region = caCertificate.toASN1Structure().getToBeSigned().getRegion();
-        if(region!=null) { // else global/europe - 65535? 
+        if(region!=null) { // else global/europe - 65535?
             ItsGeographicRegion georegion = new ItsGeographicRegion();
             georegion.setGeographicElement(ItsGeographicRegion.fromGeographicRegion(region));
             cainfo.setRegion(georegion);
         }
-                
+
         // TODO: app/issue permissions, later release
         ECA eca = (ECA) CAFactory.INSTANCE.getCitsCaImpl(cainfo);
         CAToken token = new CAToken(eca.getCAId(), new NullCryptoToken().getProperties());
@@ -4258,7 +4260,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Add CA
         caSession.addCA(admin, eca);
         //TODO: Persist ("Publish") the CA certificates to the local CertificateData database.
-        
+
     }
 
 

@@ -50,6 +50,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest;
+import org.ejbca.core.model.certificate.CertificateRequestParseException;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaCertificateSearchRequest;
 import org.ejbca.core.model.era.RaCertificateSearchResponse;
@@ -319,10 +320,14 @@ public class CertificateRestResource extends BaseRestResource {
                     requestData.getCertificateRequest(), requestData.getRequestType(), null, "CERTIFICATE");
 
             Certificate certificate = null;
-            if (requestData.getRequestType() == CertificateConstants.CERT_REQ_TYPE_CVC) {
-                certificate = CertTools.getCertfromByteArray(certificateBytes, CardVerifiableCertificate.class);
+            if (certificateBytes != null) {
+                if (requestData.getRequestType() == CertificateConstants.CERT_REQ_TYPE_CVC) {
+                    certificate = CertTools.getCertfromByteArray(certificateBytes, CardVerifiableCertificate.class);
+                } else {
+                    certificate = CertTools.getCertfromByteArray(certificateBytes, X509Certificate.class);
+                }
             } else {
-                certificate = CertTools.getCertfromByteArray(certificateBytes, X509Certificate.class);
+                throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Failed to generate certificate.");
             }
 
             final List<Certificate> certificateChain = fetchCaCertificateChain(
@@ -334,6 +339,9 @@ public class CertificateRestResource extends BaseRestResource {
                     certificateChain
             );
             return Response.status(Status.CREATED).entity(enrollCertificateRestResponse).build();
+        } catch (IOException | CertificateRequestParseException e ) {
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Failed to generate certificate due to malformed certificate request for type "
+                    + certificateRequestRestRequest.getCertificateRequestType() + ".");
         } catch (InvalidKeyException | InvalidKeySpecException | NoSuchAlgorithmException | NoSuchProviderException |
                  CertificateException | EjbcaException | ParseException e) {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
@@ -343,9 +351,6 @@ public class CertificateRestResource extends BaseRestResource {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), "An incorrect certificate key has been passed contain rather too large key or having any other issue.");
         } catch (CertificateExtensionException e) {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Failed to generate certificate due to an issue with certificate extensions.");
-        } catch (IOException e) {
-            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Failed to generate certificate due to malformed certificate requet for type "
-                    + certificateRequestRestRequest.getCertificateRequestType() + ".");
         } catch (CertificateCreateException e) {
             throw makeCertificateCreationException(e);
         }
@@ -406,7 +411,7 @@ public class CertificateRestResource extends BaseRestResource {
         endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmType(keyStoreRestRequest.getKeyAlg());
         endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmSubType(keyStoreRestRequest.getKeySpec());
         final int tokenType = endEntityInformation.getTokenType();
-        if (!(tokenType == SecConst.TOKEN_SOFT_P12 || tokenType == SecConst.TOKEN_SOFT_JKS || tokenType == SecConst.TOKEN_SOFT_BCFKS)) {
+        if (!(tokenType == EndEntityConstants.TOKEN_SOFT_P12 || tokenType == EndEntityConstants.TOKEN_SOFT_JKS || tokenType == EndEntityConstants.TOKEN_SOFT_BCFKS)) {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Unsupported token type. Must be one of 'PKCS12', 'BCFKS' or 'JKS'.");
         }
         final byte[] keyStoreBytes = raMasterApi.generateKeyStore(admin, endEntityInformation);

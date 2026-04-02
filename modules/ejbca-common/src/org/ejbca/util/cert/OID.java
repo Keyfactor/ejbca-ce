@@ -49,6 +49,10 @@ public class OID {
     }
 
     public static boolean isValidOid(final String oid) {
+        if(oid == null) {
+            return false;
+        }
+        
         try {
             new ASN1ObjectIdentifier(oid);
             return true;

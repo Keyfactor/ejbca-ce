@@ -219,7 +219,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             SignatureException, CertificateException, CertificateExtensionException, CertificateRenewalException {
 
-        ScepConfiguration scepConfig = (ScepConfiguration) this.globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
+        ScepConfiguration scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
         if (!scepConfig.aliasExists(scepConfigurationAlias)) {
             throw new NoSuchAliasException();
         }
@@ -244,7 +244,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             }
 
             // if there is a dedicated SCEP encryption certificate, add it to the chain
-            var encryptionCertificate = scepConfig.decodeEncryptionCertificate(scepConfigurationAlias);
+            var encryptionCertificate = scepConfig.getEncryptionCertificateForCa(scepConfigurationAlias, caname);
             if (encryptionCertificate != null) {
                 if (log.isDebugEnabled()) {
                     log.debug("Adding encryption certificate to certificate chain " + encryptionCertificate.getIssuerX500Principal() + ":"
@@ -258,7 +258,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             }
 
             // if there is a dedicated SCEP signing certificate, add it to the chain
-            var signingCertificate = scepConfig.decodeSigningCertificate(scepConfigurationAlias);
+            var signingCertificate = scepConfig.getSigningCertificateForCa(scepConfigurationAlias, cainfo.getName());
             if (signingCertificate != null) {
                 if (log.isDebugEnabled()) {
                     log.debug("Adding signing certificate to certificate chain " + signingCertificate.getIssuerX500Principal() + ":"
@@ -474,8 +474,14 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         boolean includeCACert = scepConfig.getIncludeCA(alias);
         ScepRequestMessage reqmsg;
         try {
-            reqmsg = new ScepRequestMessage(msg, includeCACert, scepConfig.getEncryptionCryptoTokenId(alias), scepConfig.getEncryptionKeyAlias(alias),
-                    scepConfig.getSigningCryptoTokenId(alias), scepConfig.getSigningKeyAlias(alias), scepConfig.getSigningCertificate(alias));
+            if (scepConfig.getRAMode(alias)) {
+                reqmsg = new ScepRequestMessage(msg, includeCACert, scepConfig.getEncryptionCryptoTokenId(alias), scepConfig.getEncryptionKeyAlias(alias),
+                        scepConfig.getSigningCryptoTokenId(alias), scepConfig.getSigningKeyAlias(alias), scepConfig.getSigningCertificate(alias));
+            } else {
+                reqmsg = new ScepRequestMessage(msg, includeCACert, scepConfig.getEncryptionCryptoTokenId(alias), scepConfig.getEncryptionKeyAlias(alias),
+                        scepConfig.getSigningCryptoTokenId(alias), scepConfig.getSigningKeyAlias(alias), scepConfig.getSigningCertificates(alias));
+            }
+                
         } catch (IOException e) {
             log.info("Error receiving ScepMessage: ", LogRedactionUtils.getRedactedException(e));
             return null;
@@ -519,7 +525,9 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 }
             }
             try {
-                if (scepClientCertificateRenewal != null && scepConfig.getClientCertificateRenewal(alias)) {
+                // Certificate renewal isn't allowed in RA mode.  But sometimes the GUI leaves getClientCertificateRenewal as true 
+                // when changing the mode to RA.  Make sure we're in CA mode if we're going to do a renewal.
+                if (scepClientCertificateRenewal != null && !scepConfig.getRAMode(alias) && scepConfig.getClientCertificateRenewal(alias)) {
                     if (log.isDebugEnabled()) {
                         log.debug("SCEP client certificate renewal/enrollment with alias '" + alias + "'");
                     }
@@ -826,10 +834,8 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
      * @param scepConfig configuration used to build the client
      * @return client for sending commands to Intune
      * @throws CertificateCreateException Unable to create the client
-     * @throws AzureException
-     * @throws IOException
      */
-    private IntuneRestApi getIntuneScepServiceClient(final String alias, final ScepConfiguration scepConfig) throws CertificateCreateException, IOException, AzureException {
+    private IntuneRestApi getIntuneScepServiceClient(final String alias, final ScepConfiguration scepConfig) throws CertificateCreateException {
         try {
             Builder builder = new IntuneRestApi.Builder(scepConfig.getIntuneTenant(alias), scepConfig.getIntuneAadAppId(alias), GlobalConfiguration.EJBCA_VERSION);
             if (isNotBlank(scepConfig.getIntuneProxyHost(alias))) {
@@ -920,15 +926,15 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         }
         try {
             // decrypt using dedicated encryption key
-            if (scepConfig.getEncryptionCertificate(alias) != null) {
-                int encryptionCryptoTokenId = scepConfig.getEncryptionCryptoTokenId(alias);
-                String encryptionKeyAlias = scepConfig.getEncryptionKeyAlias(alias);
+            Integer encryptionCryptoTokenId = scepConfig.getEncryptionCryptoTokenId(alias);
+            String encryptionKeyAlias = scepConfig.getEncryptionKeyAlias(alias);
+            if (encryptionCryptoTokenId != null) {
                 if (log.isDebugEnabled()) {
                     log.debug("Decrypting SCEP message using dedicated decryption key token = " + encryptionCryptoTokenId + ", key alias = " + encryptionKeyAlias);
                 }
+                X509Certificate encryptionCertificate = scepConfig.getEncryptionCertificateForCa(alias, caName);
                 final CryptoToken decryptionToken = cryptoTokenSession.getCryptoToken(encryptionCryptoTokenId);
-                reqmsg.setKeyInfo(scepConfig.decodeEncryptionCertificate(alias), decryptionToken.getPrivateKey(encryptionKeyAlias),
-                        decryptionToken.getSignProviderName());
+                reqmsg.setKeyInfo(encryptionCertificate, decryptionToken.getPrivateKey(encryptionKeyAlias), decryptionToken.getSignProviderName());
             } else {
                 final CAToken caToken = caInfo.getCAToken();
                 final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(caToken.getCryptoTokenId());

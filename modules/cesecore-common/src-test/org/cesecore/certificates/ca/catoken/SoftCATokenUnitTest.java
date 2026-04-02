@@ -65,7 +65,14 @@ public class SoftCATokenUnitTest extends CATokenTestBase {
         doCaTokenSLHDSA("SLH-DSA-SHA2-128F", cryptoToken, getCaTokenProperties("slh-dsa-test" + CAToken.DEFAULT_KEYSEQUENCE));
     }
 
-    @Test
+	@Test
+	public void testCATokenComposite() throws Exception {
+		CryptoToken cryptoToken = createSoftToken(true);
+        // Note: Aliases of composite keys must end with -COMPOSITE (and optionally have a key sequence)
+        doCaTokenComposite("MLDSA87-RSA4096-PSS-SHA512", cryptoToken, getCaTokenProperties("composite-test-COMPOSITE" + CAToken.DEFAULT_KEYSEQUENCE));
+	}
+
+	@Test
     public void testActivateDeactivate() throws Exception {
     	CryptoToken cryptoToken = createSoftToken(true);
     	doActivateDeactivate("1024", cryptoToken, getCaTokenProperties("rsatest" + CAToken.DEFAULT_KEYSEQUENCE));
@@ -79,11 +86,11 @@ public class SoftCATokenUnitTest extends CATokenTestBase {
     	cryptoToken.activate(TOKEN_PIN.toCharArray());
         cryptoToken.generateKeyPair("1024", "rsatest" + CAToken.DEFAULT_KEYSEQUENCE);
 		KeyTools.testKey(cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
-		        cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), null);
+		        cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), "BC");
 		// With auto-activate, deactivate doesn't do anything because the token always auto-activates with the default pwd
 		cryptoToken.deactivate();
 		KeyTools.testKey(cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
-		        cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), null);
+		        cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), "BC");
 	}
 
 	@Test

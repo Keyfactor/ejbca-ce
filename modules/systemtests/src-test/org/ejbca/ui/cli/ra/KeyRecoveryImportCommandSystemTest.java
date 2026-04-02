@@ -27,6 +27,12 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.Date;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.IndefiniteLengthDetectorStream;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -35,6 +41,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
@@ -55,7 +62,6 @@ import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.KeyStoreCreateSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
@@ -63,11 +69,6 @@ import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -77,8 +78,6 @@ import static org.junit.Assert.assertTrue;
 
 /** Testing the keyrecoveryimport CLI command, that a PKCS#12 keystore with existing (external) key recovery data (a private key and a certificate)
  * can be imported either for an existing end entity or creating a new end entity.
- * 
- * @version $Id$
  */
 public class KeyRecoveryImportCommandSystemTest {
 
@@ -122,13 +121,14 @@ public class KeyRecoveryImportCommandSystemTest {
         }
     }
 
-    /** Test to import key recovery data that already exists in the database, it should fail */
+    /** Test to import key recovery data that already exists in the database, it should fail 
+     * @throws CertificateCreateException */
     @Test
-    public void testImportAlreadyExisting() throws AuthorizationDeniedException, EndEntityExistsException, CADoesntExistsException, IllegalNameException, CertificateSerialNumberException, EndEntityProfileValidationException, WaitingForApprovalException, NotFoundException, EjbcaException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {
+    public void testImportAlreadyExisting() throws AuthorizationDeniedException, EndEntityExistsException, CADoesntExistsException, IllegalNameException, CertificateSerialNumberException, EndEntityProfileValidationException, WaitingForApprovalException, NotFoundException, EjbcaException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException, NoSuchEndEntityException, CouldNotRemoveEndEntityException, CertificateCreateException {
         final String username = TESTCLASS_NAME+"User";
         final EndEntityInformation userdata = new EndEntityInformation(username, END_ENTITY_SUBJECT_DN, x509ca.getCAId(), null, null,
                 EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), EndEntityConstants.TOKEN_SOFT_P12, null);
         final String password = "foo123";
         userdata.setPassword(password);
         try {
@@ -136,6 +136,14 @@ public class KeyRecoveryImportCommandSystemTest {
             final byte[] userks = keyStoreSession.generateOrKeyRecoverTokenAsByteArray(authenticationToken, username, password, "prime256v1", AlgorithmConstants.KEYALGORITHM_EC);
             final KeyStore keystore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
             keystore.load(new ByteArrayInputStream(userks), password.toCharArray());
+            // Verify that keystore returned from server has definite length encoding
+            ByteArrayInputStream bain = new ByteArrayInputStream(userks);
+            try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(bain)) {
+                while (ildStream.readValue() != null) {
+                    ;
+                }
+                assertFalse("ks.store() with PKCS12StoreParameter(true) is expected to not have indefinitlength encoding", ildStream.isIndefiniteLength());
+            }
             final String alias = username;
             final Certificate certificate = keystore.getCertificate(alias);
             final PrivateKey privKey = (PrivateKey) keystore.getKey(alias, password.toCharArray());
@@ -146,7 +154,7 @@ public class KeyRecoveryImportCommandSystemTest {
             final File temp = File.createTempFile("testImportAlreadyExisting", ".tmp");
             temp.deleteOnExit();
             try (FileOutputStream w = new FileOutputStream(temp)) {
-                w.write(userks);            
+                w.write(userks);
             }
             // Try to add key recovery data to the existing end entity "username", this should not work as it already exists
             final String[] args = new String[] { "-f", temp.getAbsolutePath(), "--username", username, "--password", password };
@@ -167,7 +175,7 @@ public class KeyRecoveryImportCommandSystemTest {
         final String username = TESTCLASS_NAME+"User";
         final EndEntityInformation userdata = new EndEntityInformation(username, END_ENTITY_SUBJECT_DN, x509ca.getCAId(), null, null,
                 EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), EndEntityConstants.TOKEN_SOFT_P12, null);
         final String password = "foo123";
         userdata.setPassword(password);
         Certificate certificate = null;
@@ -176,15 +184,23 @@ public class KeyRecoveryImportCommandSystemTest {
             final byte[] userks = keyStoreSession.generateOrKeyRecoverTokenAsByteArray(authenticationToken, username, password, "prime256v1", AlgorithmConstants.KEYALGORITHM_EC);
             final KeyStore keystore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
             keystore.load(new ByteArrayInputStream(userks), password.toCharArray());
+            // Verify that keystore returned from server has definite length encoding
+            ByteArrayInputStream bain = new ByteArrayInputStream(userks);
+            try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(bain)) {
+                while (ildStream.readValue() != null) {
+                    ;
+                }
+                assertFalse("ks.store() with PKCS12StoreParameter(true) is expected to not have indefinitlength encoding", ildStream.isIndefiniteLength());
+            }
             final String alias = username;
             certificate = keystore.getCertificate(alias);
             assertFalse("Key recovery data should should not have been added by generate command", keyRecoverySession.existsKeys(EJBTools.wrap(certificate)));
             final File temp = File.createTempFile("testImportRandomUser", ".tmp");
             temp.deleteOnExit();
             try (FileOutputStream w = new FileOutputStream(temp)) {
-                w.write(userks);            
+                w.write(userks);
             }
-            // Try to add key recovery data to a new random user 
+            // Try to add key recovery data to a new random user
             final String[] args = new String[] { "-f", temp.getAbsolutePath(), "--password", password };
             final CommandResult result = command.execute(args);
             assertEquals("Adding key recovery data should work", CommandResult.SUCCESS.getReturnCode(), result.getReturnCode());
@@ -211,7 +227,7 @@ public class KeyRecoveryImportCommandSystemTest {
         final String username = TESTCLASS_NAME+"User";
         final EndEntityInformation userdata = new EndEntityInformation(username, END_ENTITY_SUBJECT_DN, temporaryca.getCAId(), null, null,
                 EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), EndEntityConstants.TOKEN_SOFT_P12, null);
         final String password = "foo123";
         userdata.setPassword(password);
         Certificate certificate = null;
@@ -220,20 +236,28 @@ public class KeyRecoveryImportCommandSystemTest {
             final byte[] userks = keyStoreSession.generateOrKeyRecoverTokenAsByteArray(authenticationToken, username, password, "prime256v1", AlgorithmConstants.KEYALGORITHM_EC);
             final KeyStore keystore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
             keystore.load(new ByteArrayInputStream(userks), password.toCharArray());
+            // Verify that keystore returned from server has definite length encoding
+            ByteArrayInputStream bain = new ByteArrayInputStream(userks);
+            try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(bain)) {
+                while (ildStream.readValue() != null) {
+                    ;
+                }
+                assertFalse("ks.store() with PKCS12StoreParameter(true) is expected to not have indefinitlength encoding", ildStream.isIndefiniteLength());
+            }
             final String alias = username;
             certificate = keystore.getCertificate(alias);
             assertFalse("Key recovery data should should not have been added by generate command", keyRecoverySession.existsKeys(EJBTools.wrap(certificate)));
             // Remove the generated certificate, so it is a "fresh" import with nothing in the database
             internalCertificateStoreSession.removeCertificatesByUsername(username);
             // Now remove the CA so it does not exist when trying to import the keystore
-            CaTestUtils.removeCa(authenticationToken, temporaryca.getCAInfo()); 
-            
+            CaTestUtils.removeCa(authenticationToken, temporaryca.getCAInfo());
+
             final File temp = File.createTempFile("testImportRandomUser", ".tmp");
             temp.deleteOnExit();
             try (FileOutputStream w = new FileOutputStream(temp)) {
-                w.write(userks);            
+                w.write(userks);
             }
-            // Try to add key recovery data to a new random user 
+            // Try to add key recovery data to a new random user
             final String[] args = new String[] { "-f", temp.getAbsolutePath(), "--password", password };
             final CommandResult result = command.execute(args);
             assertEquals("Adding key recovery data should not work as the issuing CA does not exist", CommandResult.CLI_FAILURE.getReturnCode(), result.getReturnCode());
@@ -257,7 +281,7 @@ public class KeyRecoveryImportCommandSystemTest {
         final String username = TESTCLASS_NAME+"User";
         final EndEntityInformation userdata = new EndEntityInformation(username, END_ENTITY_SUBJECT_DN, x509ca.getCAId(), null, null,
                 EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), EndEntityConstants.TOKEN_SOFT_P12, null);
         final String password = "foo123";
         userdata.setPassword(password);
         Certificate certificate = null;
@@ -266,6 +290,14 @@ public class KeyRecoveryImportCommandSystemTest {
             final byte[] userks = keyStoreSession.generateOrKeyRecoverTokenAsByteArray(authenticationToken, username, password, "prime256v1", AlgorithmConstants.KEYALGORITHM_EC);
             final KeyStore keystore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
             keystore.load(new ByteArrayInputStream(userks), password.toCharArray());
+            // Verify that keystore returned from server has definite length encoding
+            ByteArrayInputStream bain = new ByteArrayInputStream(userks);
+            try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(bain)) {
+                while (ildStream.readValue() != null) {
+                    ;
+                }
+                assertFalse("ks.store() with PKCS12StoreParameter(true) is expected to not have indefinitlength encoding", ildStream.isIndefiniteLength());
+            }
             final String alias = username;
             certificate = keystore.getCertificate(alias);
             assertFalse("Key recovery data should should not have been added by generate command", keyRecoverySession.existsKeys(EJBTools.wrap(certificate)));
@@ -275,9 +307,9 @@ public class KeyRecoveryImportCommandSystemTest {
             final File temp = File.createTempFile("testImportRandomUserNonExistingCert", ".tmp");
             temp.deleteOnExit();
             try (FileOutputStream w = new FileOutputStream(temp)) {
-                w.write(userks);            
+                w.write(userks);
             }
-            // Try to add key recovery data to a new random user 
+            // Try to add key recovery data to a new random user
             final String[] args = new String[] { "-f", temp.getAbsolutePath(), "--password", password };
             final CommandResult result = command.execute(args);
             assertEquals("Adding key recovery data should work", CommandResult.SUCCESS.getReturnCode(), result.getReturnCode());
@@ -301,7 +333,7 @@ public class KeyRecoveryImportCommandSystemTest {
         final String username = TESTCLASS_NAME+"User";
         final EndEntityInformation userdata = new EndEntityInformation(username, END_ENTITY_SUBJECT_DN, x509ca.getCAId(), null, null,
                 EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), EndEntityConstants.TOKEN_SOFT_P12, null);
         final String password = "foo123";
         userdata.setPassword(password);
         String fingerprint = null;
@@ -310,6 +342,14 @@ public class KeyRecoveryImportCommandSystemTest {
             final byte[] userks = keyStoreSession.generateOrKeyRecoverTokenAsByteArray(authenticationToken, username, password, "prime256v1", AlgorithmConstants.KEYALGORITHM_EC);
             final KeyStore keystore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
             keystore.load(new ByteArrayInputStream(userks), password.toCharArray());
+            // Verify that keystore returned from server has definite length encoding
+            ByteArrayInputStream bain = new ByteArrayInputStream(userks);
+            try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(bain)) {
+                while (ildStream.readValue() != null) {
+                    ;
+                }
+                assertFalse("ks.store() with PKCS12StoreParameter(true) is expected to not have indefinitlength encoding", ildStream.isIndefiniteLength());
+            }
             final String alias = username;
             final Certificate certificate = keystore.getCertificate(alias);
             fingerprint = CertTools.getFingerprintAsString(certificate);
@@ -317,7 +357,7 @@ public class KeyRecoveryImportCommandSystemTest {
             final File temp = File.createTempFile("testImportExistingUserWithCert", ".tmp");
             temp.deleteOnExit();
             try (FileOutputStream w = new FileOutputStream(temp)) {
-                w.write(userks);            
+                w.write(userks);
             }
             // Try to add key recovery data to the existing end entity "username", this should work as it does not already exist
             final String[] args = new String[] { "-f", temp.getAbsolutePath(), "--username", username, "--password", password };
@@ -340,7 +380,7 @@ public class KeyRecoveryImportCommandSystemTest {
         final String username = TESTCLASS_NAME+"User";
         final EndEntityInformation userdata = new EndEntityInformation(username, END_ENTITY_SUBJECT_DN, x509ca.getCAId(), null, null,
                 EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), EndEntityConstants.TOKEN_SOFT_P12, null);
         final String password = "foo123";
         userdata.setPassword(password);
         String fingerprint = null;
@@ -349,6 +389,14 @@ public class KeyRecoveryImportCommandSystemTest {
             final byte[] userks = keyStoreSession.generateOrKeyRecoverTokenAsByteArray(authenticationToken, username, password, "prime256v1", AlgorithmConstants.KEYALGORITHM_EC);
             final KeyStore keystore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
             keystore.load(new ByteArrayInputStream(userks), password.toCharArray());
+            // Verify that keystore returned from server has definite length encoding
+            ByteArrayInputStream bain = new ByteArrayInputStream(userks);
+            try (IndefiniteLengthDetectorStream ildStream = new IndefiniteLengthDetectorStream(bain)) {
+                while (ildStream.readValue() != null) {
+                    ;
+                }
+                assertFalse("ks.store() with PKCS12StoreParameter(true) is expected to not have indefinitlength encoding", ildStream.isIndefiniteLength());
+            }
             final String alias = username;
             final Certificate certificate = keystore.getCertificate(alias);
             fingerprint = CertTools.getFingerprintAsString(certificate);
@@ -359,7 +407,7 @@ public class KeyRecoveryImportCommandSystemTest {
             final File temp = File.createTempFile("testImportExistingUserWithoutCert", ".tmp");
             temp.deleteOnExit();
             try (FileOutputStream w = new FileOutputStream(temp)) {
-                w.write(userks);            
+                w.write(userks);
             }
             // Try to add key recovery data to the existing end entity "username", this should work as it does not already exist
             final String[] args = new String[] { "-f", temp.getAbsolutePath(), "--username", username, "--password", password };

@@ -271,6 +271,13 @@ public class EditEndEntityMBean extends EndEntityBaseManagedBean implements Seri
             selectPasswordList.add(eeProfile.getPredefinedPassword().trim());
         }
 
+        if (eeProfile.getUse(EndEntityProfile.SENDNOTIFICATION, 0)) {
+            final boolean profileSendNotification = eeProfile.getValue(EndEntityProfile.SENDNOTIFICATION, 0).equals(EndEntityProfile.TRUE);
+            final boolean profileSendNotificationRequired = eeProfile.isRequired(EndEntityProfile.SENDNOTIFICATION, 0);
+            final boolean sendNotification = userData.getSendNotification() || (profileSendNotification && profileSendNotificationRequired);
+
+            setSendNotification(sendNotification);
+        }
     }
 
     private void updateMainCertDataSection() {
@@ -341,7 +348,7 @@ public class EditEndEntityMBean extends EndEntityBaseManagedBean implements Seri
 
     public boolean isPasswordReGenRequired() {
         return ((eeStatus == EndEntityConstants.STATUS_NEW || eeStatus == EndEntityConstants.STATUS_KEYRECOVERY) && eeStatus != userData.getStatus()
-                && !regeneratePassword && selectedTokenId <= SecConst.TOKEN_SOFT);
+                && !regeneratePassword && selectedTokenId <= EndEntityConstants.TOKEN_SOFT);
     }
 
     public String getEePassword() {
@@ -797,7 +804,7 @@ public class EditEndEntityMBean extends EndEntityBaseManagedBean implements Seri
             for (int i = 0; i < availableTokens.length; i++) {
                 for (int j = 0; j < tokenTexts.length; j++) {
                     if (tokenIds[j] == Integer.parseInt(availableTokens[i])) {
-                        if (tokenIds[j] > SecConst.TOKEN_SOFT) {
+                        if (tokenIds[j] > EndEntityConstants.TOKEN_SOFT) {
                             listOfTokens.add(new SelectItem(tokenIds[j], tokenTexts[j]));
                         } else {
                             listOfTokens.add(new SelectItem(tokenIds[j], getEjbcaWebBean().getText(tokenTexts[j])));
@@ -1238,7 +1245,7 @@ public class EditEndEntityMBean extends EndEntityBaseManagedBean implements Seri
         boolean keyRecoveryCheckBoxDisabled = false;
         boolean keyRecoveryCheckBoxChecked = false;
 
-        if (getSelectedTokenId() == SecConst.TOKEN_SOFT_BROWSERGEN) {
+        if (getSelectedTokenId() == EndEntityConstants.TOKEN_USERGEN) {
             keyRecoveryCheckBoxChecked = false;
             keyRecoveryCheckBoxDisabled = true;
         } else {
@@ -1804,7 +1811,7 @@ public class EditEndEntityMBean extends EndEntityBaseManagedBean implements Seri
 
     private boolean statusChangeRequiresPasswordRegen() {
         return ((eeStatus == EndEntityConstants.STATUS_NEW || eeStatus == EndEntityConstants.STATUS_KEYRECOVERY) && eeStatus != userData.getStatus()
-                && !regeneratePassword && selectedTokenId <= SecConst.TOKEN_SOFT);
+                && !regeneratePassword && selectedTokenId <= EndEntityConstants.TOKEN_SOFT);
     }
 
     private boolean isEePasswordProvided() {

@@ -22,6 +22,7 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -111,7 +112,6 @@ import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
@@ -860,7 +860,7 @@ public class CrmfKeyUpdateSystemTest extends CmpTestCase {
             CertificateCreateException, CertificateRevokeException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
             InvalidAlgorithmException, CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, InvalidKeyException,
             CertificateEncodingException, NoSuchAlgorithmException, SignatureException, RoleNotFoundException, NoSuchProviderException,
-            SecurityException, IOException, CertificateParsingException, CertPathValidatorException, CouldNotRemoveEndEntityException, CAExistsException, OperatorCreationException, InvalidCmpProtectionException, CMPException {
+            SecurityException, IOException, CertificateParsingException, CertPathValidatorException, CouldNotRemoveEndEntityException, CAExistsException, OperatorCreationException, InvalidCmpProtectionException, CMPException, URISyntaxException {
         final String cmpAdminUsername = "cmpTestAdmin";
         final String cmpAdminDn = "CN=" + cmpAdminUsername +",C=SE";
         final String cmpAdminPassword = "foo123";
@@ -1754,7 +1754,7 @@ public class CrmfKeyUpdateSystemTest extends CmpTestCase {
             //--------------- create the user and issue its certificate, expired -----------------
             EndEntityInformation endEntityInformation = new EndEntityInformation(RENEWAL_USERNAME, RENEWAL_USER_DN.toString(), this.caid, "rfc822name=" + RENEWAL_USERNAME + "@primekey.se", RENEWAL_USERNAME + "@primekey.se",
                     EndEntityTypes.ENDUSER.toEndEntityType(),
-                    endEntityProfileId, certificateProfileId, SecConst.TOKEN_SOFT_PEM, null);
+                    endEntityProfileId, certificateProfileId, EndEntityConstants.TOKEN_SOFT_PEM, null);
             endEntityInformation.setPassword(password);
             endEntityManagementSession.addUser(ADMIN, endEntityInformation, true);      
             
@@ -1823,7 +1823,7 @@ public class CrmfKeyUpdateSystemTest extends CmpTestCase {
         //--------------- create the user and issue its certificate, expired -----------------
         EndEntityInformation endEntityInformation = new EndEntityInformation(RENEWAL_USERNAME, RENEWAL_USER_DN.toString(), this.caid,
                 "rfc822name=" + RENEWAL_USERNAME + "@primekey.se", RENEWAL_USERNAME + "@primekey.se", EndEntityTypes.ENDUSER.toEndEntityType(),
-                endEntityProfileId, certificateProfileId, SecConst.TOKEN_SOFT_PEM, null);
+                endEntityProfileId, certificateProfileId, EndEntityConstants.TOKEN_SOFT_PEM, null);
         endEntityInformation.setPassword(password);
         endEntityManagementSession.addUser(ADMIN, endEntityInformation, true);  
 

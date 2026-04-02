@@ -283,17 +283,6 @@ public class GeneralPurposeCustomPublisher extends CustomPublisherUiBase impleme
         }
     } // testConnection
 
-    /**
-     * Does nothing.
-     */
-    @Override
-    protected void finalize() throws Throwable {
-        if (log.isTraceEnabled()) {
-        	log.trace("finalize, doing nothing");
-        }
-        super.finalize();
-    }
-
     @Override
     public boolean willPublishCertificate(int status, long revocationDate) {
         return true;

@@ -35,7 +35,10 @@
 		</h:panelGroup>
 		<h:form id="defaultmypreferences">
 
-            <p:panelGrid id="config" width="100%" styleClass="action" columns="2" border="0" cellspacing="3" cellpadding="3" rowClasses="Row0,Row1" columnClasses="myPreferencesColumn, myPreferencesColumn">
+            <h:panelGrid id="config" columns="2" styleClass="edit-top ui-md-12"
+                         rowClasses="Row0,Row1"
+                         columnClasses="editColumn1,editColumn2"
+            >
                 <h:panelGroup>
                     &nbsp;
                 </h:panelGroup>
@@ -44,8 +47,8 @@
                 </h:panelGroup>
 
                 <h:panelGroup>
-                    <h3><p:outputLabel value="#{web.text.PREFEREDLANGUAGE}"/></h3>
-                    <p:outputLabel styleClass="help" value="#{web.text.PREFEREDLANGUAGE_HELP}"/>
+                    <h:outputLabel value="#{web.text.PREFEREDLANGUAGE}"/><br/>
+                    <h:outputText styleClass="help" value="#{web.text.PREFEREDLANGUAGE_HELP}"/>
                 </h:panelGroup>
                 <h:panelGroup>
                     <p:selectOneMenu id="preferredLanguage" value="#{myPreferencesMBean.adminPreference.preferedLanguage}" converter="jakarta.faces.Integer">
@@ -54,8 +57,8 @@
                 </h:panelGroup>
 
                 <h:panelGroup>
-                    <h3><p:outputLabel value="#{web.text.SECONDARYLANGUAGE}"/></h3>
-                    <p:outputLabel styleClass="help" value="#{web.text.SECONDARYLANGUAGE_HELP}"/>
+                    <h:outputLabel value="#{web.text.SECONDARYLANGUAGE}"/><br/>
+                    <h:outputText styleClass="help" value="#{web.text.SECONDARYLANGUAGE_HELP}"/>
                 </h:panelGroup>
                 <h:panelGroup>
                     <p:selectOneMenu id="secondaryLanguage" value="#{myPreferencesMBean.adminPreference.secondaryLanguage}" converter="jakarta.faces.Integer">
@@ -64,8 +67,8 @@
                 </h:panelGroup>
 
                 <h:panelGroup>
-                    <h3><p:outputLabel value="#{web.text.THEME}"/></h3>
-                    <p:outputLabel styleClass="help" value="#{web.text.THEME_HELP}"/>
+                    <h:outputLabel value="#{web.text.THEME}"/><br/>
+                    <h:outputText styleClass="help" value="#{web.text.THEME_HELP}"/>
                 </h:panelGroup>
                 <h:panelGroup>
                     <p:selectOneMenu id="theme" value="#{myPreferencesMBean.adminPreference.theme}">
@@ -74,8 +77,8 @@
                 </h:panelGroup>
 
                 <h:panelGroup>
-                    <h3><p:outputLabel value="#{web.text.NUMBEROFRECORDSPERPAGE}"/></h3>
-                    <p:outputLabel styleClass="help" value="#{web.text.NUMBEROFRECORDSPERPAGE_HELP}"/>
+                    <h:outputLabel value="#{web.text.NUMBEROFRECORDSPERPAGE}"/><br/>
+                    <h:outputText styleClass="help" value="#{web.text.NUMBEROFRECORDSPERPAGE_HELP}"/>
                 </h:panelGroup>
                 <h:panelGroup>
                     <p:selectOneMenu id="entriesPerPage" value="#{myPreferencesMBean.adminPreference.entriesPerPage}">
@@ -84,8 +87,8 @@
                 </h:panelGroup>
 
                 <h:panelGroup>
-                    <h3><p:outputLabel value="#{web.text.CASTATUSONHOMEPAGE}"/></h3>
-                    <p:outputLabel styleClass="help" value="#{web.text.CASTATUSONHOMEPAGE_HELP}"/>
+                    <h:outputLabel value="#{web.text.CASTATUSONHOMEPAGE}"/><br/>
+                    <h:outputText styleClass="help" value="#{web.text.CASTATUSONHOMEPAGE_HELP}"/>
                 </h:panelGroup>
                 <h:panelGroup>
                     <p:selectBooleanCheckbox id="frontpageCaStatus" value="#{myPreferencesMBean.adminPreference.frontpageCaStatus}"/>
@@ -93,8 +96,8 @@
                 </h:panelGroup>
 
                 <h:panelGroup>
-                    <h3><p:outputLabel value="#{web.text.PUBLISHERQUEUESTATUSON}"/></h3>
-                    <p:outputLabel styleClass="help" value="#{web.text.PUBLISHERQUEUESTATUSON_HELP}"/>
+                    <h:outputLabel value="#{web.text.PUBLISHERQUEUESTATUSON}"/><br/>
+                    <h:outputText styleClass="help" value="#{web.text.PUBLISHERQUEUESTATUSON_HELP}"/>
                 </h:panelGroup>
                 <h:panelGroup>
                     <p:selectBooleanCheckbox id="frontpagePublisherQueueStatus" value="#{myPreferencesMBean.adminPreference.frontpagePublisherQueueStatus}"/>
@@ -103,10 +106,12 @@
 
                 <h:panelGroup>&nbsp;</h:panelGroup>
                 <h:panelGroup>
-                    <p:commandButton value="#{web.text.SAVE}" action="#{myPreferencesMBean.save}"/>
-                    <p:commandButton value="#{web.text.CANCEL}" action="#{myPreferencesMBean.cancel}" immediate="true"/>
+                    <div class="action-buttons">
+                        <h:commandButton value="#{web.text.SAVE}" action="#{myPreferencesMBean.save}"/>
+                        <h:commandButton value="#{web.text.CANCEL}" action="#{myPreferencesMBean.cancel}" immediate="true"/>
+                    </div>
                 </h:panelGroup>
-            </p:panelGrid>
+            </h:panelGrid>
 		</h:form>
 
 	</ui:define>

@@ -27,6 +27,8 @@ import java.math.BigInteger;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.Socket;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
@@ -183,7 +185,6 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
@@ -911,16 +912,16 @@ public abstract class CmpTestCase extends CaTestCase {
         }
     }
 
-    protected byte[] sendCmpHttp(byte[] message, int httpRespCode) throws IOException {
+    protected byte[] sendCmpHttp(byte[] message, int httpRespCode) throws IOException, URISyntaxException {
         return sendCmpHttp(message, httpRespCode, null);
     }
 
-    protected byte[] sendCmpHttp(byte[] message, int httpRespCode, String cmpAlias) throws IOException {
+    protected byte[] sendCmpHttp(byte[] message, int httpRespCode, String cmpAlias) throws IOException, URISyntaxException {
         // POST the CMP request
         // we are going to do a POST
         final String urlString = getProperty("httpCmpProxyURL", this.httpReqPath + '/' + resourceCmp) + '/' + cmpAlias;
         log.info("http URL: " + urlString);
-        URL url = new URL(urlString);
+        URL url = new URI(urlString).toURL();
         final HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setDoOutput(true);
         con.setRequestMethod("POST");
@@ -965,10 +966,10 @@ public abstract class CmpTestCase extends CaTestCase {
             return respBytes;
     }
 
-    protected void clearCmpCaches() throws IOException {
+    protected void clearCmpCaches() throws IOException, URISyntaxException {
         final String urlString = getProperty("httpCmpProxyURL", this.httpReqPath + '/' + resourceCmp) + "/?clearcache=true";
         log.info("http URL: " + urlString);
-        URL url = new URL(urlString);
+        URL url = new URI(urlString).toURL();
         final HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.connect();
         assertEquals("HTTP request to clear caches was unsuccessful.", 200, con.getResponseCode());
@@ -1646,7 +1647,7 @@ public abstract class CmpTestCase extends CaTestCase {
             CADoesntExistsException, CertificateSerialNumberException, IllegalNameException, ApprovalException, CustomFieldException {
         EndEntityInformation user = new EndEntityInformation(username, subjectDN, caid, null, username + "@primekey.se",
                 new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM, null);
+                EndEntityConstants.TOKEN_SOFT_PEM, null);
         user.setPassword(password);
         try {
             this.endEntityManagementSession.addUser(ADMIN, user, false);
@@ -1680,7 +1681,7 @@ public abstract class CmpTestCase extends CaTestCase {
             userDN = new X500Name(dn);
         }
         final EndEntityInformation user = new EndEntityInformation(username, dn, caid, null, username + "@primekey.se",
-                new EndEntityType(EndEntityTypes.ENDUSER), eepID, cpID, SecConst.TOKEN_SOFT_PEM, null);
+                new EndEntityType(EndEntityTypes.ENDUSER), eepID, cpID, EndEntityConstants.TOKEN_SOFT_PEM, null);
         user.setPassword(password);
         log.debug("Trying to add/edit USER: " + user.getUsername() + ", foo123, " + userDN+", ");
         try {

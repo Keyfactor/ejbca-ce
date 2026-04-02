@@ -324,6 +324,21 @@ subprojects {
                 sourceSets["test"].runtimeClasspath += sourceSets["main"].compileClasspath
             }
         }
+        
+        tasks.register<Test>("runanytest") {
+            description = "Runs unit tests."
+
+            filter {
+                includeTestsMatching("*")
+                isFailOnNoMatchingTests = false
+            }
+
+            java {
+                sourceSets["test"].java.srcDirs("src-test")
+                sourceSets["test"].compileClasspath += sourceSets["main"].compileClasspath
+                sourceSets["test"].runtimeClasspath += sourceSets["main"].compileClasspath
+            }
+        }
 
         // System tests
         val systemTestsExist = fileTree("src-test").apply {
@@ -478,7 +493,8 @@ val systemTestTasksOrder = listOfNotNull(
     project.findProject(":modules:ssh")?.tasks?.named("systemTest"),
     project.findProject(":modules:cits")?.tasks?.named("systemTest"),
     project.findProject(":modules:ejbca-entity")?.tasks?.named("systemTest"),
-    project.findProject(":modules:configdump")?.tasks?.named("systemTest")
+    project.findProject(":modules:configdump")?.tasks?.named("systemTest"),
+    project.findProject(":modules:systemtests-jscep")?.tasks?.named("systemTest")
 )
 
 // Add mustRunAfter dependencies to systemTest tasks to enforce the "correct order".

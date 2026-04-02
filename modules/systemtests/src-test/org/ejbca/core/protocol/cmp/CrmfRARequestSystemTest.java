@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.StringTools;
@@ -93,7 +94,6 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.junit.After;
@@ -299,15 +299,14 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
             cert1 = crmfHttpUserTest(userDN1, key1, null, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), cacert, ISSUER_DN);
             assertNotNull("Failed to create a certificate with CMP", cert1);
             assertTrue("A user with "+userName1+" should have been created by the CMP RA call", endEntityManagementSession.existsUser(userName1));
-            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-            String dn = cert1.getSubjectDN().getName();
+            String dn = X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert1.getSubjectX500Principal().getEncoded()).toString();
             // This is the reverse order than what is displayed by openssl, the fields are no known by JDK so OIDs displayed
             // The "plain" string representation here is BC X500Name.toString, in which case DERBitString is an implementation of ASN1String, with the
             // ASn1ObjectIdentifier encoded as 060329012d becomes the BitString #030600060329012D and is then printed as \#030600060329012D.
             // This is a bit strange, but perhaps a testament to why it's not a good idea to jam arbitrary binary blobs into subjectDN
             // it becomes very implementation specific
             // While CertificationID below is a sequence, which is not an implementation of ASN1String, so it is without the backslash
-            assertEquals("Not the expected DN in issued cert", "C=SE,O=PrimeKey,CN=cmptest1,SN=cmptest1serial,SURNAME=cmptest1surname,1.3.6.1.4.1.37244.2.1=FFF1,UniqueIdentifier=N62892", dn);
+            assertEquals("Not the expected DN in issued cert", "C=SE,O=PrimeKey,CN=cmptest1,SN=cmptest1serial,SURNAME=cmptest1surname,VID=FFF1,UniqueIdentifier=N62892", dn);
             // getSubjectX500Principal returns another form though...
             String principalDn = cert1.getSubjectX500Principal().getName();
             assertEquals("Not the expected Principal DN in issued cert", "2.5.4.45=#0c064e3632383932,1.3.6.1.4.1.37244.2.1=#0c0446464631,2.5.4.4=#0c0f636d7074657374317375726e616d65,2.5.4.5=#130e636d70746573743173657269616c,CN=cmptest1,O=PrimeKey,C=SE", principalDn);
@@ -315,10 +314,9 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
             cert2 = crmfHttpUserTest(userDN2, key2, null, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), cacert, ISSUER_DN);
             assertNotNull("Failed to create a certificate with CMP", cert2);
             assertTrue("A user with "+userName2+" should have been created by the CMP RA call", endEntityManagementSession.existsUser(userName2));
-            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-            dn = cert2.getSubjectDN().getName();
-            // This is the reverse order than what is displayed by openssl, the fields are no known by JDK so OIDs displayed
-            assertEquals("Not the expected DN in issued cert", "C=SE,O=PrimeKey,CN=cmptest2,SN=cmptest2serial,SURNAME=cmptest2surname,1.3.6.1.4.1.37244.2.2=8000,0.4.0.127.0.7.3.10.1.2=#301702010113124253492d4b2d54522d313233342d32303233", dn);
+            dn = X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert2.getSubjectX500Principal().getEncoded()).toString();
+            // This is the reverse order than what is displayed by openssl
+            assertEquals("Not the expected DN in issued cert", "C=SE,O=PrimeKey,CN=cmptest2,SN=cmptest2serial,SURNAME=cmptest2surname,PID=8000,CertificationID=BSI-K-TR-1234-2023", dn);
             assertEquals("Not the expected DN in issued cert", "CertificationID=BSI-K-TR-1234-2023,PID=8000,CN=cmptest2,SN=cmptest2serial,SURNAME=cmptest2surname,O=PrimeKey,C=SE", CertTools.getSubjectDN(cert2));
             // check that the request fails when asking for certificate for another user with same key.
             crmfHttpUserTest(
@@ -334,7 +332,7 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
 
             // check that you can not issue a certificate with same DN as another user.
             EndEntityInformation user = new EndEntityInformation("samednuser1", "CN=SameDNUser,O=EJBCA Sample,C=SE", caid, null, "user1" + "@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER),
-                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, null);
+                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_SOFT_PEM, null);
             user.setPassword("foo123");
             try {
                 this.endEntityManagementSession.addUser(ADMIN, user, true);

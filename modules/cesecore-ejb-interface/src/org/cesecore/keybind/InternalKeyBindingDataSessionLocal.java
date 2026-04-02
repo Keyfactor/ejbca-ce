@@ -14,6 +14,7 @@ package org.cesecore.keybind;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import jakarta.ejb.Local;
 
@@ -46,13 +47,28 @@ public interface InternalKeyBindingDataSessionLocal {
     /** Clears the InternalKeyBinding cache. */
     void flushCache();
 
-    /** @return true if the specified name is already in use by another InternalKeyBinding (checks the database, not the cache) */
-    boolean isNameUsed(String name);
+    /**
+     * Note that multiple keybindings can't share names, in spite of being of different types.  
+     * 
+     * @return true if the specified name is already in use by another InternalKeyBinding (checks the database, not the cache) 
+     */
+    boolean isNameUsed(final String name);
 
-    /** @return true if the specified name is used by exactly one InternalKeyBinding and that object has the same id (checks the database, not the cache) */
-    boolean isNameUsedByIdOnly(String name, int id);
+    /** 
+     * Note that multiple keybindings can't share names, in spite of being of different types. 
+     * 
+     * @return true if the specified name is used by exactly one InternalKeyBinding and that object has the same id (checks the database, not the cache) 
+     */
+    boolean isNameUsedByIdOnly(final String name, final int id);
 
     /** Should only be used internally by other methods. This is an Interface method so that we can specify @TransactionAttribute(TransactionAttributeType.REQUIRED). 
      * @return the a cached reference to the specified InternalKeyBinding that MAY NOT be edited. Null if not found. */
     InternalKeyBindingData readData(int id);
+
+    /**
+     * Gets all certificate IDs (fingerprints) that are currently in use by internal key bindings.
+     * 
+     * @return Set of certificate fingerprints (in lowercase) that are referenced by key bindings, never null
+     */
+    Set<String> getAllCertificateIds();
 }

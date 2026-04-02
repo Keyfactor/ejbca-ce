@@ -29,7 +29,7 @@ public class OAuth2AuthenticationToken extends NestableAuthenticationToken {
     public static final OAuth2AuthenticationTokenMetaData metaData = new OAuth2AuthenticationTokenMetaData();
 
     private static final Logger log = Logger.getLogger(OAuth2AuthenticationToken.class);
-    private static final long serialVersionUID = 1L; 
+    private static final long serialVersionUID = 1L;
 
     private final OAuth2Principal principal;
     private final String encodedAccessToken;
@@ -74,19 +74,19 @@ public class OAuth2AuthenticationToken extends NestableAuthenticationToken {
             return false;
         }
         final OAuth2AccessMatchValue matchWith = (OAuth2AccessMatchValue) getMatchValueFromDatabaseValue(accessUser.getMatchWith());
+        if (matchWith == null) {
+            throw new IllegalStateException("Unknown match value: " + accessUser.getMatchWith());
+        }
         final String value = accessUser.getMatchValue();
-        switch (matchWith) {
-        case CLAIM_ISSUER:
-            return value.equals(principal.getIssuer());
-        case CLAIM_SUBJECT:
-            return value.equals(principal.getSubject());
-        case CLAIM_AUDIENCE:
-            return principal.getAudience() != null && principal.getAudience().contains(value);
-        case CLAIM_OBJECTID:
-            return value.equals(principal.getOid());
-        case CLAIM_ROLE:
-            return principal.getRoles().contains(value);
-
+        return switch (matchWith) {
+            case CLAIM_ISSUER -> value.equals(principal.getIssuer());
+            case CLAIM_SUBJECT -> value.equals(principal.getSubject());
+            case CLAIM_AUDIENCE -> principal.getAudience() != null && principal.getAudience().contains(value);
+            case CLAIM_OBJECTID -> value.equals(principal.getOid());
+            case CLAIM_ROLES -> principal.getRoles().contains(value);
+            case CLAIM_KF_ROLES -> principal.getKfRoles().contains(value);
+            case CLAIM_EMAIL -> value.equals(principal.getEmail()) && principal.isEmailVerified();
+        };
 // Possible future extension, to allow arbitrary claims (pseudo-code)
 //      case JSON_CLAIMS:
 //          for (final Entry<String,String> claim : jsonToMap(value)) {
@@ -95,9 +95,6 @@ public class OAuth2AuthenticationToken extends NestableAuthenticationToken {
 //              }
 //          }
 //          return true;
-        default:
-            throw new IllegalStateException("Unexpected match value");
-        }
     }
 
     @Override

@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyManagementException;
@@ -103,6 +105,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -159,7 +162,7 @@ import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.DummyCustomPublisher;
@@ -198,6 +201,7 @@ import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateParser;
 
 import com.keyfactor.util.Base64;
+import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
@@ -225,7 +229,8 @@ public abstract class CommonEjbcaWs extends CaTestCase {
 
     protected final static String WS_ADMIN_ROLENAME = "WsTestRole";
 
-    
+    protected static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
+
     protected EjbcaWS ejbcaraws;
     /** Either ManagementCA or AdminCA1, or whatever is configured in target.clientcert.name */
     protected static String managementCaName;
@@ -324,9 +329,9 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         createEjbcaWSPort("https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl");
     }
 
-    private void createEjbcaWSPort(final String url) throws MalformedURLException {
+    private void createEjbcaWSPort(final String url) throws MalformedURLException, URISyntaxException {
         QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
-        EjbcaWSService service = new EjbcaWSService(new URL(url), qname);
+        EjbcaWSService service = new EjbcaWSService(new URI(url).toURL(), qname);
         this.ejbcaraws = service.getEjbcaWSPort();
     }
 
@@ -349,7 +354,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         endEntityInformation1.setEmail(null);
         endEntityInformation1.setSubjectAltName(null);
         endEntityInformation1.setStatus(EndEntityConstants.STATUS_NEW);
-        endEntityInformation1.setTokenType(SecConst.TOKEN_SOFT_JKS);
+        endEntityInformation1.setTokenType(EndEntityConstants.TOKEN_SOFT_JKS);
         endEntityInformation1.setEndEntityProfileId(EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
         endEntityInformation1.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         endEntityInformation1.setType(new EndEntityType(EndEntityTypes.ENDUSER, EndEntityTypes.ADMINISTRATOR));
@@ -368,7 +373,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         endEntityInformation2.setEmail(null);
         endEntityInformation2.setSubjectAltName(null);
         endEntityInformation2.setStatus(EndEntityConstants.STATUS_NEW);
-        endEntityInformation2.setTokenType(SecConst.TOKEN_SOFT_JKS);
+        endEntityInformation2.setTokenType(EndEntityConstants.TOKEN_SOFT_JKS);
         endEntityInformation2.setEndEntityProfileId(EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
         endEntityInformation2.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         endEntityInformation2.setType(EndEntityTypes.ENDUSER.toEndEntityType());
@@ -470,10 +475,6 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         return "CN=" + userName + ",O=" + userName.charAt(userName.length() - 1) + "Test";
     }
 
-    private String getReversedDN(String userName) {
-        return "O=" + userName.charAt(userName.length() - 1) + "Test, CN=" + userName;
-    }
-
     /** A simple host name verifier for passing HTTPS connections without verifying the hostname against the cert,
      * used for simple testing.
      */
@@ -511,9 +512,9 @@ public abstract class CommonEjbcaWs extends CaTestCase {
     /** Return a HttpsURLConnection for a GET, using client certificate authentication to the url. The url should be EJBCA client protected https port, i.e. 8443
      * @param url the URL to connect to, i.e. https://localhost:8443/ejbca/adminweb/index.xhtml
      */
-    protected HttpURLConnection getHttpsURLConnection(String url) throws IOException, UnrecoverableKeyException, KeyManagementException, NoSuchAlgorithmException, KeyStoreException, CertificateException {
+    protected HttpURLConnection getHttpsURLConnection(String url) throws IOException, UnrecoverableKeyException, KeyManagementException, NoSuchAlgorithmException, KeyStoreException, CertificateException, URISyntaxException {
         final HttpsURLConnection con;
-        URL u = new URL(url);
+        URL u = new URI(url).toURL();
         con = (HttpsURLConnection)u.openConnection();
         con.setHostnameVerifier(new SimpleVerifier());
         con.setSSLSocketFactory(getSSLFactory(TEST_ADMIN_FILE, PASSWORD.toCharArray()));
@@ -680,7 +681,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             profile.addField(DnComponents.JURISDICTIONSTATE);
             profile.addField(DnComponents.JURISDICTIONCOUNTRY);
             profile.addField(DnComponents.DATEOFBIRTH);
-            profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+            profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(CAConstants.ALLCAS));
             profile.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0, false); // not allowing clear text password is the most common option
             profile.setUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, true);
             profile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);         
@@ -717,8 +718,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         assertNotNull(certenv);
         X509Certificate cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getData());
         assertNotNull(cert);
-        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-        assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
+        assertEquals(getDN(CA1_WSTESTUSER1), X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert.getSubjectX500Principal().getEncoded()).toString());
         byte[] ext = cert.getExtensionValue("1.2.3.4");
         // Certificate profile did not allow extension override
         assertNull("no extension should exist", ext);
@@ -735,8 +735,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             assertNotNull(certenv);
             cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getData());
             assertNotNull(cert);
-            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-            assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
+            assertEquals(getDN(CA1_WSTESTUSER1), X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert.getSubjectX500Principal().getEncoded()).toString());
             ext = cert.getExtensionValue("1.2.3.4");
             assertNotNull("there should be an extension", ext);
             try (ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(ext))) {
@@ -772,8 +771,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         // as in the request.
         final X509Certificate cert = certificateResponse.getCertificate();
         assertNotNull(cert);
-        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-        assertTrue(cert.getSubjectDN().toString().equals(userdata.getSubjectDN()));
+        assertEquals(userdata.getSubjectDN(), X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert.getSubjectX500Principal().getEncoded()).toString());
 
         // Request a PKCS#7 via the WS API
         final CertificateResponse pkcs7Response = ejbcaraws.certificateRequest(userdata, requestdata, requesttype, null,
@@ -1120,8 +1118,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         X509Certificate cert = (X509Certificate) CertificateHelper.getCertificate(certificateResponse.getData());
         assertNotNull("No certificate in response from CRMF request.", cert);
         log.info(cert.getSubjectX500Principal().toString());
-        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-        assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
+        assertEquals(getDN(CA1_WSTESTUSER1), X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert.getSubjectX500Principal().getEncoded()).toString());
         // Certificate profile did not allow extension override
         assertNull("No extension should exist in response certificate.", cert.getExtensionValue(EXTENSION_OID));
         // Allow extension override
@@ -1138,8 +1135,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             assertNotNull("No certificate response from CRMF request.", certificateResponse);
             cert = (X509Certificate) CertificateHelper.getCertificate(certificateResponse.getData());
             assertNotNull("No certificate in response from CRMF request.", cert);
-            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-            assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
+            assertEquals(getDN(CA1_WSTESTUSER1), X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert.getSubjectX500Principal().getEncoded()).toString());
             final byte[] extensionValue = cert.getExtensionValue(EXTENSION_OID);
             assertNotNull("There should be an extension in the response certificate.", extensionValue);
             final ASN1OctetString extensionOctets = (DEROctetString)DEROctetString.fromByteArray(extensionValue);
@@ -1274,8 +1270,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         X509Certificate cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getData());
 
         assertNotNull(cert);
-        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-        assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
+        assertEquals(getDN(CA1_WSTESTUSER1), X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert.getSubjectX500Principal().getEncoded()).toString());
     }
 
     protected void generatePkcs12() throws Exception {
@@ -1336,11 +1331,9 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         Enumeration<String> en = ks.aliases();
         String alias = en.nextElement();
         X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
-        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-        assertEquals(cert.getSubjectDN().toString(), getDN(CA1_WSTESTUSER1));
+        assertEquals(getDN(CA1_WSTESTUSER1), X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert.getSubjectX500Principal().getEncoded()).toString());
         PrivateKey privK1 = (PrivateKey) ks.getKey(alias, "foo456".toCharArray());
-        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-        log.info("test04GeneratePkcs12() Certificate " + cert.getSubjectDN().toString() + " equals " + getDN(CA1_WSTESTUSER1));
+        log.info("test04GeneratePkcs12() Certificate " + X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert.getSubjectX500Principal().getEncoded()).toString() + " equals " + getDN(CA1_WSTESTUSER1));
 
         // Generate a new one and make sure it is a new one and that key
         // recovery does not kick in by mistake
@@ -1363,8 +1356,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         en = ks2.aliases();
         alias = en.nextElement();
         X509Certificate cert2 = (X509Certificate) ks2.getCertificate(alias);
-        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-        assertEquals(cert2.getSubjectDN().toString(), getDN(CA1_WSTESTUSER1));
+        assertEquals(getDN(CA1_WSTESTUSER1), X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert2.getSubjectX500Principal().getEncoded()).toString());
         PrivateKey privK2 = (PrivateKey) ks2.getKey(alias, "foo456".toCharArray());
 
         // Compare certificates, must not be the same
@@ -1374,20 +1366,17 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         String key2 = new String(Hex.encode(privK2.getEncoded()));
         assertFalse(key1.equals(key2));
 
-        // Test the method for adding/editing and requesting a PKCS#12 KeyStore
-        // in a single transaction
+        // Test the method for adding/editing and requesting a PKCS#12 KeyStore in a single transaction
         ksenv2 = ejbcaraws.softTokenRequest(userdatas.get(0), null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
         ks2 = KeyStoreHelper.getKeyStore(ksenv2.getKeystoreData(), "PKCS12", "foo456");
         assertNotNull(ks2);
         en = ks2.aliases();
         alias = en.nextElement();
         cert2 = (X509Certificate) ks2.getCertificate(alias);
-        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-        assertEquals(cert2.getSubjectDN().toString(), getDN(CA1_WSTESTUSER1));
+        assertEquals(getDN(CA1_WSTESTUSER1), X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert2.getSubjectX500Principal().getEncoded()).toString());
         privK2 = (PrivateKey) ks2.getKey(alias, "foo456".toCharArray());
 
-        // Test the method for adding/editing and requesting a JKS KeyStore in a
-        // single transaction
+        // Test the method for adding/editing and requesting a JKS KeyStore in a single transaction
         userdatas.get(0).setTokenType(UserDataVOWS.TOKEN_TYPE_JKS);
         ksenv2 = ejbcaraws.softTokenRequest(userdatas.get(0), null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
         ks2 = KeyStoreHelper.getKeyStore(ksenv2.getKeystoreData(), "JKS", "foo456");
@@ -1395,8 +1384,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         en = ks2.aliases();
         alias = en.nextElement();
         cert2 = (X509Certificate) ks2.getCertificate(alias);
-        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-        assertEquals(cert2.getSubjectDN().getName(), getReversedDN(CA1_WSTESTUSER1));
+        assertEquals(getDN(CA1_WSTESTUSER1), X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert2.getSubjectX500Principal().getEncoded()).toString());
         privK2 = (PrivateKey) ks2.getKey(alias, "foo456".toCharArray());
         log.trace("<generatePkcs12");
     }
@@ -1647,8 +1635,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         assertTrue(certenv.getResponseType().equals(CertificateHelper.RESPONSETYPE_CERTIFICATE));
         X509Certificate cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getData());
         assertNotNull(cert);
-        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-        assertTrue(cert.getSubjectDN().toString().equals(getDN(CA1_WSTESTUSER1)));
+        assertEquals(getDN(CA1_WSTESTUSER1), X500Name.getInstance(CeSecoreNameStyle.INSTANCE, cert.getSubjectX500Principal().getEncoded()).toString());
 
         // 1.2 Test PKCS#10 request with PKCS#7 container returned.
         ejbcaraws.editUser(userdatas.get(0));
@@ -1690,7 +1677,8 @@ public abstract class CommonEjbcaWs extends CaTestCase {
                     CertificateHelper.RESPONSETYPE_CERTIFICATE);
             fail("Calling pkcs10Request for an existing user but invalid password should throw an exception.");
         } catch(EjbcaException_Exception e) {
-            assertTrue(e.getMessage().contains("Got request for user with invalid password"));
+            final String expectedSubString = intres.getLocalizedMessage("ra.wrongusernameorpassword");
+            assertTrue("Expected '" + expectedSubString + "' to be part of the exception message. But the exception message is '" + e.getMessage() + "'", e.getMessage().contains(expectedSubString));
         }
         
         // 2.4 Test some malformed PKCS#10 message.
@@ -1901,7 +1889,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
                 adminUser.setEmail(null);
                 adminUser.setSubjectAltName(null);
                 adminUser.setStatus(EndEntityConstants.STATUS_NEW);
-                adminUser.setTokenType(SecConst.TOKEN_SOFT_JKS);
+                adminUser.setTokenType(EndEntityConstants.TOKEN_SOFT_JKS);
                 adminUser.setEndEntityProfileId(endEntityProfileSession.getEndEntityProfileId(WS_EEPROF_EI));
                 adminUser.setCertificateProfileId(cpid);
                 adminUser.setType(new EndEntityType(EndEntityTypes.ENDUSER, EndEntityTypes.ADMINISTRATOR));

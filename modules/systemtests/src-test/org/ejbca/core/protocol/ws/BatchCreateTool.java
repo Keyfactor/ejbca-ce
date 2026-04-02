@@ -39,6 +39,7 @@ import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyStoreCipher;
+import com.keyfactor.util.keys.KeyStoreTools;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
@@ -72,7 +73,6 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
@@ -135,8 +135,8 @@ public abstract class BatchCreateTool {
         do {
             for (EndEntityInformation data : EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class)
                     .findAllBatchUsersByStatusWithLimit(status)) {
-                if (data.getTokenType() == SecConst.TOKEN_SOFT_JKS || data.getTokenType() == SecConst.TOKEN_SOFT_PEM
-                        || data.getTokenType() == SecConst.TOKEN_SOFT_P12) {
+                if (data.getTokenType() == EndEntityConstants.TOKEN_SOFT_JKS || data.getTokenType() == EndEntityConstants.TOKEN_SOFT_PEM
+                        || data.getTokenType() == EndEntityConstants.TOKEN_SOFT_P12) {
                     result.add(data);
                 }
             }
@@ -292,9 +292,9 @@ public abstract class BatchCreateTool {
         File ret = null;
         // get users Token Type.
         int tokentype = data.getTokenType();
-        boolean createJKS = (tokentype == SecConst.TOKEN_SOFT_JKS);
-        boolean createPEM = (tokentype == SecConst.TOKEN_SOFT_PEM);
-        boolean createP12 = (tokentype == SecConst.TOKEN_SOFT_P12);
+        boolean createJKS = (tokentype == EndEntityConstants.TOKEN_SOFT_JKS);
+        boolean createPEM = (tokentype == EndEntityConstants.TOKEN_SOFT_PEM);
+        boolean createP12 = (tokentype == EndEntityConstants.TOKEN_SOFT_P12);
         // Only generate supported tokens
         if (createP12 || createPEM || createJKS) {
             if (status == EndEntityConstants.STATUS_KEYRECOVERY) {
@@ -612,7 +612,7 @@ public abstract class BatchCreateTool {
             keyStoreFile = new File(keyStoreFilename);
             FileOutputStream os = new FileOutputStream(keyStoreFile);
             try {
-                ks.store(os, kspassword.toCharArray());
+                KeyStoreTools.storeKeyStore(ks, os, kspassword.toCharArray());
             } catch (IOException e) {
                 throw new IllegalStateException("Unexpected IOException was caught.", e);
             }

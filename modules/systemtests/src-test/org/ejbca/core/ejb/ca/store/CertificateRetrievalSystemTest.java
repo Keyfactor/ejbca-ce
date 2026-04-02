@@ -50,7 +50,6 @@ import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.model.SecConst;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -419,7 +418,7 @@ public class CertificateRetrievalSystemTest {
         EndEntityInformation userdata = new EndEntityInformation(username,  dn, caid, "", null,
             EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER),
             EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-            new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+            new Date(), new Date(), EndEntityConstants.TOKEN_SOFT_P12, null);
         userdata.setPassword("foo123");
         String fingerprint = null;
         try {

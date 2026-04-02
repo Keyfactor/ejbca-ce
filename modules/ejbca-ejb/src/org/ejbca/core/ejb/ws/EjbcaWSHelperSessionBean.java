@@ -46,7 +46,6 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -130,7 +129,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
 
     private final String[] softtokennames = { UserDataVOWS.TOKEN_TYPE_USERGENERATED, UserDataVOWS.TOKEN_TYPE_P12, UserDataVOWS.TOKEN_TYPE_JKS,
             UserDataVOWS.TOKEN_TYPE_PEM, UserDataVOWS.TOKEN_TYPE_BCFKS };
-    private final int[] softtokenids = { SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.TOKEN_SOFT_P12, SecConst.TOKEN_SOFT_JKS, SecConst.TOKEN_SOFT_PEM, SecConst.TOKEN_SOFT_BCFKS };
+    private final int[] softtokenids = { EndEntityConstants.TOKEN_USERGEN, EndEntityConstants.TOKEN_SOFT_P12, EndEntityConstants.TOKEN_SOFT_JKS, EndEntityConstants.TOKEN_SOFT_PEM, EndEntityConstants.TOKEN_SOFT_BCFKS };
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override

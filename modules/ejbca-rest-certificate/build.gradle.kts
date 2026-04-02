@@ -20,6 +20,7 @@ dependencies {
     compileOnly(libs.jakarta.xml.bind.api)
     compileOnly(libs.jackson.annotations)
     compileOnly(libs.x509.common.util)
+    compileOnly(libs.swagger.annotations)
 }
 
 sourceSets {

@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
     xmlns:f="jakarta.faces.core"
     xmlns:h="jakarta.faces.html"
-    xmlns:ui="jakarta.faces.facelets">
+    xmlns:ui="jakarta.faces.facelets"
+	xmlns:p="http://primefaces.org/ui">
 <ui:remove>
   	<!--
     /*************************************************************************
@@ -29,16 +30,16 @@
 		<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/SCEP.html')}" escape="false"/>
 	</h2>
 	<h:form id="currentAliasForm">
-	<h:panelGrid columns="2">
+	<h:panelGrid columns="2" columnClasses="form-label-col,ui-md-3" styleClass="form-vertical-align ui-md-6">
 		<h:outputLabel for="currentAlias" value="#{web.text.NAME}:"/>
 		<h:panelGroup id="currentAlias">
 	    	<h:outputText value="#{scepConfigMBean.currentAlias.alias}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 			<h:inputText value="#{scepConfigMBean.currentAlias.alias}" rendered="#{scepConfigMBean.currentAliasEditMode}"
-						 required="true" requiredMessage="#{web.text.YOUAREREQUIRED} #{web.text.NAME}">
+						 required="true" requiredMessage="#{web.text.YOUAREREQUIRED} #{web.text.NAME}" styleClass="ui-md-12">
 				<f:converter converterId="trimConverter"/>
 			</h:inputText>
 		</h:panelGroup>
-
+ 
 		<h:outputLabel for="currentMode" value="#{web.text.SCEP_OPERATIONAL_MODE}"/>
 		<h:panelGroup id="currentMode">
 			<h:panelGroup rendered="#{scepConfigMBean.currentAliasEditMode}">
@@ -51,11 +52,11 @@
 		</h:panelGroup>
 
 		<h:outputLabel for="includeca" value="#{web.text.SCEP_INCLUDE_CA}" />
-		<h:selectBooleanCheckbox id="includeca" value="#{scepConfigMBean.currentAlias.includeCA}" disabled="#{!scepConfigMBean.currentAliasEditMode}" />
+		<p:selectBooleanCheckbox id="includeca" value="#{scepConfigMBean.currentAlias.includeCA}" disabled="#{!scepConfigMBean.currentAliasEditMode}" />
 		
 		<h:outputLabel for="cachain" value="#{web.text.SCEP_CA_CHAIN}" />
-		<h:selectBooleanCheckbox id="cachain" value="#{scepConfigMBean.currentAlias.returnCaChainInGetCaCert}" disabled="#{!scepConfigMBean.currentAliasEditMode}">
-		</h:selectBooleanCheckbox>
+		<p:selectBooleanCheckbox id="cachain" value="#{scepConfigMBean.currentAlias.returnCaChainInGetCaCert}" disabled="#{!scepConfigMBean.currentAliasEditMode}">
+		</p:selectBooleanCheckbox>
 		
 		<h:outputLabel for="caChainOrder" value="#{web.text.SCEP_CA_CHAIN_ORDER}" />
 		<h:selectOneMenu id="caChainOrder" value="#{scepConfigMBean.currentAlias.rootFirst}" disabled="#{!scepConfigMBean.currentAliasEditMode}">
@@ -66,20 +67,20 @@
 		    <h:outputLabel for="allowlegacydigestalgorithm" value="#{web.text.SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM}" />
 		    <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/SCEP_Operations_Guide.html#Properties')}" escape="false"/>
 		</h:panelGroup>
-		<h:selectBooleanCheckbox id="allowlegacydigestalgorithm" value="#{scepConfigMBean.currentAlias.allowLegacyDigestAlgorithm}" disabled="#{!scepConfigMBean.currentAliasEditMode}" />
+		<p:selectBooleanCheckbox id="allowlegacydigestalgorithm" value="#{scepConfigMBean.currentAlias.allowLegacyDigestAlgorithm}" disabled="#{!scepConfigMBean.currentAliasEditMode}" />
         <h:outputLabel for="useIntune" value="#{web.text.SCEP_RA_USE_INTUNE}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
 		<h:panelGroup id="useIntune" rendered="#{scepConfigMBean.currentAlias.modeRa}">
-	    	<h:selectBooleanCheckbox id="useIntuneCheckbox" value="#{scepConfigMBean.currentAlias.useIntune}" disabled="#{!scepConfigMBean.currentAliasEditMode}">
+	    	<p:selectBooleanCheckbox id="useIntuneCheckbox" value="#{scepConfigMBean.currentAlias.useIntune}" disabled="#{!scepConfigMBean.currentAliasEditMode}">
 	    		<f:ajax event="change" execute="@this" render="@form currentAliasForm:intuneValues"/>
-	    	</h:selectBooleanCheckbox>
+	    	</p:selectBooleanCheckbox>
 		</h:panelGroup>
 
 		<h:outputLabel for="clientCertificateRenewal" value="#{web.text.SCEP_CLIENT_CERTIFICATE_RENEWAL} " rendered="#{scepConfigMBean.currentAlias.modeCa}" />
-		<h:selectBooleanCheckbox id="clientCertificateRenewal" value="#{scepConfigMBean.currentAlias.clientCertificateRenewal}"
+		<p:selectBooleanCheckbox id="clientCertificateRenewal" value="#{scepConfigMBean.currentAlias.clientCertificateRenewal}"
 			rendered="#{scepConfigMBean.currentAlias.modeCa}" disabled="#{!scepConfigMBean.currentAliasEditMode || !scepConfigMBean.existsClientCertificateRenewalExtension}" />
 		
 		<h:outputLabel for="clientCertificateRenewalWithOldKey" value="#{web.text.SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_SAME_KEY}" rendered="#{scepConfigMBean.currentAlias.modeCa}" />
-		<h:selectBooleanCheckbox id="clientCertificateRenewalWithOldKey" value="#{scepConfigMBean.currentAlias.allowClientCertificateRenewaWithOldKey}"
+		<p:selectBooleanCheckbox id="clientCertificateRenewalWithOldKey" value="#{scepConfigMBean.currentAlias.allowClientCertificateRenewalWithOldKey}"
 			rendered="#{scepConfigMBean.currentAlias.modeCa}" disabled="#{!scepConfigMBean.currentAliasEditMode || !scepConfigMBean.existsClientCertificateRenewalExtension}" />
 		
 		<h:outputLabel for="eep" value="#{web.text.SCEP_RA_ENDENTITY_PROFILE}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
@@ -103,7 +104,7 @@
 			</h:panelGroup>
 			<h:outputText value="#{scepConfigMBean.currentAlias.raCertProfile}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
-		
+
 		<h:outputLabel for="raca" value="#{web.text.SCEP_RA_CA}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
 		<h:panelGroup id="raca" rendered="#{scepConfigMBean.currentAlias.modeRa}">
 			<h:panelGroup rendered="#{scepConfigMBean.currentAliasEditMode}">
@@ -115,103 +116,156 @@
 			<h:outputText value="#{scepConfigMBean.currentAlias.raDefaultCA}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 
+		<!--	ProxyCA fields. Only visible when ProxyCA is available	-->
+		<h:panelGroup id="proxyCaEncryptionCertTemplateLableWrapper"
+					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable}">
+			<h:outputText value="#{web.text.SCEP_PROXYCA_ENCRYPTION_CERT_TEMPLATE}" />
+		</h:panelGroup>
+		<h:panelGroup id="proxyCaEncryptionCertTemplateWrapper"
+					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable}">
+			<h:inputText value="#{scepConfigMBean.currentAlias.proxyCaEncryptionCertTemplate}"
+						 disabled="#{!scepConfigMBean.currentAliasEditMode}" >
+				<f:converter converterId="trimConverter"/>
+			</h:inputText>
+		</h:panelGroup>
+
+		<h:panelGroup id="proxyCaSigningCertTemplateLabelWrapper"
+					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable}">
+			<h:outputText value="#{web.text.SCEP_PROXYCA_SIGNING_CERT_TEMPLATE}" />
+		</h:panelGroup>
+		<h:panelGroup id="proxyCaSigningCertTemplateWrapper"
+					  rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.proxyCaAvailable}">
+			<h:inputText value="#{scepConfigMBean.currentAlias.proxyCaSigningCertTemplate}"
+						 disabled="#{!scepConfigMBean.currentAliasEditMode}" >
+				<f:converter converterId="trimConverter"/>
+			</h:inputText>
+		</h:panelGroup>
+
+		<h:panelGroup id="proxyCaEnrollmentTemplateLabelWrapper"
+					  rendered="#{scepConfigMBean.proxyCaAvailable}">
+			<h:outputText value="#{web.text.SCEP_PROXYCA_ENROLLMENT_TEMPLATE}" />
+		</h:panelGroup>
+		<h:panelGroup id="proxyCaEnrollmentTemplateWrapper"
+					  rendered="#{scepConfigMBean.proxyCaAvailable}">
+			<h:inputText value="#{scepConfigMBean.currentAlias.proxyCaCaEnrollmentTemplate}"
+						 disabled="#{!scepConfigMBean.currentAliasEditMode}" styleClass="ui-md-12">
+				<f:converter converterId="trimConverter"/>
+			</h:inputText>
+		</h:panelGroup>
+		<!--		-->
+
         <!-- Use RA keys instead of the key for the CA when decrypting SCEP requests and signing SCEP responses -->
-        <h:outputLabel for="useRaKeys" value="#{web.text.SCEP_RA_USE_RA_KEYS}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
-        <h:panelGroup id="useRaKeys" rendered="#{scepConfigMBean.currentAlias.modeRa}">
-            <h:selectBooleanCheckbox id="useRaKeyCheckbox" value="#{scepConfigMBean.currentAlias.useRaKeys}" disabled="#{!scepConfigMBean.currentAliasEditMode}">
+        <h:outputLabel for="useRaKeys" value="#{web.text.SCEP_RA_USE_RA_KEYS}"/>
+        <h:panelGroup id="useRaKeys">
+            <p:selectBooleanCheckbox id="useRaKeyCheckbox" value="#{scepConfigMBean.currentAlias.useRaKeys}" disabled="#{!scepConfigMBean.currentAliasEditMode}">
                 <f:ajax execute="@this" render="
                     raEncryptionCryptoTokenLabelWrapper raEncryptionCryptoTokenWrapper
                     raEncryptionKeyLabelWrapper raEncryptionKeyWrapper
                     raSigningAlgorithmLabelWrapper raSigningAlgorithmWrapper
                     raSigningCryptoTokenLabelWrapper raSigningCryptoTokenWrapper
                     raSigningKeyLabelWrapper raSigningKeyWrapper
+                    caModeCasLabelWrapper caModeCasWrapper
                     "/>
-            </h:selectBooleanCheckbox>
+            </p:selectBooleanCheckbox>
         </h:panelGroup>
-        
+
         <!-- Separate key (token + alias) for SCEP request encryption fields token/key -->
-        <h:panelGroup id="raEncryptionCryptoTokenLabelWrapper" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+        <h:panelGroup id="raEncryptionCryptoTokenLabelWrapper">
 	        <h:outputLabel id="raEncryptionCryptoTokenLabel" for="raEncryptionCryptoToken" value="#{web.text.SCEP_RA_ENCRYPTION_TOKEN}" 
 	           rendered="#{scepConfigMBean.currentAlias.useRaKeys}"/>
         </h:panelGroup>
-        <h:panelGroup id="raEncryptionCryptoTokenWrapper" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+        <h:panelGroup id="raEncryptionCryptoTokenWrapper">
             <h:panelGroup id="raEncryptionCryptoToken" rendered="#{scepConfigMBean.currentAlias.useRaKeys}">
                 <h:outputText value="#{web.text.SCEP_RA_NO_TOKENS}"
 	                   rendered="#{!scepConfigMBean.currentAliasEditMode and empty scepConfigMBean.availableEncryptionCryptoTokens}"/>
-	            <h:selectOneMenu id="selectOneMenuEncryptionCryptoToken" value="#{scepConfigMBean.currentAlias.encryptionCryptoTokenId}" 
-	                   rendered="#{scepConfigMBean.currentAliasEditMode and not empty scepConfigMBean.availableEncryptionCryptoTokens}">
+	            <h:selectOneMenu id="selectOneMenuEncryptionCryptoToken" value="#{scepConfigMBean.currentAlias.encryptionCryptoTokenId}"
+	                   rendered="#{scepConfigMBean.currentAliasEditMode and not empty scepConfigMBean.availableEncryptionCryptoTokens}" styleClass="ui-md-12">
 	                <f:selectItems value="#{scepConfigMBean.availableEncryptionCryptoTokens}"/>
                  	<f:ajax render="raEncryptionKey"/>
 	            </h:selectOneMenu>
 	            <h:outputText value="#{scepConfigMBean.currentAliasEncryptionCryptoTokenName}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
             </h:panelGroup>
         </h:panelGroup>
-        <h:panelGroup id="raEncryptionKeyLabelWrapper" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+        <h:panelGroup id="raEncryptionKeyLabelWrapper">
             <h:outputLabel id="raEncryptionKeyLabel" for="raEncryptionKey" value="#{web.text.SCEP_RA_ENCRYPTION_KEY}" rendered="#{scepConfigMBean.currentAlias.useRaKeys}"/>
         </h:panelGroup>
-        <h:panelGroup id="raEncryptionKeyWrapper" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+        <h:panelGroup id="raEncryptionKeyWrapper">
             <h:panelGroup id="raEncryptionKey" rendered="#{scepConfigMBean.currentAlias.useRaKeys}">
-                <h:outputText value="#{web.text.SCEP_RA_NO_KEYS}" 
+                <h:outputText value="#{web.text.SCEP_RA_NO_KEYS}"
                         rendered="#{scepConfigMBean.currentAliasEditMode and empty scepConfigMBean.availableEncryptionKeys}"/>
-                <h:selectOneMenu id="selectOneMenuEncryptionKey" value="#{scepConfigMBean.currentAlias.encryptionKeyAlias}" 
-                        rendered="#{scepConfigMBean.currentAliasEditMode and not empty scepConfigMBean.availableEncryptionKeys}">
+                <h:selectOneMenu id="selectOneMenuEncryptionKey" value="#{scepConfigMBean.currentAlias.encryptionKeyAlias}"
+                        rendered="#{scepConfigMBean.currentAliasEditMode and not empty scepConfigMBean.availableEncryptionKeys}" styleClass="ui-md-12">
                     <f:selectItems value="#{scepConfigMBean.availableEncryptionKeys}"/>
                 </h:selectOneMenu>
-                <h:outputText value="#{scepConfigMBean.currentAlias.encryptionKeyAlias}" 
+                <h:outputText value="#{scepConfigMBean.currentAlias.encryptionKeyAlias}"
                         rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
             </h:panelGroup>
         </h:panelGroup>
 
         <!-- Separate key (token + alias) for SCEP request signing fields token/key -->
-        <h:panelGroup id="raSigningAlgorithmLabelWrapper" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+        <h:panelGroup id="raSigningAlgorithmLabelWrapper">
             <h:outputLabel id="raSigningAlgorithmLabel" for="raSigningAlgorithm" value="#{web.text.SCEP_RA_SIGNING_ALGORITHM}" rendered="#{scepConfigMBean.currentAlias.useRaKeys}"/>
         </h:panelGroup>
-        <h:panelGroup id="raSigningAlgorithmWrapper" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+        <h:panelGroup id="raSigningAlgorithmWrapper">
             <h:panelGroup id="raSigningAlgorithm" rendered="#{scepConfigMBean.currentAlias.useRaKeys}">
                 <h:selectOneMenu id="selectOneMenuSigningAlgorithm" value="#{scepConfigMBean.currentAlias.signingAlgorithm}"
-                       rendered="#{scepConfigMBean.currentAliasEditMode}">
+                       rendered="#{scepConfigMBean.currentAliasEditMode}" styleClass="ui-md-12">
                     <f:selectItems value="#{scepConfigMBean.availableSigningAlgorithms}"/>
                     <f:ajax render="raSigningKey"/>
                 </h:selectOneMenu>
                 <h:outputText value="#{scepConfigMBean.currentAlias.signingAlgorithm}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
             </h:panelGroup>
         </h:panelGroup>
-        <h:panelGroup id="raSigningCryptoTokenLabelWrapper" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+        <h:panelGroup id="raSigningCryptoTokenLabelWrapper">
             <h:outputLabel id="raSigningCryptoTokenLabel" for="raSigningCryptoToken" value="#{web.text.SCEP_RA_SIGNING_TOKEN}" rendered="#{scepConfigMBean.currentAlias.useRaKeys}"/>
         </h:panelGroup>
-        <h:panelGroup id="raSigningCryptoTokenWrapper" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+        <h:panelGroup id="raSigningCryptoTokenWrapper">
             <h:panelGroup id="raSigningCryptoToken" rendered="#{scepConfigMBean.currentAlias.useRaKeys}">
-                <h:outputText value="#{web.text.SCEP_RA_NO_TOKENS}" 
+                <h:outputText value="#{web.text.SCEP_RA_NO_TOKENS}"
                        rendered="#{!scepConfigMBean.currentAliasEditMode and empty scepConfigMBean.availableSigningCryptoTokens}"/>
-                <h:selectOneMenu id="selectOneMenuSigningCryptoToken" value="#{scepConfigMBean.currentAlias.signingCryptoTokenId}" 
-                       rendered="#{scepConfigMBean.currentAliasEditMode and not empty scepConfigMBean.availableSigningCryptoTokens}">
+                <h:selectOneMenu id="selectOneMenuSigningCryptoToken" value="#{scepConfigMBean.currentAlias.signingCryptoTokenId}"
+                       rendered="#{scepConfigMBean.currentAliasEditMode and not empty scepConfigMBean.availableSigningCryptoTokens}" styleClass="ui-md-12">
                     <f:selectItems value="#{scepConfigMBean.availableSigningCryptoTokens}"/>
                     <f:ajax render="raSigningKey"/>
                 </h:selectOneMenu>
                 <h:outputText value="#{scepConfigMBean.currentAliasSigningCryptoTokenName}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
             </h:panelGroup>
         </h:panelGroup>
-        <h:panelGroup id="raSigningKeyLabelWrapper" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+        <h:panelGroup id="raSigningKeyLabelWrapper">
             <h:outputLabel id="raSigningKeyLabel" for="raSigningKey" value="#{web.text.SCEP_RA_SIGNING_KEY}" rendered="#{scepConfigMBean.currentAlias.useRaKeys}"/>
         </h:panelGroup>
-        <h:panelGroup id="raSigningKeyWrapper" rendered="#{scepConfigMBean.currentAlias.modeRa}">
+        <h:panelGroup id="raSigningKeyWrapper">
             <h:panelGroup id="raSigningKey" rendered="#{scepConfigMBean.currentAlias.useRaKeys}">
-                <h:outputText value="#{web.text.SCEP_RA_NO_KEYS}" 
+                <h:outputText value="#{web.text.SCEP_RA_NO_KEYS}"
                         rendered="#{scepConfigMBean.currentAliasEditMode and empty scepConfigMBean.availableSigningKeys}"/>
-                <h:selectOneMenu id="selectOneMenuSigningKey" value="#{scepConfigMBean.currentAlias.signingKeyAlias}" 
-                        rendered="#{scepConfigMBean.currentAliasEditMode and not empty scepConfigMBean.availableSigningKeys}">
+                <h:selectOneMenu id="selectOneMenuSigningKey" value="#{scepConfigMBean.currentAlias.signingKeyAlias}"
+                        rendered="#{scepConfigMBean.currentAliasEditMode and not empty scepConfigMBean.availableSigningKeys}" styleClass="ui-md-12">
                     <f:selectItems value="#{scepConfigMBean.availableSigningKeys}"/>
                 </h:selectOneMenu>
-                <h:outputText value="#{scepConfigMBean.currentAlias.signingKeyAlias}" 
+                <h:outputText value="#{scepConfigMBean.currentAlias.signingKeyAlias}"
                         rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
             </h:panelGroup>
         </h:panelGroup>
-        <!-- End of RA keys -->                
+        <!-- End of RA keys --> 
+          
+        <!-- RA keys for CA mode -->   
+        <h:panelGroup id="caModeCasLabelWrapper" rendered="#{scepConfigMBean.currentAlias.modeCa}">
+            <h:outputLabel id="caModeCasLabel" for="caModeCas" value="#{web.text.SCEP_CA_MODE_CAS}" rendered="#{scepConfigMBean.currentAlias.useRaKeys}"/>
+        </h:panelGroup>
+        <h:panelGroup id="caModeCasWrapper" rendered="#{scepConfigMBean.currentAlias.modeCa}">
+            <h:panelGroup id="caModeCas" rendered="#{scepConfigMBean.currentAlias.useRaKeys}">
+                <h:selectManyListbox id="availableCAs" size="7"
+                            value="#{scepConfigMBean.currentAlias.encryptionCAs}"
+                            disabled="#{!scepConfigMBean.currentAliasEditMode}" styleClass="ui-md-12">
+                    <f:selectItems id="availableCAList" value="#{scepConfigMBean.availableCAs}" />
+                </h:selectManyListbox>             
+            </h:panelGroup>
+        </h:panelGroup>
+        <!-- end RA keys for CA mode -->   
 
-		<h:outputLabel for="rapwd" value="#{web.text.SCEP_RA_AUTH_PASSWORD}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
-		<h:panelGroup id="rapwd" rendered="#{scepConfigMBean.currentAlias.modeRa}">
-	    	<h:inputSecret redisplay="true" value="#{scepConfigMBean.currentAlias.raAuthPassword}" rendered="#{scepConfigMBean.currentAliasEditMode}"
-	    		disabled="#{scepConfigMBean.currentAlias.useIntune}">
+        <h:outputLabel for="rapwd" value="#{web.text.SCEP_RA_AUTH_PASSWORD}" rendered="#{scepConfigMBean.currentAlias.modeRa and not scepConfigMBean.currentAlias.useIntune}"/>
+        <h:panelGroup id="rapwd" rendered="#{scepConfigMBean.currentAlias.modeRa and not scepConfigMBean.currentAlias.useIntune}">
+            <h:inputSecret redisplay="true" value="#{scepConfigMBean.currentAlias.raAuthPassword}" rendered="#{scepConfigMBean.currentAliasEditMode}" styleClass="ui-md-12">
 				<f:passThroughAttribute name="autocomplete" value="new-password"/>
 	    	</h:inputSecret>
 	    	<h:outputText value="**********" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
@@ -220,7 +274,7 @@
 		<h:outputLabel for="rascheme" value="#{web.text.SCEP_RA_NAME_GEN_SCHEME}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
 		<h:panelGroup id="rascheme" rendered="#{scepConfigMBean.currentAlias.modeRa}">
 			<h:panelGroup rendered="#{scepConfigMBean.currentAliasEditMode}">
-				<h:selectOneMenu id="selectOneMenuRAScheme" value="#{scepConfigMBean.currentAlias.raNameGenScheme}">
+				<h:selectOneMenu id="selectOneMenuRAScheme" value="#{scepConfigMBean.currentAlias.raNameGenScheme}" styleClass="ui-md-12">
 					<f:selectItems value="#{scepConfigMBean.availableSchemes}"/>
 					<f:ajax render="currentAliasForm:raparam"/>
 				</h:selectOneMenu>
@@ -232,7 +286,7 @@
 		<h:panelGroup id="raparam"  rendered="#{scepConfigMBean.currentAlias.modeRa}">
 			<h:panelGroup rendered="#{scepConfigMBean.currentAlias.raNameGenSchemeDn}">
 				<h:panelGroup rendered="#{scepConfigMBean.currentAliasEditMode}">
-					<h:selectOneMenu id="selectOneMenuRAParam" value="#{scepConfigMBean.currentAlias.raNameGenParams}">
+					<h:selectOneMenu id="selectOneMenuRAParam" value="#{scepConfigMBean.currentAlias.raNameGenParams}" styleClass="ui-md-12">
 						<f:selectItems value="#{scepConfigMBean.dnParts}"/>
 					</h:selectOneMenu>
 				</h:panelGroup>
@@ -240,7 +294,7 @@
 			</h:panelGroup>
 	    		
 	    	<h:panelGroup rendered="#{scepConfigMBean.currentAlias.raNameGenSchemeFixed}">
-	    		<h:inputText  value="#{scepConfigMBean.currentAlias.raNameGenParams}" rendered="#{scepConfigMBean.currentAliasEditMode}">
+	    		<h:inputText value="#{scepConfigMBean.currentAlias.raNameGenParams}" rendered="#{scepConfigMBean.currentAliasEditMode}" styleClass="ui-md-12">
 	    			<f:validator validatorId="legalCharsValidator"/>
 	    		</h:inputText>
 	    		<h:outputText value="#{scepConfigMBean.currentAlias.raNameGenParams}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
@@ -249,7 +303,7 @@
 
 		<h:outputLabel for="raprefix" value="#{web.text.SCEP_RA_NAME_GEN_PREFIX}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
 		<h:panelGroup id="raprefix" rendered="#{scepConfigMBean.currentAlias.modeRa}">
-	    	<h:inputText  value="#{scepConfigMBean.currentAlias.raNameGenPrefix}" rendered="#{scepConfigMBean.currentAliasEditMode}">
+	    	<h:inputText value="#{scepConfigMBean.currentAlias.raNameGenPrefix}" rendered="#{scepConfigMBean.currentAliasEditMode}" styleClass="ui-md-12">
 	    		<f:validator validatorId="legalCharsValidator"/>
 	    	</h:inputText>
 	    	<h:outputText value="#{scepConfigMBean.currentAlias.raNameGenPrefix}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
@@ -257,44 +311,45 @@
 
 		<h:outputLabel for="rapostfix" value="#{web.text.SCEP_RA_NAME_GEN_POSTFIX}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
 		<h:panelGroup id="rapostfix" rendered="#{scepConfigMBean.currentAlias.modeRa}">
-	    	<h:inputText  value="#{scepConfigMBean.currentAlias.raNameGenPostfix}" rendered="#{scepConfigMBean.currentAliasEditMode}">
+	    	<h:inputText value="#{scepConfigMBean.currentAlias.raNameGenPostfix}" rendered="#{scepConfigMBean.currentAliasEditMode}" styleClass="ui-md-12">
 	    		<f:validator validatorId="legalCharsValidator"/>
 	    	</h:inputText>
 	    	<h:outputText value="#{scepConfigMBean.currentAlias.raNameGenPostfix}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
-
-	</h:panelGrid>		
+		
+	</h:panelGrid>
 		
 	<!-- Intune Configuration Values -->	
-	<h:panelGrid columns="2" id="intuneValues" rendered="#{scepConfigMBean.currentAlias.useIntune and scepConfigMBean.currentAlias.modeRa}">			
-		<h:outputLabel for="intuneHeader" value="#{web.text.SCEP_RA_INTUNE}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
+	<h:panelGrid columns="2" id="intuneValues" rendered="#{scepConfigMBean.currentAlias.useIntune and scepConfigMBean.currentAlias.modeRa}"
+				 columnClasses="form-label-col,ui-md-3" styleClass="form-vertical-align ui-md-6">
+		<h:outputLabel for="intuneHeader" value="#{web.text.SCEP_RA_INTUNE}" rendered="#{scepConfigMBean.currentAlias.modeRa}" style="font-weight:bold;"/>
 		<h:panelGroup id="intuneHeader" rendered="#{scepConfigMBean.currentAlias.modeRa}">	    	
 		</h:panelGroup>
 		
 		<h:outputLabel for="intuneAuthority" value="#{web.text.SCEP_AUTH_AUTHORITY}" rendered="#{scepConfigMBean.currentAlias.modeRa}" />
 		 <h:panelGroup id="intuneAuthority" rendered="#{scepConfigMBean.currentAlias.modeRa}">
-		     <h:inputText  value="#{scepConfigMBean.currentAlias.intuneAuthority}" rendered="#{scepConfigMBean.currentAliasEditMode}" size="60">
+		     <h:inputText  value="#{scepConfigMBean.currentAlias.intuneAuthority}" rendered="#{scepConfigMBean.currentAliasEditMode}" styleClass="ui-md-12">
 		     </h:inputText>
 		     <h:outputText value="#{scepConfigMBean.currentAlias.intuneAuthority}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 			
 		<h:outputLabel for="intuneAadAppId" value="#{web.text.SCEP_AAD_APP_ID}" rendered="#{scepConfigMBean.currentAlias.modeRa}" />
 		<h:panelGroup id="intuneAadAppId" rendered="#{scepConfigMBean.currentAlias.modeRa}">
-	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneAadAppId}" rendered="#{scepConfigMBean.currentAliasEditMode}" size="60">
+	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneAadAppId}" rendered="#{scepConfigMBean.currentAliasEditMode}" styleClass="ui-md-12">
 	    	</h:inputText>
 	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneAadAppId}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 
 		<h:outputLabel for="intuneAadUseKeyBinding" value="#{web.text.SCEP_USE_INTUNE_KEY_BINDING}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
 		<h:panelGroup id="intuneAadUseKeyBinding" rendered="#{scepConfigMBean.currentAlias.modeRa}">
-	    	<h:selectBooleanCheckbox id="intuneAadUseKeyBindingCheckbox" value="#{scepConfigMBean.currentAlias.intuneAadUseKeyBinding}" disabled="#{!scepConfigMBean.currentAliasEditMode}">
+	    	<p:selectBooleanCheckbox id="intuneAadUseKeyBindingCheckbox" value="#{scepConfigMBean.currentAlias.intuneAadUseKeyBinding}" disabled="#{!scepConfigMBean.currentAliasEditMode}">
 	    		<f:ajax event="change" execute="@this" render="@form currentAliasForm:intuneValues"/>
-	    	</h:selectBooleanCheckbox>
+	    	</p:selectBooleanCheckbox>
 		</h:panelGroup>
 			
 		<h:outputLabel for="intuneAadAppKey" value="#{web.text.SCEP_AAD_APP_KEY}" rendered="#{scepConfigMBean.currentAlias.modeRa and not scepConfigMBean.currentAlias.intuneAadUseKeyBinding}"/>
 		<h:panelGroup id="intuneAadAppKey" rendered="#{scepConfigMBean.currentAlias.modeRa and not scepConfigMBean.currentAlias.intuneAadUseKeyBinding}">
-	    	<h:inputSecret  redisplay="true" value="#{scepConfigMBean.currentAlias.intuneAadAppKey}" rendered="#{scepConfigMBean.currentAliasEditMode}">
+	    	<h:inputSecret  redisplay="true" value="#{scepConfigMBean.currentAlias.intuneAadAppKey}" rendered="#{scepConfigMBean.currentAliasEditMode}" styleClass="ui-md-12">
 				<f:passThroughAttribute name="autocomplete" value="new-password"/>
 			</h:inputSecret>
 	    	<h:outputText value="*****" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
@@ -302,56 +357,56 @@
 				
 		<h:outputLabel for="intuneAadAppKeyBinding" value="#{web.text.SCEP_AAD_APP_KEY_BINDING}" rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.currentAlias.intuneAadUseKeyBinding}"/>
 		<h:panelGroup id="intuneAadAppKeyBinding" rendered="#{scepConfigMBean.currentAlias.modeRa and scepConfigMBean.currentAlias.intuneAadUseKeyBinding}">
-			<h:inputText  value="#{scepConfigMBean.currentAlias.intuneAadAppKeyBinding}" rendered="#{scepConfigMBean.currentAliasEditMode}" size="60">
+			<h:inputText  value="#{scepConfigMBean.currentAlias.intuneAadAppKeyBinding}" rendered="#{scepConfigMBean.currentAliasEditMode}" styleClass="ui-md-12">
 	    	</h:inputText>
 	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneAadAppKeyBinding}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 				
 		<h:outputLabel for="intuneTenant" value="#{web.text.SCEP_TENANT}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
 		<h:panelGroup id="intuneTenant" rendered="#{scepConfigMBean.currentAlias.modeRa}">
-	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneTenant}" rendered="#{scepConfigMBean.currentAliasEditMode}" size="60">
+	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneTenant}" rendered="#{scepConfigMBean.currentAliasEditMode}" styleClass="ui-md-12">
 	    	</h:inputText>
 	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneTenant}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>				
 		
 		<h:outputLabel for="intuneResourceUrl" value="#{web.text.SCEP_INTUNE_RESOURCE_URL}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
 		<h:panelGroup id="intuneResourceUrl" rendered="#{scepConfigMBean.currentAlias.modeRa}">
-	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneResourceUrl}" rendered="#{scepConfigMBean.currentAliasEditMode}" size="60">
+	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneResourceUrl}" rendered="#{scepConfigMBean.currentAliasEditMode}" styleClass="ui-md-12">
 	    	</h:inputText>
 	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneResourceUrl}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>	
 
 		<h:outputLabel for="intuneGraphApiVersion" value="#{web.text.SCEP_GRAPH_API_VERSION}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
 		<h:panelGroup id="intuneGraphApiVersion" rendered="#{scepConfigMBean.currentAlias.modeRa}">
-	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneGraphApiVersion}" rendered="#{scepConfigMBean.currentAliasEditMode}" size="60">
+	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneGraphApiVersion}" rendered="#{scepConfigMBean.currentAliasEditMode}" styleClass="ui-md-12">
 	    	</h:inputText>
 	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneGraphApiVersion}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>	
 
 		<h:outputLabel for="intuneGraphResourceUrl" value="#{web.text.SCEP_GRAPH_RESOURCE_URL}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
 		<h:panelGroup id="intuneGraphResourceUrl" rendered="#{scepConfigMBean.currentAlias.modeRa}">
-	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneGraphResourceUrl}" rendered="#{scepConfigMBean.currentAliasEditMode}" size="60">
+	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneGraphResourceUrl}" rendered="#{scepConfigMBean.currentAliasEditMode}" styleClass="ui-md-12">
 	    	</h:inputText>
 	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneGraphResourceUrl}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>	
 
 		<h:outputLabel for="intuneProxyHost" value="#{web.text.SCEP_PROXY_HOST}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
 		<h:panelGroup id="intuneProxyHost" rendered="#{scepConfigMBean.currentAlias.modeRa}">
-	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneProxyHost}" rendered="#{scepConfigMBean.currentAliasEditMode}" size="60">
+	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneProxyHost}" rendered="#{scepConfigMBean.currentAliasEditMode}" styleClass="ui-md-12">
 	    	</h:inputText>
 	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneProxyHost}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 				
 		<h:outputLabel for="intuneProxyPort" value="#{web.text.SCEP_PROXY_PORT}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
 		<h:panelGroup id="intuneProxyPort" rendered="#{scepConfigMBean.currentAlias.modeRa}">
-	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneProxyPort}" rendered="#{scepConfigMBean.currentAliasEditMode}" size="60">
+	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneProxyPort}" rendered="#{scepConfigMBean.currentAliasEditMode}" styleClass="ui-md-12">
 	    	</h:inputText>
 	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneProxyPort}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 
 		<h:outputLabel for="intuneProxyUser" value="#{web.text.SCEP_PROXY_USER}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
 		<h:panelGroup id="intuneProxyUser" rendered="#{scepConfigMBean.currentAlias.modeRa}">
-	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneProxyUser}" rendered="#{scepConfigMBean.currentAliasEditMode}" size="60">
+	    	<h:inputText  value="#{scepConfigMBean.currentAlias.intuneProxyUser}" rendered="#{scepConfigMBean.currentAliasEditMode}" styleClass="ui-md-12">
 	    	</h:inputText>
 	    	<h:outputText value="#{scepConfigMBean.currentAlias.intuneProxyUser}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
@@ -359,18 +414,19 @@
 		<h:outputLabel for="intuneProxyPass" value="#{web.text.SCEP_PROXY_PASS}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
 		<h:panelGroup id="intuneProxyPass" rendered="#{scepConfigMBean.currentAlias.modeRa}">
 	    	<h:inputSecret redisplay="true" value="#{scepConfigMBean.currentAlias.intuneProxyPass}"
-	    		rendered="#{scepConfigMBean.currentAliasEditMode}" size="60">
+	    		rendered="#{scepConfigMBean.currentAliasEditMode}" styleClass="ui-md-12">
 				<f:passThroughAttribute name="autocomplete" value="new-password"/>
 	    	</h:inputSecret>
 	    	<h:outputText value="*****" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>	    	
 		</h:panelGroup>
-
 		
 	</h:panelGrid>
 	<h:panelGrid columns="2" id="actions">
 		<h:panelGroup>
-			<h:commandButton action="#{scepConfigMBean.saveCurrentAlias}" value="#{web.text.SAVE}" rendered="#{scepConfigMBean.currentAliasEditMode}"/>
-			<h:commandButton action="#{scepConfigMBean.cancelCurrentAlias}" value="#{web.text.CANCEL}" immediate="true"/>
+			<div class="action-buttons">
+				<h:commandButton action="#{scepConfigMBean.saveCurrentAlias}" value="#{web.text.SAVE}" rendered="#{scepConfigMBean.currentAliasEditMode}"/>
+				<h:commandButton action="#{scepConfigMBean.cancelCurrentAlias}" value="#{web.text.CANCEL}" immediate="true"/>
+			</div>
 		</h:panelGroup>
 	</h:panelGrid>
 	</h:form>

@@ -31,6 +31,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.config.GlobalCaConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
@@ -179,7 +180,7 @@ public class RenewCANewSubjectDNPropagationSystemTest extends CaTestCase {
 
         CAInfo caInfoBeforeNameChange = caSession.getCAInfo(internalAdmin, "TEST");
         caAdminSession.renewCANewSubjectDn(internalAdmin, caInfoBeforeNameChange.getCAId(), /*regenerateKeys=*/true, /*customNotBefore=*/null,
-                /*createLinkCertificates=*/false, newSubjectDN);
+                /*createLinkCertificates=*/false, CertificateProfileConstants.NO_CERTIFICATE_PROFILE, newSubjectDN);
         CAInfo caInfoAfterNameChange = caSession.getCAInfo(internalAdmin, newCAName);
         
         //End entity profiles propagation has to add new caid to availableCAs field

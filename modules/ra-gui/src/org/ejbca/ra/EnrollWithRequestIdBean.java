@@ -48,7 +48,6 @@ import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSession;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
@@ -533,7 +532,7 @@ public class EnrollWithRequestIdBean implements Serializable {
             return false;
         }
         final String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_JKS));
+        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(EndEntityConstants.TOKEN_SOFT_JKS));
     }
 
     public boolean isRenderGenerateKeyStorePkcs12(){
@@ -550,7 +549,7 @@ public class EnrollWithRequestIdBean implements Serializable {
             return false;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_P12));
+        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(EndEntityConstants.TOKEN_SOFT_P12));
     }
 
     public boolean isRenderGenerateKeyStoreBcfks() {
@@ -566,7 +565,7 @@ public class EnrollWithRequestIdBean implements Serializable {
             return false;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_BCFKS));
+        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(EndEntityConstants.TOKEN_SOFT_BCFKS));
     }
 
     public boolean isRenderGenerateKeyStorePem(){
@@ -582,7 +581,7 @@ public class EnrollWithRequestIdBean implements Serializable {
             return false;
         }
         String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_PEM));
+        return availableKeyStores != null && availableKeyStores.contains(String.valueOf(EndEntityConstants.TOKEN_SOFT_PEM));
     }
 
     /**
@@ -752,10 +751,6 @@ public class EnrollWithRequestIdBean implements Serializable {
                 return false;
             }
         }
-    }
-    
-    public boolean isKeyRecoverable() {
-        return getEndEntityInformation().getKeyRecoverable();
     }
 
     //-----------------------------------------------------------------

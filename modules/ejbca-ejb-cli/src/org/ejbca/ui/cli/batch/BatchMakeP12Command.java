@@ -26,6 +26,15 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyStoreTools;
+import com.keyfactor.util.keys.KeyTools;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.Properties;
@@ -41,7 +50,6 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
-import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -56,14 +64,6 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 import org.ejbca.util.keystore.P12toPEM;
-
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.certificate.SimpleCertGenerator;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.KeyTools;
 
 /**
  * This class generates keys and request certificates for all users with status NEW. The result is
@@ -147,10 +147,10 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
             final String keyAlg = parameters.get(END_ENTITY_KEY_ALG);
             final String keySpec = parameters.get(END_ENTITY_KEY_SPEC);
             if (StringUtils.isEmpty(keyAlg) && !StringUtils.isEmpty(keySpec)) {
-                log.info("If specifying --keyalg or --keyspec, both must be specified, see --help' for additional options.");                
+                log.info("If specifying --keyalg or --keyspec, both must be specified, see --help' for additional options.");
             }
             if (!StringUtils.isEmpty(keyAlg) && StringUtils.isEmpty(keySpec)) {
-                log.info("If specifying --keyalg or --keyspec, both must be specified, see --help' for additional options.");                
+                log.info("If specifying --keyalg or --keyspec, both must be specified, see --help' for additional options.");
             }
             if (!StringUtils.isEmpty(keyAlg) && !StringUtils.isEmpty(keySpec)) {
                 getProps().setKeyAlg(keyAlg);
@@ -189,12 +189,12 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
         return usekeyrecovery;
     }
 
-  
+
 
     /**
      * Sets the location where generated P12-files will be stored, full name
      * will be: mainStoreDir/username.p12.
-     * 
+     *
      * @param dir
      *            existing directory
      */
@@ -204,7 +204,7 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
 
     /**
      * Stores keystore.
-     * 
+     *
      * @param ks
      *            KeyStore
      * @param username
@@ -231,19 +231,19 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
 
         String keyStoreFilename = mainStoreDir + "/" + username;
 
-        if (keystoreType == SecConst.TOKEN_SOFT_JKS) {
+        if (keystoreType == EndEntityConstants.TOKEN_SOFT_JKS) {
             keyStoreFilename += ".jks";
         } else {
             keyStoreFilename += ".p12";
         }
 
         // If we should also create PEM-files, do that
-        if (keystoreType == SecConst.TOKEN_SOFT_PEM) {
+        if (keystoreType == EndEntityConstants.TOKEN_SOFT_PEM) {
             String PEMfilename = mainStoreDir + "/pem";
             P12toPEM.createPEM(ks, kspassword, PEMfilename);
         } else {
             try (final FileOutputStream fileOutputStream = new FileOutputStream(keyStoreFilename);) {
-                ks.store(fileOutputStream, kspassword.toCharArray());
+                KeyStoreTools.storeKeyStore(ks, fileOutputStream, kspassword.toCharArray());
             }
         }
 
@@ -256,7 +256,7 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
     /**
      * Creates files for a user, sends request to CA, receives reply and creates
      * P12.
-     * 
+     *
      * @param username
      *            username
      * @param password
@@ -296,8 +296,7 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
             boolean finishUser = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caId)
                     .getFinishUser();
             if (finishUser) {
-                
-                EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSession.class).finishUser(userdata);
+                EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).finishUser(userdata);
             }
 
         } else {
@@ -310,7 +309,7 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
                 sigAlg = AlgorithmConstants.SIGALG_ED25519;
             } else if (getProps().getKeyAlg().equalsIgnoreCase(AlgorithmConstants.SIGALG_ED448)) {
                 sigAlg = AlgorithmConstants.SIGALG_ED448;
-            } 
+            }
 
             X509Certificate selfcert = SimpleCertGenerator.forTESTLeafCert()
                     .setSubjectDn("CN=selfsigned")
@@ -320,7 +319,7 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
                     .setEntityPubKey(keyPair.getPublic())
                     .setSignatureAlgorithm(sigAlg)
                     .generateCertificate();
-                    
+
             cert = (X509Certificate) EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class).createCertificate(getAuthenticationToken(),
                     username, password, selfcert);
         }
@@ -370,12 +369,12 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
         // Store keys and certificates in keystore.
         KeyStore ks = null;
 
-        if (keystoreType == SecConst.TOKEN_SOFT_JKS) {
+        if (keystoreType == EndEntityConstants.TOKEN_SOFT_JKS) {
             ks = KeyTools.createJKS(alias, keyPair.getPrivate(), password, cert, cachain);
-        } else if (keystoreType == SecConst.TOKEN_SOFT_BCFKS) {
+        } else if (keystoreType == EndEntityConstants.TOKEN_SOFT_BCFKS) {
             ks = KeyTools.createBcfks(alias, keyPair.getPrivate(), cert, cachain);
         } else {
-            EndEntityProfile endEntityProfile = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfile(userdata.getEndEntityProfileId());            
+            EndEntityProfile endEntityProfile = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfile(userdata.getEndEntityProfileId());
             ks = KeyTools.createP12(alias, keyPair.getPrivate(), cert, cachain, endEntityProfile.getP12Cipher());
         }
 
@@ -389,7 +388,7 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
 
     /**
      * Recovers or generates new keys for the user and generates keystore
-     * 
+     *
      * @param data
      *            user data for user
      * @param keystoreType the type of keystore, one of the constants from {@link SecConst}
@@ -440,9 +439,9 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
         boolean ret = false;
         // get users Token Type.
         int tokentype = data.getTokenType();
-        boolean createJKS = (tokentype == SecConst.TOKEN_SOFT_JKS);
-        boolean createPEM = (tokentype == SecConst.TOKEN_SOFT_PEM);
-        boolean createP12 = tokentype == SecConst.TOKEN_SOFT_P12 || tokentype == SecConst.TOKEN_SOFT_BCFKS;
+        boolean createJKS = (tokentype == EndEntityConstants.TOKEN_SOFT_JKS);
+        boolean createPEM = (tokentype == EndEntityConstants.TOKEN_SOFT_PEM);
+        boolean createP12 = tokentype == EndEntityConstants.TOKEN_SOFT_P12 || tokentype == EndEntityConstants.TOKEN_SOFT_BCFKS;
         // Only generate supported tokens
         if (createP12 || createPEM || createJKS) {
             if (status == EndEntityConstants.STATUS_KEYRECOVERY) {
@@ -524,7 +523,7 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
 
     /**
      * Creates P12-files for all users with status in the local database.
-     * 
+     *
      * Since authentication tokens from the CLI are single use only, this method will take multiple (until a better design is reached).
      */
     private void createAllWithStatus(int status) throws Exception {
@@ -532,14 +531,14 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
             log.trace(">createAllWithStatus: " + status);
         }
         CryptoProviderTools.installBCProviderIfNotAvailable(); // If this is invoked directly
-        ArrayList<EndEntityInformation> result = new ArrayList<EndEntityInformation>();
+        ArrayList<EndEntityInformation> result = new ArrayList<>();
 
         boolean stopnow = false;
         do {
             for (EndEntityInformation data : EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class)
                     .findAllBatchUsersByStatusWithLimit(status)) {
-                if (data.getTokenType() == SecConst.TOKEN_SOFT_JKS || data.getTokenType() == SecConst.TOKEN_SOFT_PEM
-                        || data.getTokenType() == SecConst.TOKEN_SOFT_P12) {
+                if (data.getTokenType() == EndEntityConstants.TOKEN_SOFT_JKS || data.getTokenType() == EndEntityConstants.TOKEN_SOFT_PEM
+                        || data.getTokenType() == EndEntityConstants.TOKEN_SOFT_P12) {
                     result.add(data);
                 }
             }
@@ -552,7 +551,7 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
 
             final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
             final GlobalCesecoreConfiguration globalConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
-            
+
             if (result.size() > 0) {
                 if (result.size() < globalConfiguration.getMaximumQueryCount()) {
                     stopnow = true;
@@ -618,7 +617,7 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
 
     /**
      * Creates P12-files for one end entity in the local database.
-     * 
+     *
      * @param username
      *            username
      * @throws Exception
@@ -677,7 +676,7 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
     /**
      * Return environment variable EJBCA_HOME or an empty string if the variable
      * isn't set.
-     * 
+     *
      * @return Environment variable EJBCA_HOME
      */
     private static String getHomeDir() {

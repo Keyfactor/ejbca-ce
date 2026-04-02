@@ -39,10 +39,10 @@ import org.json.simple.JSONValue;
 public class AzureClientAndSecretAuthenticator extends AzureAuthenticator {
     Logger logger = Logger.getLogger(getClass());
 
-    final private String tenantID;
-    final private String clientID;
-    final private String clientSecret;
-    final private HttpClientWithProxySupport client;
+    private final String tenantID;
+    private final String clientID;
+    private final String clientSecret;
+    private final HttpClientWithProxySupport client;
 
     public AzureClientAndSecretAuthenticator(String azureLoginUrl, String tenantID, String clientID, String clientSecret,
             HttpClientWithProxySupport client) {

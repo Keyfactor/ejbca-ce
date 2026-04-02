@@ -1,6 +1,3 @@
-drop table AccessRulesData cascade constraints;
-drop table AdminEntityData cascade constraints;
-drop table AdminGroupData cascade constraints;
 drop table AdminPreferencesData cascade constraints;
 drop table ApprovalData cascade constraints;
 drop table AuditRecordData cascade constraints;
@@ -25,7 +22,6 @@ drop table RoleData cascade constraints;
 drop table RoleMemberData cascade constraints;
 drop table ServiceData cascade constraints;
 drop table UserData cascade constraints;
-drop table UserDataSourceData cascade constraints;
 drop table NoConflictCertificateData cascade constraints;
 drop table AcmeAuthorizationData cascade constraints;
 drop table AcmeChallengeData cascade constraints;

@@ -13,19 +13,12 @@
 
 package org.ejbca.config;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
-import org.apache.log4j.Logger;
-import org.cesecore.configuration.ConfigurationBase;
-import org.ejbca.core.model.UsernameGenerateMode;
-
-import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -34,6 +27,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.apache.log4j.Logger;
+import org.cesecore.configuration.ConfigurationBase;
+import org.ejbca.core.model.UsernameGenerateMode;
 
 /**
  * Configuration of the SCEP protocol.
@@ -84,6 +86,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public static final String SCEP_RA_NAME_GENERATION_POSTFIX = "ra.namegenerationpostfix";
     public static final String SCEP_CLIENT_CERTIFICATE_RENEWAL = "clientCertificateRenewal";
     public static final String SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY = "clientCertificateRenewalWithOldKey";
+    public static final String SCEP_PROXYCA_ENCRYPTION_CERT_TEMPLATE = "proxyCaEncryptionCert";
+    public static final String SCEP_PROXYCA_SIGNING_CERT_TEMPLATE = "proxyCaSigningCert";
+    public static final String SCEP_PROXYCA_ENROLLMENT_TEMPLATE = "proxyCaEnrollmentTemplate";
 
     //Intune configuration values
     public static final String SCEP_USE_INTUNE = "useIntune";
@@ -103,23 +108,24 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public static final String ENCRYPTION_TOKEN_ID = "encryptionTokenId";
     public static final String ENCRYPTION_KEY_ALIAS = "encryptionKeyAlias";
     public static final String ENCRYPTION_CERTIFICATE = "encryptionCertificate";
+    public static final String ENCRYPTION_CERTIFICATES = "encryptionCertificates"; // used in CA mode
     public static final String SIGNING_ALGORITHM = "signingAlgorithm";
     public static final String SIGNING_TOKEN_ID = "signingTokenId";
     public static final String SIGNING_KEY_ALIAS = "signingKeyAlias";
     public static final String SIGNING_CERTIFICATE = "signingCertificate";
+    public static final String SIGNING_CERTIFICATES = "signingCertificates"; // used in CA mode
+    public static final String ENCRYPTION_CAS = "encryptionCAs"; // used in CA mode
 
     // This List is used in the command line handling of updating a config value to insure a correct value.
     public static final List<String> SCEP_BOOLEAN_KEYS = Arrays.asList(SCEP_INCLUDE_CA, SCEP_RETURN_CA_CHAIN_IN_GETCACERT);
 
     public static final String SCEP_CONFIGURATION_ID = "2";
 
-
     private final String ALIAS_LIST = "aliaslist";
 
     // Default Values
-    public static final float LATEST_VERSION = 8f;
+    public static final float LATEST_VERSION = 9f;
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
-
 
     public static final Set<String> DEFAULT_ALIAS_LIST = new LinkedHashSet<String>();
     public static final String DEFAULT_OPERATION_MODE = Mode.CA.getResource();
@@ -139,7 +145,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public static final String DEFAULT_RETURN_CA_CHAIN_IN_GETCACERT = Boolean.TRUE.toString();
     public static final String DEFAULT_AAD_USE_KEYBINDING = Boolean.FALSE.toString();
     public static final String DEFAULT_SIGNING_ALGORITHM = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
-
+    public static final String DEFAULT_SCEP_PROXYCA_ENCRYPTION_CERT_TEMPLATE = "";
+    public static final String DEFAULT_SCEP_PROXYCA_SIGNING_CERT_TEMPLATE = "";
+    public static final String DEFAULT_SCEP_PROXYCA_ENROLLMENT_TEMPLATE = "";
 
     /**
      * Creates a new instance of ScepConfiguration
@@ -153,7 +161,6 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         LinkedHashMap<Object, Object> d = (LinkedHashMap<Object, Object>) dataobj;
         data = d;
     }
-
 
     /**
      * Initializes a new scep configuration with default values.
@@ -175,6 +182,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         data.put(alias + SCEP_RA_NAME_GENERATION_POSTFIX, DEFAULT_RA_NAME_GENERATION_POSTFIX);
         data.put(alias + SCEP_CLIENT_CERTIFICATE_RENEWAL, DEFAULT_CLIENT_CERTIFICATE_RENEWAL);
         data.put(alias + SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY, DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
+        data.put(alias + SCEP_PROXYCA_ENCRYPTION_CERT_TEMPLATE, DEFAULT_SCEP_PROXYCA_ENCRYPTION_CERT_TEMPLATE);
+        data.put(alias + SCEP_PROXYCA_SIGNING_CERT_TEMPLATE, DEFAULT_SCEP_PROXYCA_SIGNING_CERT_TEMPLATE);
+        data.put(alias + SCEP_PROXYCA_ENROLLMENT_TEMPLATE, DEFAULT_SCEP_PROXYCA_ENROLLMENT_TEMPLATE);
 
         data.put(alias + SCEP_USE_INTUNE, Boolean.FALSE.toString());
         data.put(alias + AUTH_AUTHORITY, "");
@@ -197,6 +207,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         data.put(alias + SIGNING_TOKEN_ID, "");
         data.put(alias + SIGNING_KEY_ALIAS, "");
         data.put(alias + SIGNING_CERTIFICATE, "");
+        data.put(alias + ENCRYPTION_CAS, "");
     }
 
     // return all the key with an alias
@@ -218,6 +229,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         keys.add(alias + SCEP_RA_NAME_GENERATION_POSTFIX);
         keys.add(alias + SCEP_CLIENT_CERTIFICATE_RENEWAL);
         keys.add(alias + SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
+        keys.add(alias + SCEP_PROXYCA_ENCRYPTION_CERT_TEMPLATE);
+        keys.add(alias + SCEP_PROXYCA_SIGNING_CERT_TEMPLATE);
+        keys.add(alias + SCEP_PROXYCA_ENROLLMENT_TEMPLATE);
 
         keys.add(alias + SCEP_USE_INTUNE);
         keys.add(alias + AUTH_AUTHORITY);
@@ -240,6 +254,9 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         keys.add(alias + SIGNING_TOKEN_ID);
         keys.add(alias + SIGNING_KEY_ALIAS);
         keys.add(alias + SIGNING_CERTIFICATE);
+        keys.add(alias + SIGNING_CERTIFICATES);
+        keys.add(alias + ENCRYPTION_CERTIFICATES);
+        keys.add(alias + ENCRYPTION_CAS);
 
         return keys;
     }
@@ -349,7 +366,6 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         String key = alias + "." + SCEP_CHAIN_ROOT_FIRST;
         setValue(key, Boolean.toString(caChainRootFirstOrder), alias);
     }
-
 
     public boolean getAllowLegacyDigestAlgorithm(String alias) {
         String key = alias + "." + SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM;
@@ -593,6 +609,38 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         return getDecryptedValue(getValue(key, alias));
     }
 
+    /// Templates for Proxy CA fields
+    public String getProxyCaEncryptionCertTemplate(final String alias) {
+        String key = alias + "." + SCEP_PROXYCA_ENCRYPTION_CERT_TEMPLATE;
+        return getValue(key, alias);
+    }
+
+    public void setProxyCaEncryptionCertTemplate(final String alias, final String value) {
+        String key = alias + "." + SCEP_PROXYCA_ENCRYPTION_CERT_TEMPLATE;
+        setValue(key, value, alias);
+    }
+
+    public String getProxyCaSigningCertTemplate(final String alias) {
+        String key = alias + "." + SCEP_PROXYCA_SIGNING_CERT_TEMPLATE;
+        return getValue(key, alias);
+    }
+
+    public void setProxyCaSigningCertTemplate(final String alias, final String value) {
+        String key = alias + "." + SCEP_PROXYCA_SIGNING_CERT_TEMPLATE;
+        setValue(key, value, alias);
+    }
+
+    public String getProxyCaEnrollmentTemplate(final String alias) {
+        String key = alias + "." + SCEP_PROXYCA_ENROLLMENT_TEMPLATE;
+        return getValue(key, alias);
+    }
+
+    public void setProxyCaEnrollmentTemplate(final String alias, final String value) {
+        String key = alias + "." + SCEP_PROXYCA_ENROLLMENT_TEMPLATE;
+        setValue(key, value, alias);
+    }
+    ///
+
     public Properties getIntuneProperties(final String alias) {
         Properties intuneProperties = new Properties();
         intuneProperties.put("PROVIDER_NAME_AND_VERSION", GlobalConfiguration.EJBCA_VERSION);
@@ -636,13 +684,26 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         return intuneProperties;
     }
 
+    @SuppressWarnings("unchecked")
     public String getValue(String key, String alias) {
         if (aliasExists(alias)) {
             if (data.containsKey(key)) {
                 if (data.get(key) instanceof Boolean) {
                     return Boolean.toString((Boolean) data.get(key));
+                } else if (data.get(key) instanceof Map<?,?> || data.get(key) instanceof ArrayList<?>) {
+                    log.trace("GetValue: " + key + " - value - " + data.get(key));
+                    // List of encryptionCAs (GUI: 'Available CAs') from CA-mode for configdump.
+                    if ((alias + "." + ScepConfiguration.ENCRYPTION_CAS).equals(key)) {
+                        return String.join(",", (ArrayList<String>) data.get(key));
+                    }
+                    return null;
                 }
-                return (String) data.get(key);
+                if (data.get(key) != null) {
+                    return String.valueOf(data.get(key));
+                    // return String.valueOf(data.get(key)).replaceAll("[\\[\\]',]", "");
+                } else {
+                    return (String) data.get(key);
+                }
             } else {
                 log.info("Could not find key '" + key + "' in the SCEP configuration data");
             }
@@ -661,6 +722,28 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
                 }
             } else {
                 log.info("Key '" + key + "' does not exist in the SCEP configuration data");
+            }
+        } else {
+            log.info("SCEP alias '" + alias + "' does not exist trying to set value for '" + key + "'");
+        }
+    }
+
+    public void setListValue(String key, ArrayList<String> value, String alias) {
+        if (aliasExists(alias)) {
+            data.put(key, value);
+            if (log.isDebugEnabled()) {
+                log.debug("Added '" + key + "=" + value + "' to the SCEP configuration data");
+            }
+        } else {
+            log.info("SCEP alias '" + alias + "' does not exist trying to set value for '" + key + "'");
+        }
+    }
+
+    public void setMapValue(String key, HashMap<String, String> value, String alias) {
+        if (aliasExists(alias)) {
+            data.put(key, value);
+            if (log.isDebugEnabled()) {
+                log.debug("Added '" + key + "=" + value + "' to the SCEP configuration data");
             }
         } else {
             log.info("SCEP alias '" + alias + "' does not exist trying to set value for '" + key + "'");
@@ -838,7 +921,6 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         return null;
     }
 
-
     /**
      * Implementation of UpgradableDataHashMap function getLatestVersion
      */
@@ -928,6 +1010,19 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
                 if (data.get(alias + SIGNING_CERTIFICATE) == null) {
                     data.put(alias + SIGNING_CERTIFICATE, "");
                 }
+                if (data.get(alias + ENCRYPTION_CAS) == null) {
+                    data.put(alias + ENCRYPTION_CAS, "");
+                }
+                /// Proxy CA
+                if (data.get(alias + SCEP_PROXYCA_ENCRYPTION_CERT_TEMPLATE) == null) {
+                    data.put(alias + SCEP_PROXYCA_ENCRYPTION_CERT_TEMPLATE, "");
+                }
+                if (data.get(alias + SCEP_PROXYCA_SIGNING_CERT_TEMPLATE) == null) {
+                    data.put(alias + SCEP_PROXYCA_SIGNING_CERT_TEMPLATE, "");
+                }
+                if (data.get(alias + SCEP_PROXYCA_ENROLLMENT_TEMPLATE) == null) {
+                    data.put(alias + SCEP_PROXYCA_ENROLLMENT_TEMPLATE, "");
+                }
             }
             data.put(VERSION, Float.valueOf(LATEST_VERSION));
         }
@@ -937,7 +1032,6 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public String getConfigurationId() {
         return SCEP_CONFIGURATION_ID;
     }
-
 
     @Override
     public void filterDiffMapForLogging(Map<Object, Object> diff) {
@@ -961,7 +1055,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public void setEncryptionCertificate(String alias, String pemEncodedCertificate) {
         setValue(alias + "." + ENCRYPTION_CERTIFICATE, pemEncodedCertificate == null ? "" : pemEncodedCertificate, alias);
     }
-
+    
     public String getEncryptionKeyAlias(String alias) {
         String value = getValue(alias + "." + ENCRYPTION_KEY_ALIAS, alias);
         if (value == null) {
@@ -981,8 +1075,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
             // Lazy initialization for SCEP configurations older than 9.4
             setValue(alias + "." + ENCRYPTION_TOKEN_ID, "", alias);
             return null;
-        }
-        else if ("".equals(stringValue)) {
+        } else if ("".equals(stringValue)) {
             return null;
         } else {
             return Integer.parseInt(stringValue);
@@ -991,34 +1084,76 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
 
     public String getEncryptionCertificate(String alias) {
         String value = getValue(alias + "." + ENCRYPTION_CERTIFICATE, alias);
-        if (value == null)  {
+        if (value == null) {
             // Lazy initialization for SCEP configurations older than 9.4
             setValue(alias + "." + ENCRYPTION_CERTIFICATE, "", alias);
             return null;
-        }
-        else if ("".equals(value)) {
+        } else if ("".equals(value)) {
             return null;
         } else {
             return value;
         }
     }
 
-    /** return the SCEP encryption certificate as a certificate object */
-    public X509Certificate decodeEncryptionCertificate(String alias) {
-        String pemEncodedCertificate = getEncryptionCertificate(alias);
-        if (pemEncodedCertificate == null) {
-            return null;
-        }
-
-        try {
-            return CertTools.getCertsFromPEM(new ByteArrayInputStream(pemEncodedCertificate.getBytes()), X509Certificate.class).get(0);
-        } catch (CertificateParsingException e) {
-            // how did a badly formatted certificate end up in the config?
-            log.error("Bad SCEP encryption certificate in alias " + alias + "\n" + pemEncodedCertificate);
-            return null;
-        }
+    public HashMap<String, String> getEncryptionCertificates(String alias) {
+        return getMapValue(alias + "." + ENCRYPTION_CERTIFICATES, alias);
     }
 
+    public HashMap<String, String> getSigningCertificates(String alias) {
+        return getMapValue(alias + "." + SIGNING_CERTIFICATES, alias);
+    }
+
+    /**
+     * Return the hashmap value with key = key for the named alias.  If not present, return null.
+     * 
+     * Store it in a tree map to have consistent ordering for signing/verification
+     * 
+     * @param key value key
+     * @param alias scep alias
+     * 
+     * @return map of string to string
+     */
+    @SuppressWarnings("unchecked")
+    private HashMap<String, String> getMapValue(String key, String alias) {
+        if (aliasExists(alias)) {
+            return (HashMap<String, String>) data.get(key);
+        } else {
+            log.info("SCEP alias '" + alias + "' does not exist trying to get value for '" + key + "'");
+        }
+        return null;
+    }
+
+    /**
+     * Return the hashmap value with key = key for the named alias.  If not present, return null.
+     * 
+     * Store it in a tree map to have consistent ordering for signing/verification
+     * 
+     * @param key value key
+     * @param alias scep alias
+     * 
+     * @return map of string to string
+     */
+    
+    @SuppressWarnings("unchecked")
+    private ArrayList<String> getListValue(String key, String alias) {
+        if (aliasExists(alias)) {
+            try {
+                return (ArrayList<String>) data.get(key);
+            } catch (ClassCastException e) {
+                final ArrayList<String> result = new ArrayList<String>();
+                final String Cas = data.get(key).toString();
+                if (Cas != null && Cas.length() > 0) {
+                    Cas.replaceAll("[\\[\\]',]", "");
+                    result.addAll(Arrays.asList(Cas.split(" ")));
+                }
+                return result;
+            }
+        } else {
+            log.info("SCEP alias '" + alias + "' does not exist trying to get value for '" + key + "'");
+        }
+        return null;
+    }
+    
     public void setSigningAlgorithm(final String alias, final String sigAlg) {
         setValue(alias + "." + SIGNING_ALGORITHM, sigAlg, alias);
     }
@@ -1059,8 +1194,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
             // Lazy initialization for SCEP configurations older than 9.4
             setValue(alias + "." + SIGNING_TOKEN_ID, "", alias);
             return null;
-        }
-        else if ("".equals(stringValue)) {
+        } else if ("".equals(stringValue)) {
             return null;
         } else {
             return Integer.parseInt(stringValue);
@@ -1069,33 +1203,115 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
 
     public String getSigningCertificate(String alias) {
         String value = getValue(alias + "." + SIGNING_CERTIFICATE, alias);
-        if (value == null)  {
+        if (value == null) {
             // Lazy initialization for SCEP configurations older than 9.4
             setValue(alias + "." + SIGNING_CERTIFICATE, "", alias);
             return null;
-        }
-        else if ("".equals(value)) {
+        } else if ("".equals(value)) {
             return null;
         } else {
             return value;
         }
     }
 
-    /** return the SCEP signing certificate as a certificate object */
-    public X509Certificate decodeSigningCertificate(String alias) {
-        String pemEncodedCertificate = getSigningCertificate(alias);
-        if (pemEncodedCertificate == null) {
-            return null;
+    public void setEncryptionCertificates(String alias, HashMap<String, String> caToEncryptionCertificate) {
+        setMapValue(alias + "." + ENCRYPTION_CERTIFICATES, caToEncryptionCertificate, alias);
+    }
+
+    public void setSigningCertificates(String alias, HashMap<String, String> perCaCertificates) {
+        setMapValue(alias + "." + SIGNING_CERTIFICATES, perCaCertificates, alias);
+    }
+
+    public void setEncryptionCAs(String alias, Collection<String> encryptionCAs) {
+        if (encryptionCAs == null) {
+            setListValue(alias + "." + ENCRYPTION_CAS, null, alias);
+        } else {
+            ArrayList<String> value = new ArrayList<String>();
+            value.addAll(encryptionCAs);
+            value.sort(String::compareTo);
+            setListValue(alias + "." + ENCRYPTION_CAS, value, alias);
         }
+    }
+
+    public ArrayList<String> getEncryptionCAs(String alias) {
+        return getListValue(alias + "." + ENCRYPTION_CAS, alias);
+    }
+
+    /**
+     * Look up which encryption certificate should be used for ca = caName for the specified SCEP alias.
+     * 
+     * @param alias scep alias that holds configuration
+     * @param caName CA's keys to return - ignored if in RA mode
+     * 
+     * @return the X509 certificate PEM encoded, or null if none configured for RA encryption
+     */
+    public X509Certificate getEncryptionCertificateForCa(String alias, String caName) {
+        String pemEncodedCertificate;
+
+        if (getRAMode(alias)) {
+            pemEncodedCertificate = getEncryptionCertificate(alias);
+        } else {
+            var perCaCertificates = getEncryptionCertificates(alias);
+            if (perCaCertificates == null) {
+                log.debug("SCEP alias " + alias + " not configured with RA keys when in CA mode");
+                return null;
+            }
+            if (!perCaCertificates.containsKey(caName)) {
+                log.debug("CA " + caName + " not configured with RA keys in SCEP alias " + alias + " when in CA mode");
+                return null;
+            }
+
+            pemEncodedCertificate = perCaCertificates.get(caName);
+        }
+        
+        if (pemEncodedCertificate == null)
+            return null;
 
         try {
-            return CertTools.getCertsFromPEM(new ByteArrayInputStream(pemEncodedCertificate.getBytes()), X509Certificate.class).get(0);
+            return CertTools.getCertsFromPEM(new java.io.ByteArrayInputStream(pemEncodedCertificate.getBytes()), X509Certificate.class).get(0);
+        } catch (CertificateParsingException e) {
+            // how did a badly formatted certificate end up in the config?
+            log.error("Bad SCEP encryption certificate in alias " + alias + "\n" + pemEncodedCertificate);
+            return null;
+        }
+    }
+    
+    /**
+     * Look up which signing certificate should be used for ca = caName for the specified SCEP alias.
+     * 
+     * @param alias scep alias that holds configuration
+     * @param caName CA's keys to return - ignored if in RA mode
+     * 
+     * @return the X509 certificate PEM encoded, or null if none configured for RA encryption
+     */
+    public X509Certificate getSigningCertificateForCa(String alias, String caName) {
+        String pemEncodedCertificate;
+
+        if (getRAMode(alias)) {
+            pemEncodedCertificate = getSigningCertificate(alias);
+        } else {
+            var perCaCertificates = getSigningCertificates(alias);
+            if (perCaCertificates == null) {
+                log.debug("SCEP alias " + alias + " not configured with RA keys when in CA mode");
+                return null;
+            }
+            if (!perCaCertificates.containsKey(caName)) {
+                log.debug("CA " + caName + " not configured with RA keys in SCEP alias " + alias + " when in CA mode");
+                return null;
+            }
+
+            pemEncodedCertificate = perCaCertificates.get(caName);
+        }
+        
+        if (pemEncodedCertificate == null)
+            return null;
+
+        try {
+            return CertTools.getCertsFromPEM(new java.io.ByteArrayInputStream(pemEncodedCertificate.getBytes()), X509Certificate.class).get(0);
         } catch (CertificateParsingException e) {
             // how did a badly formatted certificate end up in the config?
             log.error("Bad SCEP signing certificate in alias " + alias + "\n" + pemEncodedCertificate);
             return null;
         }
     }
-
-
 }

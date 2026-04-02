@@ -1,6 +1,3 @@
-drop table AccessRulesData;
-drop table AdminEntityData;
-drop table AdminGroupData;
 drop table AdminPreferencesData;
 drop table ApprovalData;
 drop table AuditRecordData;
@@ -25,7 +22,6 @@ drop table RoleData;
 drop table RoleMemberData;
 drop table ServiceData;
 drop table UserData;
-drop table UserDataSourceData;
 drop table NoConflictCertificateData;
 drop table AcmeAuthorizationData;
 drop table AcmeChallengeData;

@@ -28,6 +28,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.util.ProfileID;
@@ -178,6 +179,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     private KeyStoreCreateSessionLocal keyStoreCreateSession;
     @EJB
     private InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
+    @EJB
+    private InternalKeyBindingDataSessionLocal internalKeyBindingDataSession;
     @EJB
     private OcspResponseGeneratorSessionLocal ocspGeneratorResponseSessionLocal;
     @EJB
@@ -586,6 +589,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         ejbs.put(ImportCrlSessionLocal.class, importCrlSession);
         ejbs.put(KeyStoreCreateSessionLocal.class, keyStoreCreateSession);
         ejbs.put(InternalKeyBindingMgmtSessionLocal.class, internalKeyBindingMgmtSession);
+        ejbs.put(InternalKeyBindingDataSessionLocal.class, internalKeyBindingDataSession);
         ejbs.put(OcspResponseGeneratorSessionLocal.class, ocspGeneratorResponseSessionLocal);
         ejbs.put(OcspDataSessionLocal.class, ocspDataSessionLocal);
         ejbs.put(RevocationSessionLocal.class, revocationSession);
@@ -789,6 +793,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             ejbs.put(ImportCrlSessionLocal.class, importCrlSession);
             ejbs.put(KeyStoreCreateSessionLocal.class, keyStoreCreateSession);
             ejbs.put(InternalKeyBindingMgmtSessionLocal.class, internalKeyBindingMgmtSession);
+            ejbs.put(InternalKeyBindingDataSessionLocal.class, internalKeyBindingDataSession);
             ejbs.put(OcspResponseGeneratorSessionLocal.class, ocspGeneratorResponseSessionLocal);
             ejbs.put(OcspDataSessionLocal.class, ocspDataSessionLocal);
             ejbs.put(RevocationSessionLocal.class, revocationSession);
@@ -837,6 +842,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             ejbs.put(ImportCrlSessionLocal.class, importCrlSession);
             ejbs.put(KeyStoreCreateSessionLocal.class, keyStoreCreateSession);
             ejbs.put(InternalKeyBindingMgmtSessionLocal.class, internalKeyBindingMgmtSession);
+            ejbs.put(InternalKeyBindingDataSessionLocal.class, internalKeyBindingDataSession);
             ejbs.put(OcspResponseGeneratorSessionLocal.class, ocspGeneratorResponseSessionLocal);
             ejbs.put(OcspDataSessionLocal.class, ocspDataSessionLocal);
             ejbs.put(RevocationSessionLocal.class, revocationSession);

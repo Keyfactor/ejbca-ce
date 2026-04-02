@@ -26,6 +26,8 @@ import java.time.Period;
 import java.util.Date;
 import java.util.Set;
 
+import javax.security.auth.x500.X500Principal;
+
 import static org.easymock.EasyMock.anyInt;
 import static org.easymock.EasyMock.anyObject;
 import static org.easymock.EasyMock.anyString;
@@ -61,8 +63,9 @@ public class ScepKeyRenewalDataSessionBeanUnitTest {
 		var scepKeyRenewalDataSessionBean = new ScepKeyRenewalDataSessionBean();
 		final ScepConfiguration scepConfigurationMock = EasyMock.createMock(ScepConfiguration.class);
 		expect(scepConfigurationMock.getAliasList()).andReturn(Set.of(TEST_SCEP_ALIAS));
-		expect(scepConfigurationMock.decodeEncryptionCertificate(TEST_SCEP_ALIAS)).andReturn(null);
-		expect(scepConfigurationMock.decodeSigningCertificate(TEST_SCEP_ALIAS)).andReturn(null);
+		expect(scepConfigurationMock.getRAMode(TEST_SCEP_ALIAS)).andReturn(true);
+		expect(scepConfigurationMock.getEncryptionCertificateForCa(TEST_SCEP_ALIAS, null)).andReturn(null);
+		expect(scepConfigurationMock.getSigningCertificateForCa(TEST_SCEP_ALIAS, null)).andReturn(null);
 		final GlobalConfigurationSessionLocal globalConfigSessionMock = EasyMock.createMock(
 				GlobalConfigurationSessionLocal.class);
 		expect(globalConfigSessionMock.getCachedConfigurationAndLockWrites(anyString())).andReturn(
@@ -83,9 +86,10 @@ public class ScepKeyRenewalDataSessionBeanUnitTest {
 		final X509Certificate signingCertificateMock = EasyMock.createMock(X509Certificate.class);
 		expect(signingCertificateMock.getNotAfter()).andReturn(Date.from(Instant.now().plus(Period.ofDays(30))));
 		final ScepConfiguration scepConfigurationMock = EasyMock.createMock(ScepConfiguration.class);
+		expect(scepConfigurationMock.getRAMode(TEST_SCEP_ALIAS)).andReturn(true);
 		expect(scepConfigurationMock.getAliasList()).andReturn(Set.of(TEST_SCEP_ALIAS));
-		expect(scepConfigurationMock.decodeEncryptionCertificate(TEST_SCEP_ALIAS)).andReturn(encryptCertficateMock);
-		expect(scepConfigurationMock.decodeSigningCertificate(TEST_SCEP_ALIAS)).andReturn(signingCertificateMock);
+		expect(scepConfigurationMock.getEncryptionCertificateForCa(TEST_SCEP_ALIAS, null)).andReturn(encryptCertficateMock);
+		expect(scepConfigurationMock.getSigningCertificateForCa(TEST_SCEP_ALIAS, null)).andReturn(signingCertificateMock);
 		final GlobalConfigurationSessionLocal globalConfigSessionMock = EasyMock.createMock(
 				GlobalConfigurationSessionLocal.class);
 		expect(globalConfigSessionMock.getCachedConfigurationAndLockWrites(anyString())).andReturn(
@@ -105,16 +109,17 @@ public class ScepKeyRenewalDataSessionBeanUnitTest {
 		var scepKeyRenewalDataSessionBean = new ScepKeyRenewalDataSessionBean();
 		final X509Certificate encryptCertificateMock = EasyMock.createMock(X509Certificate.class);
 		expect(encryptCertificateMock.getNotAfter()).andReturn(Date.from(Instant.now())).times(2);
-		expect(encryptCertificateMock.getSubjectDN()).andReturn(null);
+		expect(encryptCertificateMock.getSubjectX500Principal()).andReturn(new X500Principal("cn=foo"));
 		expect(encryptCertificateMock.getSerialNumber()).andReturn(BigInteger.ZERO);
 		final X509Certificate signingCertificateMock = EasyMock.createMock(X509Certificate.class);
 		expect(signingCertificateMock.getNotAfter()).andReturn(Date.from(Instant.now())).times(2);
-		expect(signingCertificateMock.getSubjectDN()).andReturn(null);
+		expect(signingCertificateMock.getSubjectX500Principal()).andReturn(new X500Principal("cn=foo"));
 		expect(signingCertificateMock.getSerialNumber()).andReturn(BigInteger.ZERO);
 		final ScepConfiguration scepConfigurationMock = EasyMock.createMock(ScepConfiguration.class);
+		expect(scepConfigurationMock.getRAMode(TEST_SCEP_ALIAS)).andReturn(true);
 		expect(scepConfigurationMock.getAliasList()).andReturn(Set.of(TEST_SCEP_ALIAS));
-		expect(scepConfigurationMock.decodeEncryptionCertificate(TEST_SCEP_ALIAS)).andReturn(encryptCertificateMock);
-		expect(scepConfigurationMock.decodeSigningCertificate(TEST_SCEP_ALIAS)).andReturn(signingCertificateMock);
+		expect(scepConfigurationMock.getEncryptionCertificateForCa(TEST_SCEP_ALIAS, null)).andReturn(encryptCertificateMock);
+		expect(scepConfigurationMock.getSigningCertificateForCa(TEST_SCEP_ALIAS, null)).andReturn(signingCertificateMock);
 		expect(scepConfigurationMock.getRADefaultCA(TEST_SCEP_ALIAS)).andReturn("").times(2);
 		expect(scepConfigurationMock.getEncryptionCryptoTokenId(TEST_SCEP_ALIAS)).andReturn(0);
 		expect(scepConfigurationMock.getEncryptionKeyAlias(TEST_SCEP_ALIAS)).andReturn("");
@@ -134,15 +139,15 @@ public class ScepKeyRenewalDataSessionBeanUnitTest {
 		encryptCertificateRenewedMock.getEncoded();
 		expectLastCall().andReturn(new byte[0]).once();
 		expect(encryptCertificateRenewedMock.getNotAfter()).andReturn(Date.from(Instant.now()));
-		expect(encryptCertificateRenewedMock.getSubjectDN()).andReturn(null);
+		expect(encryptCertificateRenewedMock.getSubjectX500Principal()).andReturn(null);
 		expect(encryptCertificateRenewedMock.getSerialNumber()).andReturn(BigInteger.ZERO);
 		final X509Certificate signingCertificateRenewedMock = EasyMock.createMock(X509Certificate.class);
 		signingCertificateRenewedMock.getEncoded();
 		expectLastCall().andReturn(new byte[0]).once();
 		expect(signingCertificateRenewedMock.getNotAfter()).andReturn(Date.from(Instant.now()));
-		expect(signingCertificateRenewedMock.getSubjectDN()).andReturn(null);
+		expect(signingCertificateRenewedMock.getSubjectX500Principal()).andReturn(null);
 		expect(signingCertificateRenewedMock.getSerialNumber()).andReturn(BigInteger.ZERO);
-		final ScepRaCertificateIssuer scepRaCertificateIssuerMock = EasyMock.createMock(ScepRaCertificateIssuer.class);
+		final ScepRaCertificateIssuerSessionLocal scepRaCertificateIssuerMock = EasyMock.createMock(ScepRaCertificateIssuerSessionLocal.class);
 		expect(scepRaCertificateIssuerMock.issueEncryptionCertificate(anyObject(), anyString(), anyInt(),
 				anyString())).andReturn(encryptCertificateRenewedMock);
 		expect(scepRaCertificateIssuerMock.issueSigningCertificate(anyObject(), anyString(), anyInt(),

@@ -62,7 +62,6 @@ import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.services.actions.NoAction;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.core.model.services.workers.CertificateCrlReader;
@@ -165,7 +164,7 @@ public class CertificateCrlReaderSystemTest {
                 EndEntityTypes.ENDUSER.toEndEntityType(),
                 EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM,
+                EndEntityConstants.TOKEN_SOFT_PEM,
                 null
         );
         endEntityInformation.setPassword("foo123");

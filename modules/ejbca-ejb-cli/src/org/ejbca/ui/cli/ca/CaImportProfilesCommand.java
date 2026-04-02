@@ -25,6 +25,7 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -36,7 +37,6 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.SecureXMLDecoder;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
@@ -199,7 +199,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                     final List<Integer> availableCAs = new ArrayList<>();
                                     for (int currentCaId : cas) {
                                         // The constant ALLCAS will not be searched for among available CAs
-                                        if (currentCaId != SecConst.ALLCAS) {
+                                        if (currentCaId != CAConstants.ALLCAS) {
                                             if (!getCaSession().existsCa(currentCaId)) {
                                                 getLogger().warn("CA with id " + currentCaId + " was not found and will not be used in end entity profile '" + profileInfo.getProfileName() + "'.");
                                                 if (defaultCA == currentCaId) {
@@ -209,13 +209,13 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                                 availableCAs.add(currentCaId);
                                             }
                                         } else {
-                                            availableCAs.add(SecConst.ALLCAS);
+                                            availableCAs.add(CAConstants.ALLCAS);
                                         }
                                     }
                                     if (availableCAs.isEmpty()) {
                                         if (caId == null) {
                                             getLogger().error("No CAs left in end entity profile '" + profileInfo.getProfileName() + "' and no CA specified on command line. Using ALLCAs.");
-                                            availableCAs.add(SecConst.ALLCAS);
+                                            availableCAs.add(CAConstants.ALLCAS);
                                         } else {
                                             availableCAs.add(caId);
                                             getLogger().warn("No CAs left in end entity profile '" + profileInfo.getProfileName() + "'. Using CA supplied on command line with id '" + caId + "'.");

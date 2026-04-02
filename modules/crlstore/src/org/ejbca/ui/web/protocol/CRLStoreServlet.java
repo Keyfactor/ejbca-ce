@@ -16,6 +16,7 @@ package org.ejbca.ui.web.protocol;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.security.cert.X509Certificate;
+import java.util.Set;
 
 import jakarta.ejb.EJB;
 import jakarta.servlet.ServletConfig;
@@ -145,8 +146,13 @@ public class CRLStoreServlet extends StoreServletBase {
 	}
 	
     @Override
-    protected void printInfo(X509Certificate[] certs, String indent, PrintWriter pw) {
+    protected void printInfo(X509Certificate[] certs, String indent, PrintWriter pw, Set<String> consideredSubjectDns) {
         for (X509Certificate cert : certs) {
+            if (consideredSubjectDns.contains(CertTools.getSubjectDN(cert))) {
+                continue;
+            } else {
+                consideredSubjectDns.add(CertTools.getSubjectDN(cert));
+            }
             //Verify that there is a CRL to download
             if (crlStoreSession.crlExistsForCa(CertTools.getSubjectDN(cert))) {
                 printInfo(cert, indent, pw);
@@ -156,7 +162,7 @@ public class CRLStoreServlet extends StoreServletBase {
             if (ArrayUtils.isEmpty(issuedCerts)) {
                 continue;
             }
-            printInfo(issuedCerts, SPACE + indent, pw);
+            printInfo(issuedCerts, SPACE + indent, pw, consideredSubjectDns);
         }
     }
 }
