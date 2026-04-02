@@ -2178,10 +2178,11 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
                 final boolean keyEncipherment = certificate.getKeyUsage()[CertificateConstants.KEYENCIPHERMENT];
                 final boolean dataEncipherment = certificate.getKeyUsage()[CertificateConstants.DATAENCIPHERMENT];
                 final boolean nonRepudation = certificate.getKeyUsage()[CertificateConstants.NONREPUDIATION];
-    
-                assertEquals("Key Encipherment key usage should be false", allowEncryption || !forbidEncryptionUsageForECC, keyEncipherment);
-                assertEquals("Data Encipherment key usage should be false", allowEncryption || !forbidEncryptionUsageForECC, dataEncipherment);
-                assertEquals("Non Repudation key usage should be true", true, nonRepudation);
+
+                final boolean expectedEcipherment = allowEncryption || !forbidEncryptionUsageForECC;
+                assertEquals("Key Encipherment key usage should be " + expectedEcipherment, expectedEcipherment, keyEncipherment);
+                assertEquals("Data Encipherment key usage should be " + expectedEcipherment, expectedEcipherment, dataEncipherment);
+                assertTrue("Non Repudiation key usage should be true", nonRepudation);
     
             } catch (CAOfflineException e) {
                 fail("Certificate could not be created or AIA could not be parsed: " + e.getMessage());
