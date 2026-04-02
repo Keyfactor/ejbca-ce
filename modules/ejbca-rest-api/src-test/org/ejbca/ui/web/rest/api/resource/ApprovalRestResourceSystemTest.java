@@ -283,7 +283,7 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
 
         // Then
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        final JSONArray steps = (JSONArray) actualJsonObject.get("steps");
+        final JSONArray steps = (JSONArray) actualJsonObject.get("performed_steps");
         final JSONObject step = (JSONObject) steps.get(0);
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
         assertJsonContentType(actualResponse);
@@ -295,7 +295,7 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
         assertNotNull("Steps should not be null", steps);
         assertEquals("Should have one approval step", 1, steps.size());
         assertEquals("Step number should be 1", 1L, step.get("step_number"));
-        final JSONArray partitions = (JSONArray) step.get("partition_list");
+        final JSONArray partitions = (JSONArray) step.get("approval_list");
         final JSONObject partition = (JSONObject) partitions.get(0);
         assertEquals("Approval action should be APPROVED", "APPROVED", partition.get("approval_action"));
         assertNotNull("Approval date should be present", partition.get("approval_date"));
@@ -410,7 +410,7 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
 
         // Then
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        final JSONArray steps = (JSONArray) actualJsonObject.get("steps");
+        final JSONArray steps = (JSONArray) actualJsonObject.get("performed_steps");
         final JSONObject nextStep = (JSONObject) actualJsonObject.get("next_step");
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
         assertJsonContentType(actualResponse);
@@ -423,7 +423,7 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
         assertNotNull("Next step should not be null", nextStep);
         assertEquals("Should have none approved step", 0, steps.size());
         assertEquals("Step number should be 1", 1L, nextStep.get("step_number"));
-        final JSONArray partitions = (JSONArray) nextStep.get("partition_list");
+        final JSONArray partitions = (JSONArray) nextStep.get("approval_list");
         final JSONObject partition = (JSONObject) partitions.get(0);
         assertEquals("Approval action should be PENDING", "PENDING", partition.get("approval_action"));
         assertEquals(EndEntityTypes.ENDUSER.toString(), actualJsonObject.get("certificate_profile_name"));
@@ -433,6 +433,9 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
         assertEquals("Approval key_recoverable is incorrect","NO", actualJsonObject.get("key_recoverable"));
         assertFalse("Approval subject_name_log_redaction is incorrect", Boolean.getBoolean(actualJsonObject.get("subject_name_log_redaction").toString()));
         assertEquals("Approval send_notification is incorrect","NO", actualJsonObject.get("send_notification"));
+        assertNotNull("Remaining approvals should be present", partition.get("remaining_approvals"));
+        assertEquals("Remaining approvals should be 1", 1L, partition.get("remaining_approvals"));
+        assertNotNull("Can approve field should be present", partition.get("can_approve"));
 
 
         // Verify approval was actually processed internally
@@ -451,7 +454,7 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
 
         // Then
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        final JSONArray steps = (JSONArray) actualJsonObject.get("steps");
+        final JSONArray steps = (JSONArray) actualJsonObject.get("performed_steps");
         final JSONObject nextStep = (JSONObject) actualJsonObject.get("next_step");
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
         assertJsonContentType(actualResponse);
