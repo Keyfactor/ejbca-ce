@@ -78,7 +78,7 @@ import com.keyfactor.util.keys.KeyTools;
  */
 public class CertificateView implements Serializable {
 
-    private static final long serialVersionUID = -3511834437471085177L;
+    private static final long serialVersionUID = -3511834437471085177L;    
     private Certificate certificate;
     private DNFieldExtractor subjectDnFieldExtractor;
     private DNFieldExtractor issuerDnFieldExtractor;
@@ -161,12 +161,16 @@ public class CertificateView implements Serializable {
     }
 
     public String getIssuerDNUnEscaped() {
-        if (certificate==null) {
+        
+        String issuerDn = "";                
+        if (certificate!=null) {
+            issuerDn = CertTools.getIssuerDN(certificate);
+        }
+          
+        if (StringUtils.isBlank(issuerDn) && certificateData!=null) {
             return certificateData.getIssuerDN();
         }
-        final String issuerDN = CertTools.getIssuerDN(certificate);
-
-        return StringUtils.defaultIfBlank(issuerDN, certificateData.getIssuerDN());
+        return issuerDn;
     }
 
     public String getIssuerDNField(int field, int number) {
