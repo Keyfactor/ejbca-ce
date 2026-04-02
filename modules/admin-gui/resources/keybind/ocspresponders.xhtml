@@ -119,7 +119,7 @@
 					</f:facet>
 					<div class="action-buttons">
 						<h:commandButton rendered="#{guiInfo.status ne 'INTERNALKEYBINDING_STATUS_DISABLED'}"
-										 action="#{ocspResponderMBean.commandDisable}"
+										 action="#{ocspResponderMBean.commandDisable(guiInfo)}"
 										 id="disable"
 										 value="#{web.text.INTERNALKEYBINDING_DISABLE_SHORT}"
 										 title="#{web.text.INTERNALKEYBINDING_DISABLE_FULL}"
@@ -128,7 +128,7 @@
 										 styleClass="rounded-button"
 						/>
 						<h:commandButton rendered="#{guiInfo.status eq 'INTERNALKEYBINDING_STATUS_DISABLED'}"
-										 action="#{ocspResponderMBean.commandEnable}"
+										 action="#{ocspResponderMBean.commandEnable(guiInfo)}"
 										 id="enable"
 										 value="#{web.text.INTERNALKEYBINDING_ENABLE_SHORT}"
 										 title="#{web.text.INTERNALKEYBINDING_ENABLE_FULL}"
@@ -137,7 +137,7 @@
 										 styleClass="rounded-button"
 						/>
 						<h:commandButton rendered="#{!guiInfo.nextKeyAliasAvailable and guiInfo.authorizedToGenerateKeys}"
-										 action="#{ocspResponderMBean.commandGenerateNewKey}"
+										 action="#{ocspResponderMBean.commandGenerateNewKey(guiInfo)}"
 										 id="generateNewKeys"
 										 value="#{web.text.INTERNALKEYBINDING_GENERATENEWKEY_SHORT}"
 										 title="#{web.text.INTERNALKEYBINDING_GENERATENEWKEY_FULL}"
@@ -146,7 +146,7 @@
 										 styleClass="rounded-button"
 						/>
 						<h:commandButton rendered="#{guiInfo.authorizedToCryptoToken}"
-										 action="#{ocspResponderMBean.commandGenerateRequest}"
+										 action="#{ocspResponderMBean.commandGenerateRequest(guiInfo)}"
 										 id="csr"
 										 value="#{web.text.INTERNALKEYBINDING_GETCSR_SHORT}"
 										 title="#{web.text.INTERNALKEYBINDING_GETCSR_FULL}"
@@ -154,7 +154,7 @@
 										 ajax="false"
 										 styleClass="rounded-button"
 						/>
-						<h:commandButton action="#{ocspResponderMBean.commandReloadCertificate}"
+						<h:commandButton action="#{ocspResponderMBean.commandReloadCertificate(guiInfo)}"
 										 id="reload"
 										 value="#{web.text.INTERNALKEYBINDING_RELOADCERTIFICATE_SHORT}"
 										 title="#{web.text.INTERNALKEYBINDING_RELOADCERTIFICATE_FULL}"
@@ -163,7 +163,7 @@
 										 styleClass="rounded-button"
 						/>
 						<h:commandButton rendered="#{guiInfo.issuedByInternalCa}"
-										 action="#{ocspResponderMBean.commandRenewCertificate}"
+										 action="#{ocspResponderMBean.commandRenewCertificate(guiInfo)}"
 										 id="renew"
 										 value="#{web.text.INTERNALKEYBINDING_RENEWCERTIFICATE_SHORT}"
 										 title="#{web.text.INTERNALKEYBINDING_RENEWCERTIFICATE_FULL}"
@@ -171,11 +171,10 @@
 										 ajax="false"
 										 styleClass="rounded-button"
 						/>
-						<h:commandButton action="#{ocspResponderMBean.commandDelete}"
+						<h:commandButton action="#{ocspResponderMBean.commandDelete(guiInfo)}"
 										 id="delete"
 										 value="#{web.text.INTERNALKEYBINDING_DELETE_SHORT}"
 										 title="#{web.text.INTERNALKEYBINDING_DELETE_FULL}"
-
 										 disabled="#{ocspResponderMBean.forbiddenToEdit}"
 										 ajax="false"
 										 styleClass="rounded-button"
