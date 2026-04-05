@@ -31,6 +31,7 @@ import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
 
@@ -42,6 +43,7 @@ import com.keyfactor.util.keys.KeyTools;
 
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
@@ -57,7 +59,11 @@ import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.cmp.PKIStatusInfo;
+import org.bouncycastle.asn1.cms.CMSObjectIdentifiers;
 import org.bouncycastle.asn1.cms.EnvelopedData;
+import org.bouncycastle.asn1.cms.KEMRecipientInfo;
+import org.bouncycastle.asn1.cms.OtherRecipientInfo;
+import org.bouncycastle.asn1.cms.RecipientInfo;
 import org.bouncycastle.asn1.crmf.AttributeTypeAndValue;
 import org.bouncycastle.asn1.crmf.CRMFObjectIdentifiers;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
@@ -69,6 +75,7 @@ import org.bouncycastle.asn1.crmf.OptionalValidity;
 import org.bouncycastle.asn1.crmf.POPOPrivKey;
 import org.bouncycastle.asn1.crmf.ProofOfPossession;
 import org.bouncycastle.asn1.crmf.SubsequentMessage;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
@@ -283,6 +290,17 @@ public class CrmfResponseMessageUnitTest {
             ASN1Encodable asn1 = encrCert.getValue();
             // Should be a CMS EnvelopedData
             assertEquals("Encrypted value should be a CMS EnvelopedData", EnvelopedData.class.getName(), asn1.getClass().getName());
+            EnvelopedData ed = (EnvelopedData)asn1;
+            ASN1Set recipientInfos = ed.getRecipientInfos();
+            assertEquals("There should be only one RecipientInfo in the returned EnvelopedData", 1, recipientInfos.size());
+            Enumeration<?> e = recipientInfos.getObjects();
+            while (e.hasMoreElements()) {
+                RecipientInfo ri = RecipientInfo.getInstance(e.nextElement());
+                OtherRecipientInfo ori = OtherRecipientInfo.getInstance(ri.getInfo());
+                assertEquals("RecipientInfo (in OtherRecipientInfo) should be KEMRecipientInfo", CMSObjectIdentifiers.id_ori_kem, ori.getType());
+                KEMRecipientInfo kemri = KEMRecipientInfo.getInstance(ori.getValue());
+                assertEquals("KDF should be HKDF_SHA256", PKCSObjectIdentifiers.id_alg_hkdf_with_sha256, kemri.getKdf().getAlgorithm());
+            }
 
             // this is the preferred way of recovering an encrypted certificate, note the usage of slightly different classes for messages
             // See BC "PQC Almanac.pdf" for sample code from the BC team
