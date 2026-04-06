@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.StringUtils;
@@ -589,6 +590,29 @@ public class LdapPublisher extends BasePublisher {
 		return true;
 	}
 
+	/**
+	 * Retrieves the LDAP attribute representing the user's certificate from the given LDAP entry.
+	 * The method first determines the attribute name associated with the user certificate,
+	 * then attempts to retrieve it from the specified LDAP entry. If the attribute is not found
+	 * by its base name, it tries using the full name of the attribute.
+	 *
+	 * @param oldEntry the existing LDAP entry from which the user certificate attribute is to be retrieved;
+	 *                 can be null. If null, the method will return null.
+	 * @return the LDAPAttribute representing the user's certificate if it exists in the given LDAP entry,
+	 *         otherwise null.
+	 */
+	LDAPAttribute getLdapAttributeUserCert(final LDAPEntry oldEntry) {
+		final LDAPAttribute attr = new LDAPAttribute(getUserCertAttribute());
+		if (oldEntry == null) {
+			return null;
+		}
+
+		final LDAPAttribute oldAttrByBaseName = oldEntry.getAttribute(attr.getBaseName());
+		final LDAPAttribute oldAttrByName = oldEntry.getAttribute(attr.getName());
+
+		return Optional.ofNullable(oldAttrByBaseName).orElse(oldAttrByName);
+	}
+
 	/*
 	 * The reason for this logic is that OpenLDAP and AD from Microsoft might have different implementations when
 	 * it comes to deleting certificates. One of them requires the base name (the part before ;) and the other one
@@ -716,8 +740,7 @@ public class LdapPublisher extends BasePublisher {
 			if (oldEntry != null) {
 				if (removecert) {
                     // Get the current set of certificates
-					final String userCertAttribute = getUserCertAttribute();
-                    LDAPAttribute oldAttr = oldEntry.getAttribute(userCertAttribute);
+                    final LDAPAttribute oldAttr = getLdapAttributeUserCert(oldEntry);
 					if (isDeleteUserCertAttribute(oldEntry, oldAttr)) {
 						modSet = getModificationSet(oldEntry, certdn, null, false, true, null, cert);
 						final var encoded = getEncoded(cert);
@@ -731,8 +754,7 @@ public class LdapPublisher extends BasePublisher {
 								modSet.add(new LDAPModification(LDAPModification.REPLACE, oldAttr));
 								removeuser = false;
 							} else {
-								LDAPAttribute attr = new LDAPAttribute(userCertAttribute);
-								modSet.add(new LDAPModification(LDAPModification.DELETE, attr));
+								modSet.add(new LDAPModification(LDAPModification.DELETE, oldAttr));
 							}
 						} else if (containsCertificates(oldAttr)) {
 							log.debug("User " + username + " still have certificates in the LDAP user entry, so the user entry will not be removed.");
