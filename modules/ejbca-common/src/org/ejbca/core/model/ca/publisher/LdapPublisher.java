@@ -19,12 +19,14 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509CRL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.StringUtils;
@@ -588,22 +590,98 @@ public class LdapPublisher extends BasePublisher {
 		return true;
 	}
 
+	/**
+	 * Retrieves the LDAP attribute representing the user's certificate from the given LDAP entry.
+	 * The method first determines the attribute name associated with the user certificate,
+	 * then attempts to retrieve it from the specified LDAP entry. If the attribute is not found
+	 * by its base name, it tries using the full name of the attribute.
+	 *
+	 * @param oldEntry the existing LDAP entry from which the user certificate attribute is to be retrieved;
+	 *                 can be null. If null, the method will return null.
+	 * @return the LDAPAttribute representing the user's certificate if it exists in the given LDAP entry,
+	 *         otherwise null.
+	 */
+	LDAPAttribute getLdapAttributeUserCert(final LDAPEntry oldEntry) {
+		final LDAPAttribute attr = new LDAPAttribute(getUserCertAttribute());
+		if (oldEntry == null) {
+			return null;
+		}
+
+		final LDAPAttribute oldAttrByBaseName = oldEntry.getAttribute(attr.getBaseName());
+		final LDAPAttribute oldAttrByName = oldEntry.getAttribute(attr.getName());
+
+		return Optional.ofNullable(oldAttrByBaseName).orElse(oldAttrByName);
+	}
+
 	/*
 	 * The reason for this logic is that OpenLDAP and AD from Microsoft might have different implementations when
 	 * it comes to deleting certificates. One of them requires the base name (the part before ;) and the other one
 	 * requires the full name.
 	 */
 	boolean isDeleteUserCertAttribute(final LDAPEntry oldEntry, final LDAPAttribute attr) {
-		final LDAPAttribute oldAttrByBaseName = oldEntry.getAttribute(attr.getBaseName());
-		final LDAPAttribute oldAttrByName     = oldEntry.getAttribute(attr.getName());
+		if (attr != null) {
+			final LDAPAttribute oldAttrByBaseName = oldEntry.getAttribute(attr.getBaseName());
+			final LDAPAttribute oldAttrByName = oldEntry.getAttribute(attr.getName());
 
-		// Don't try to remove the cert if it doesn't exist
-		if (oldAttrByBaseName != null || oldAttrByName != null) {
-			return true;
-		} else {
-			String msg = intres.getLocalizedMessage("publisher.inforevokenocert");
-			log.info(msg);
-			return false;
+			// Don't try to remove the cert if it doesn't exist
+			if (oldAttrByBaseName != null || oldAttrByName != null) {
+				return true;
+			}
+		}
+		String msg = intres.getLocalizedMessage("publisher.inforevokenocert");
+		log.info(msg);
+		return false;
+	}
+
+	/**
+	 * @param certificate The certificate to encode
+	 * @return The byte array representation of a certificate or null if it cannot be encoded.
+	 */
+	private byte[] getEncoded(final Certificate certificate) {
+        try {
+            return certificate.getEncoded();
+        } catch (CertificateEncodingException e) {
+			// Exception should not happen!
+			String msg = "Unexpected certificate encoding issue. Cannot remove the certificate from LDAP.";
+			log.warn(msg);
+            return null;
+        }
+
+    }
+
+	/**
+	 * @return Returns if ldapAttribute contains one or more certificates.
+	 */
+	private boolean containsCertificates(final LDAPAttribute ldapAttribute) {
+		return ldapAttribute.getByteValueArray().length >= 1;
+	}
+
+	/**
+	 * @param ldapAttribute The LDAPAttribute to iterate
+	 * @param encodedCertificate The certificate to search for
+	 * @return If ldapAttribute contains the encoded certificate
+	 */
+	private boolean containsCertificate(final LDAPAttribute ldapAttribute, final byte[] encodedCertificate) {
+		for (final var array : ldapAttribute.getByteValueArray()) {
+			if (Arrays.equals(array, encodedCertificate)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * @param certificate The certificate to extract from
+	 * @return The Subject DN from a certificate
+	 * @throws PublisherException If the extraction fails
+	 */
+	private String getSubjectDN(final Certificate certificate) throws PublisherException {
+		try {
+			return CertTools.getSubjectDN(certificate);
+		} catch (Exception e) {
+			String msg = intres.getLocalizedMessage("publisher.errorldapdecode", "certificate");
+			log.error(msg, LogRedactionUtils.getRedactedException(e));
+			throw new PublisherException(msg);
 		}
 	}
 
@@ -642,17 +720,8 @@ public class LdapPublisher extends BasePublisher {
 		int ldapVersion = LDAPConnection.LDAP_V3;
 		LDAPConnection lc = createLdapConnection();
 
-		final String dn;
-		final String certdn;
-		try {
-			// Extract the users DN from the cert.
-			certdn = CertTools.getSubjectDN(cert);
-			dn = constructLDAPDN(certdn, userDN);
-		} catch (Exception e) {
-			String msg = intres.getLocalizedMessage("publisher.errorldapdecode", "certificate");
-			log.error(msg, LogRedactionUtils.getRedactedException(e));
-			throw new PublisherException(msg);            
-		}
+		final String certdn = getSubjectDN(cert);
+		final String dn = constructLDAPDN(certdn, userDN);
 
 		// Extract the users email from the cert.
 		String email = DnComponents.getEMailAddress(cert);
@@ -662,17 +731,35 @@ public class LdapPublisher extends BasePublisher {
 
 		ArrayList<LDAPModification> modSet = null;
 
+		boolean removedCertOrUser = false;
 		if (!CertTools.isCA(cert)) {
 			oldEntry = searchOldEntity(username, ldapVersion, lc, certdn, userDN, email);
 			if (log.isDebugEnabled()) {
 				log.debug("Removing end user certificate from first available server of " + getHostnames());
 			}
-			if (oldEntry != null) {          
+			if (oldEntry != null) {
 				if (removecert) {
-					LDAPAttribute attr = new LDAPAttribute(getUserCertAttribute());
-					if (isDeleteUserCertAttribute(oldEntry, attr)) {
+                    // Get the current set of certificates
+                    final LDAPAttribute oldAttr = getLdapAttributeUserCert(oldEntry);
+					if (isDeleteUserCertAttribute(oldEntry, oldAttr)) {
 						modSet = getModificationSet(oldEntry, certdn, null, false, true, null, cert);
-						modSet.add(new LDAPModification(LDAPModification.DELETE, attr));
+						final var encoded = getEncoded(cert);
+						if (encoded == null) {
+							return;
+						}
+						if (containsCertificate(oldAttr, encoded)) {
+							oldAttr.removeValue(encoded);
+							removedCertOrUser = true;
+							if (containsCertificates(oldAttr)) {
+								modSet.add(new LDAPModification(LDAPModification.REPLACE, oldAttr));
+								removeuser = false;
+							} else {
+								modSet.add(new LDAPModification(LDAPModification.DELETE, oldAttr));
+							}
+						} else if (containsCertificates(oldAttr)) {
+							log.debug("User " + username + " still have certificates in the LDAP user entry, so the user entry will not be removed.");
+							removeuser = false;
+						}
 					}
 				}
 			} else {
@@ -712,16 +799,19 @@ public class LdapPublisher extends BasePublisher {
                 lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes(StandardCharsets.UTF_8), ldapBindConstraints);
 				// Add or modify the entry
 				if (modSet != null && getModifyExistingUsers()) {
-					if (removecert) {
-						LDAPModification[] mods = new LDAPModification[modSet.size()]; 
+					if (removecert && removedCertOrUser) {
+						LDAPModification[] mods = new LDAPModification[modSet.size()];
 						mods = (LDAPModification[])modSet.toArray(mods);
-						lc.modify(oldEntry.getDN(), mods, ldapStoreConstraints);            		
+						lc.modify(oldEntry.getDN(), mods, ldapStoreConstraints);
 					}
 					if (removeuser) {
-						lc.delete(oldEntry.getDN(), ldapStoreConstraints);            		
+						lc.delete(oldEntry.getDN(), ldapStoreConstraints);
+						removedCertOrUser = true;
 					}
-					String msg = intres.getLocalizedMessage("publisher.ldapremove", LogRedactionUtils.getSubjectDnLogSafe(dn));
-					log.info(msg);
+					if (removedCertOrUser) {
+						String msg = intres.getLocalizedMessage("publisher.ldapremove", LogRedactionUtils.getSubjectDnLogSafe(dn));
+						log.info(msg);
+					}
 				} else {
 					if (log.isDebugEnabled()) {
 						if (modSet == null) {
@@ -1671,7 +1761,7 @@ public class LdapPublisher extends BasePublisher {
 	 * @param userDataDN user data DN
 	 * @return LDAP DN to be used.
 	 */
-	protected String constructLDAPDN(String certDN, String userDataDN){
+	protected String constructLDAPDN(String certDN, String userDataDN) {
 		if (log.isDebugEnabled()) {
 			log.debug("DN in certificate '" + LogRedactionUtils.getSubjectDnLogSafe(certDN) + "'. DN in user data '" + LogRedactionUtils.getSubjectDnLogSafe(userDataDN) + "'.");
 		}
@@ -1744,7 +1834,7 @@ public class LdapPublisher extends BasePublisher {
 		return clone;	
 	}
 
-	/* *
+	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#getLatestVersion()
 	 */
 	public float getLatestVersion() {		
@@ -1822,6 +1912,7 @@ public class LdapPublisher extends BasePublisher {
     public boolean isCallingExternalScript() {
         return false;        
     }
+
     @Override
     public void setExternalScriptsAllowlist(ExternalScriptsAllowlist allowList) {
         // Method not applicable for this publisher type!        
