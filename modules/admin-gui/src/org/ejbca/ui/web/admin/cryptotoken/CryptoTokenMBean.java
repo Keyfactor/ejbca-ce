@@ -93,6 +93,7 @@ import jakarta.faces.context.FacesContext;
 import jakarta.faces.model.ListDataModel;
 import jakarta.faces.model.SelectItem;
 import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 /**
@@ -909,7 +910,6 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
     private transient ListDataModel<CryptoTokenGuiInfo> cryptoTokenGuiList = null;
     private ArrayList<CryptoTokenGuiInfo> cryptoTokenGuiInfos = null;
-    private transient ListDataModel<KeyPairGuiInfo> keyPairGuiList = null;
     private ArrayList<KeyPairGuiInfo> keyPairGuiInfos = null;
 
     private List<SelectItem> availablePaddingSchemes;
@@ -932,7 +932,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
 
-    private CurrentSessionCryptoTokenChanges currentSessionCryptoTokenChanges = new CurrentSessionCryptoTokenChanges();
+    @Inject
+    private CurrentSessionCryptoTokenChanges currentSessionCryptoTokenChanges;
+    
     private transient CryptoTokenManagementSessionLocal cryptoTokenManagementSession = null;
     private transient AuthorizationSessionLocal authorizationSession = null;
     private transient CaSessionLocal caSession = null;
@@ -961,7 +963,6 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
      * Force reload from underlying layer for the current CryptoToken and its list of key pairs
      */
     private void flushCurrent() {
-        keyPairGuiList = null;
         keyPairGuiInfos = null;
         currentCryptoToken = null;
         p11SlotUsed = false;
@@ -1920,12 +1921,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
      * @return a list of all the keys in the current CryptoToken.
      */
     public ListDataModel<KeyPairGuiInfo> getKeyPairGuiList() throws AuthorizationDeniedException {
-        if (keyPairGuiList == null) {
-            keyPairGuiList = new ListDataModel<>(getKeyPairGuiInfos());
-        }
-        return keyPairGuiList;
+        return new ListDataModel<>(getKeyPairGuiInfos());
     }
-
 
     private List<KeyPairGuiInfo> getKeyPairGuiInfos() throws AuthorizationDeniedException {
         if (keyPairGuiInfos == null) {
@@ -1933,7 +1930,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             if (getCurrentCryptoToken().isActive()) {
                 // Add existing key pairs
                 try {
-                    final Properties tokenProperties = getCryptoTokenManagementSession().getCryptoToken(getCurrentCryptoTokenId()).getProperties();
+                    CryptoToken cryptoToken = getCryptoTokenManagementSession().getCryptoToken(getCurrentCryptoTokenId());
+                    cryptoToken.clearCache();
+                    final Properties tokenProperties = cryptoToken.getProperties();
                     for (KeyPairInfo keyPairInfo : getCryptoTokenManagementSession().getKeyPairInfos(getAdmin(), getCurrentCryptoTokenId())) {
                         final KeyPairGuiInfo keyPairGuiInfo = new KeyPairGuiInfo(keyPairInfo);
                         // If CP5 HSM, add KAK association for each key
@@ -2007,6 +2006,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             final String logMsg = getAdmin().toString() + " failed to generate a keypair: ";
             log.info(logMsg + e.getMessage());
         }
+        currentSessionCryptoTokenChanges.tokenChanged(getCurrentCryptoTokenId());
         flushCaches();
         if (log.isTraceEnabled()) {
             log.trace("<generateNewKeyPair");
@@ -2170,6 +2170,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                         addNonTranslatedErrorMessage(e);
                     }
                 });
+        currentSessionCryptoTokenChanges.tokenChanged(cryptoTokenId);
         flushCaches();
         editCryptoToken(String.valueOf(cryptoTokenId));
     }
@@ -2199,8 +2200,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     public CryptoTokenManagementSessionLocal getCryptoTokenManagementSession() {
         if (cryptoTokenManagementSession == null) {
             cryptoTokenManagementSession = getEjbcaWebBean().getEjb().getCryptoTokenManagementSession();
-            currentSessionCryptoTokenChanges.refreshChangedCryptoTokens(cryptoTokenSession);
         }
+        currentSessionCryptoTokenChanges.refreshChangedCryptoTokens(cryptoTokenSession);
         return cryptoTokenManagementSession;
     }
 

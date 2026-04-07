@@ -20,12 +20,15 @@ import java.util.Random;
 import org.apache.log4j.Logger;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 
+import jakarta.enterprise.context.SessionScoped;
+
 /**
  * I keep track of crypto tokens that have changed during the current session 
  * and can compare those with the last known state on the current JVM.  If they're different
  * (which can happen in HA mode when we the user is directed to a different JVM instance)
  * I can update the tokens to reflect that change.
  */
+@SessionScoped
 public class CurrentSessionCryptoTokenChanges implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CurrentSessionCryptoTokenChanges.class);
