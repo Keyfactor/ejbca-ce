@@ -302,10 +302,9 @@ public class ProcessApprovalRestResponse {
 
         if (approvals != null) {
             for (Approval approval : approvals) {
-                if (approval.getStepId() == stepId) {
-                    if (approval.getComment() != null && !approval.getComment().isEmpty()) {
-                        partitionBuilder.approvalComment(approval.getComment());
-                    }
+                if (approval.getStepId() == stepId && partition.getPartitionIdentifier() == approval.getPartitionId()
+                        && approval.getComment() != null && !approval.getComment().isEmpty()) {
+                    partitionBuilder.approvalComment(approval.getComment());
                 }
             }
         }
