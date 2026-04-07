@@ -246,7 +246,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.not_yet_valid", subject, keyFingerprint));
                 return null;
             }
-            final OAuth2Principal principal = createOauthPrincipal(claims, keyInfo);
+            final OAuth2Principal principal = createOauthPrincipal(claims, keyInfo, keyId);
             final boolean usingDefaultProvider = (keyId == null);
             return new OAuth2AuthenticationToken(principal, encodedOauthBearerToken, oauthIdToken, keyFingerprint, keyInfo.getLabel(), usingDefaultProvider);
         } catch (ParseException e) {
@@ -433,7 +433,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         return true;
     }
 
-    private OAuth2Principal createOauthPrincipal(final JWTClaimsSet claims, final OAuthKeyInfo keyInfo) {
+    private OAuth2Principal createOauthPrincipal(final JWTClaimsSet claims, final OAuthKeyInfo keyInfo, final String keyId) {
         return OAuth2Principal.builder()
                 .setOauthProviderId(keyInfo.getInternalId())
                 .setIssuer(claims.getIssuer())
@@ -446,6 +446,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 .setName(safeGetClaim(claims, "name"))
                 .setEmail(safeGetClaim(claims, "email"))
                 .setEmailVerified(safeGetBooleanClaim(claims, "email_verified"))
+                .setKeyId(keyId)
                 .addRoles(claims)
                 .addKfRoles(claims)
                 .build();
