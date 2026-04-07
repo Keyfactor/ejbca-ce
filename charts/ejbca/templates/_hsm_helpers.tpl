@@ -23,14 +23,32 @@ Define HSM container image with versions
 {{- end }}
 {{- end -}}
 
+{{- /*
+Common sidecar configuration for all HSMs
+*/}}
+{{- define "ejbca.hsm.sidecar.common" -}}
+- name: hsm
+  image: {{ include "ejbca.hsmImage" . }}
+  imagePullPolicy: {{ .Values.hsm.imagePullPolicy }}
+  {{- /* Setting 'restartPolicy: Always' on an init container turns it into a native sidecar container. */}}
+  restartPolicy: Always
+  {{- /* Wait up to 5 minutes for the sidecar to initialize and p11proxy-server to start. */}}
+  startupProbe:
+    tcpSocket:
+      port: 7121
+    periodSeconds: 2
+    failureThreshold: 150
+  livenessProbe:
+    tcpSocket:
+      port: 7121
+{{- end -}}
+
 {{/*
 Enable individual sidecars and volumes: SoftHSM
 */}}
 {{- define "ejbca.hsm.sidecar.softhsm" -}}
 {{- if .Values.hsm.softhsm.enabled }}
-- name: hsm
-  image: {{ include "ejbca.hsmImage" . }}
-  imagePullPolicy: {{ .Values.hsm.imagePullPolicy }}
+{{- include "ejbca.hsm.sidecar.common" . }}
   env:
     - name: SOFTHSM2_LOG_LEVEL
       value: {{ .Values.hsm.softhsm.logLevel }}
@@ -55,9 +73,7 @@ Enable individual sidecars and volumes: Luna
 */}}
 {{- define "ejbca.hsm.sidecar.luna" -}}
 {{- if .Values.hsm.luna.enabled }}
-- name: hsm
-  image: {{ include "ejbca.hsmImage" . }}
-  imagePullPolicy: {{ .Values.hsm.imagePullPolicy }}
+{{- include "ejbca.hsm.sidecar.common" . }}
   env:
     {{- if .Values.hsm.luna.server_name }}
     - name: SERVER_NAME
@@ -114,9 +130,7 @@ Almost same as Luna but allows mounting of /opt/keyfactor/Chrystoki.conf as an a
 */}}
 {{- define "ejbca.hsm.sidecar.lunatct" -}}
 {{- if .Values.hsm.lunatct.enabled }}
-- name: hsm
-  image: {{ include "ejbca.hsmImage" . }}
-  imagePullPolicy: {{ .Values.hsm.imagePullPolicy }}
+{{- include "ejbca.hsm.sidecar.common" . }}
   env:
     {{- if .Values.hsm.lunatct.server_name }}
     - name: SERVER_NAME
@@ -172,9 +186,7 @@ Enable individual sidecars and volumes: DPoD
 */}}
 {{- define "ejbca.hsm.sidecar.dpod" -}}
 {{- if .Values.hsm.dpod.enabled }}
-- name: hsm
-  image: {{ include "ejbca.hsmImage" . }}
-  imagePullPolicy: {{ .Values.hsm.imagePullPolicy }}
+{{- include "ejbca.hsm.sidecar.common" . }}
   volumeMounts:
     - name: hsm-dpod-secret
       mountPath: "/opt/keyfactor/thales/conf/Chrystoki.conf"
@@ -196,9 +208,7 @@ Enable individual sidecars and volumes: Utimaco
 */}}
 {{- define "ejbca.hsm.sidecar.utimaco" -}}
 {{- if .Values.hsm.utimaco.enabled }}
-- name: hsm
-  image: {{ include "ejbca.hsmImage" . }}
-  imagePullPolicy: {{ .Values.hsm.imagePullPolicy }}
+{{- include "ejbca.hsm.sidecar.common" . }}
   volumeMounts:
     - name: cs-pkcs11-r3-cfg
       mountPath: /etc/cs_pkcs11_R3.cfg
@@ -220,9 +230,7 @@ Enable individual sidecars and volumes: Nshield
 */}}
 {{- define "ejbca.hsm.sidecar.nshield" -}}
 {{- if .Values.hsm.nshield.enabled }}
-- name: hsm
-  image: {{ include "ejbca.hsmImage" . }}
-  imagePullPolicy: {{ .Values.hsm.imagePullPolicy }}
+{{- include "ejbca.hsm.sidecar.common" . }}
   envFrom:
     - secretRef:
         name: nshield-secret
@@ -234,9 +242,7 @@ Enable individual sidecars and volumes: AWS CloudHSM
 */}}
 {{- define "ejbca.hsm.sidecar.awsCloudHsm" -}}
 {{- if .Values.hsm.awsCloudHsm.enabled }}
-- name: hsm
-  image: {{ include "ejbca.hsmImage" . }}
-  imagePullPolicy: {{ .Values.hsm.imagePullPolicy }}
+{{- include "ejbca.hsm.sidecar.common" . }}
   env:
     - name: CLOUDHSM_IP_ADDRESS
       value: {{ .Values.hsm.awsCloudHsm.hsmIpAddress }}
@@ -263,9 +269,7 @@ Enable individual sidecars and volumes: Bull Proteccio HSM
 */}}
 {{- define "ejbca.hsm.sidecar.bullproteccio" -}}
 {{- if .Values.hsm.bullproteccio.enabled }}
-- name: hsm
-  image: {{ include "ejbca.hsmImage" . }}
-  imagePullPolicy: {{ .Values.hsm.imagePullPolicy }}
+{{- include "ejbca.hsm.sidecar.common" . }}
   volumeMounts:
     - name: hsms-json-secret
       mountPath: /opt/keyfactor/hsms.json
