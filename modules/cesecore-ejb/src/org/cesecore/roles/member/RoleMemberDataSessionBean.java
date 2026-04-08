@@ -268,12 +268,12 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
     @Override
     public Set<RoleMember> getRoleMembersMatchingAuthenticationToken(final AuthenticationToken authenticationToken) {
         final Set<RoleMember> ret = new HashSet<>();
-        if (authenticationToken!=null) {
+        if (authenticationToken != null) {
             if (authenticationToken instanceof OAuth2AuthenticationToken oAuthToken) {
                 OAuthConfiguration oAuthConfiguration = getOAuthConfiguration();
                 for (final RoleMember roleMember : getRoleMembersForAuthenticationToken(authenticationToken)) {
                     try {
-                        if (authenticationToken.matches(convertToAccessUserAspect(roleMember))) {
+                        if (oAuthToken.matches(convertToAccessUserAspect(roleMember), oAuthConfiguration)) {
                             ret.add(roleMember);
                         }
                     } catch (AuthenticationFailedException e) {
