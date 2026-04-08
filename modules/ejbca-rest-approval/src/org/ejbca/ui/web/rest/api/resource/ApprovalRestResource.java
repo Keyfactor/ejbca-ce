@@ -91,7 +91,7 @@ public class ApprovalRestResource extends BaseRestResource {
             //CA activation approval is disabled via REST API
             if (isCaActivationApproval(approvalRequestInfo)) {
                 throw new RestException(Response.Status.FORBIDDEN.getStatusCode(),
-                        "CA activation approval requests cannot be viewed through this endpoint.");
+                        "CA activation approval requests cannot be viewed through REST API.");
             }
 
             // getApprovalRequest also returns null if the user is not authorized to view the request.
@@ -302,7 +302,7 @@ public class ApprovalRestResource extends BaseRestResource {
             //CA activation approval is disabled via REST API
             if (isCaActivationApproval(approvalRequestInfo)) {
                 throw new RestException(Response.Status.FORBIDDEN.getStatusCode(),
-                        "CA activation approval requests cannot be viewed through this endpoint.");
+                        "CA activation approval requests cannot be viewed through REST API.");
             }
 
             final ApprovalRequestRestResponse response = ApprovalRequestRestResponse.buildApprovalResponse(approvalRequestInfo);
@@ -348,7 +348,7 @@ public class ApprovalRestResource extends BaseRestResource {
         //CA activation approval is disabled via REST API
         if (isCaActivationApproval(approvalRequestInfo)) {
             throw new RestException(Response.Status.FORBIDDEN.getStatusCode(),
-                    "CA activation approval requests cannot be processed through this endpoint.");
+                    "CA activation approval requests cannot be processed through REST API.");
         }
 
         // Check if the request can be processed
