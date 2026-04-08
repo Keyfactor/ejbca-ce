@@ -88,17 +88,17 @@ public class ApprovalRestResource extends BaseRestResource {
         try {
             final AuthenticationToken authenticationToken = getAdmin(requestContext, false);
             final RaApprovalRequestInfo approvalRequestInfo = raMasterApi.getApprovalRequest(authenticationToken, requestId);
-            //CA activation approval is disabled via REST API
-            if (isCaActivationApproval(approvalRequestInfo)) {
-                throw new RestException(Response.Status.FORBIDDEN.getStatusCode(),
-                        "CA activation approval requests cannot be viewed through REST API.");
-            }
 
             // getApprovalRequest also returns null if the user is not authorized to view the request.
             if (approvalRequestInfo == null) {
                 throw new RestException(
                         Response.Status.NOT_FOUND.getStatusCode(),
                         "Approval request with ID '" + requestId + "' not found, or user not authorized to view.");
+            }
+            //CA activation approval is disabled via REST API
+            if (isCaActivationApproval(approvalRequestInfo)) {
+                throw new RestException(Response.Status.FORBIDDEN.getStatusCode(),
+                        "CA activation approval requests cannot be viewed through REST API.");
             }
 
             final ApprovalRequestStatus status = ApprovalRequestStatus.fromIntWithCombinedStates(approvalRequestInfo.getStatus());
