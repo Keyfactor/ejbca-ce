@@ -536,16 +536,8 @@ public class ApprovalRestResource extends BaseRestResource {
                 continue; // Skip empty or null values
             }
 
-            // Validate property type
-            if (!partitionProperty.getType().equals(uiProperty.getType().getSimpleName())) {
-                throw new RestException(
-                        Response.Status.BAD_REQUEST.getStatusCode(),
-                        ERROR_WRONG_TYPE + label
-                );
-            }
-
             // Parse and set the value
-            Serializable parsedValue = parseValue(uiProperty.getType(), propertyValue, label);
+            Serializable parsedValue = parseValue(uiProperty.getType().getSimpleName(), propertyValue, label);
             try {
                 uiProperty.setValue(parsedValue);
             } catch (PropertyValidationException e) {
@@ -559,33 +551,47 @@ public class ApprovalRestResource extends BaseRestResource {
     }
 
     // Extracted method to handle value parsing
-    private Serializable parseValue(Class<?> type, String value, String label) throws RestException {
-        try {
-            if (type.equals(String.class)) {
+    private Serializable parseValue(String type, String value, String label) throws RestException {
+        switch (type) {
+            case "String":
                 return value;
-            } else if (type.equals(Integer.class)) {
-                return Integer.parseInt(value);
-            } else if (type.equals(Boolean.class)) {
+            case "Integer":
+                try {
+                    return Integer.parseInt(value);
+                } catch (NumberFormatException e) {
+                    throw new RestException(
+                            Response.Status.BAD_REQUEST.getStatusCode(),
+                            "Invalid ApprovalPartitionPropertyRestRequest content, value '" + value + "' for label '" + label + "' is not a valid integer."
+                    );
+                }
+            case "Boolean":
+                if (!value.equalsIgnoreCase("true") && !value.equalsIgnoreCase("false")) {
+                    throw new RestException(
+                            Response.Status.BAD_REQUEST.getStatusCode(),
+                            "Invalid ApprovalPartitionPropertyRestRequest content, value '" + value + "' for label '" + label + "' is not a boolean. Use 'true' or 'false'."
+                    );
+                }
                 return Boolean.parseBoolean(value);
-            } else if (type.equals(Long.class)) {
-                return Long.parseLong(value);
-            } else if (type.equals(RadioButton.class)) {
+            case "Long":
+                try {
+                    return Long.parseLong(value);
+                } catch (NumberFormatException e) {
+                    throw new RestException(
+                            Response.Status.BAD_REQUEST.getStatusCode(),
+                            "Invalid ApprovalPartitionPropertyRestRequest content, value '" + value + "' for label '" + label + "' is not a valid Long."
+                    );
+                }
+            case "RadioButton":
                 return new RadioButton(value);
-            } else if (type.equals(MultiLineString.class)) {
+            case "MultiLineString":
                 return new MultiLineString(value);
-            } else if (type.equals(UrlString.class)) {
+            case "UrlString":
                 return new UrlString(value);
-            } else {
+            default:
                 throw new RestException(
                         Response.Status.BAD_REQUEST.getStatusCode(),
                         "Unknown type for property with label " + label
                 );
-            }
-        } catch (NumberFormatException e) {
-            throw new RestException(
-                    Response.Status.BAD_REQUEST.getStatusCode(),
-                    ERROR_WRONG_TYPE + label
-            );
         }
     }
 

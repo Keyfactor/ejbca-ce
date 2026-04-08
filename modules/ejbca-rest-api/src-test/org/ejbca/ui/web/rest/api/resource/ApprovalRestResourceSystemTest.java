@@ -78,6 +78,9 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
     private static final JSONParser jsonParser = new JSONParser();
     private static final ApprovalSessionRemote approvalSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
     private static final ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
+    public static final String INTEGER_LABEL = "Integer value";
+    public static final String LONG_LABEL = "Long value";
+    public static final String BOOLEAN_LABEL = "Boolean value";
     private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ApprovalRestResourceSystemTest"));
 
@@ -89,6 +92,7 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
     private static Integer partitionedCaId;
     private static Integer accumulativeApprovalProfileId;
     private static Integer partitionedApprovalProfileId;
+    private static Integer partitionId;
 
     private static final String CA_NAME = "ApprovalRestResourceSystemTest_CA";
     private static final String CA_NAME_PARTITIONED = "ApprovalRestResourceSystemTest_Partitioned_CA";
@@ -140,7 +144,18 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
         final DynamicUiProperty<RadioButton>  property = new DynamicUiProperty<>("Radio test", new RadioButton("Blue"),
                 new ArrayList<RadioButton>( Arrays.asList(new RadioButton("Green"), new RadioButton("Blue"), new RadioButton("Red"))));
         property.setType(RadioButton.class);
-        partitionedApprovalProfile.addPropertyToPartition(firstStep.getStepIdentifier(), firstStepPartition.getPartitionIdentifier(), property);
+        partitionId = firstStepPartition.getPartitionIdentifier();
+        partitionedApprovalProfile.addPropertyToPartition(firstStep.getStepIdentifier(), partitionId, property);
+        final DynamicUiProperty<Integer>  propertyInteger = new DynamicUiProperty<>(INTEGER_LABEL, 1);
+        propertyInteger.setType(Integer.class);
+        partitionedApprovalProfile.addPropertyToPartition(firstStep.getStepIdentifier(), partitionId, propertyInteger);
+        final DynamicUiProperty<Long>  propertyLong = new DynamicUiProperty<>(LONG_LABEL, 1L);
+        propertyLong.setType(Long.class);
+        partitionedApprovalProfile.addPropertyToPartition(firstStep.getStepIdentifier(), partitionId, propertyLong);
+        final DynamicUiProperty<Boolean>  propertyBoolean = new DynamicUiProperty<>(BOOLEAN_LABEL, true);
+        propertyBoolean.setType(Boolean.class);
+        partitionedApprovalProfile.addPropertyToPartition(firstStep.getStepIdentifier(), partitionId, propertyBoolean);
+
 
         partitionedApprovalProfileId = approvalProfileSession.addApprovalProfile(alwaysAllowToken, partitionedApprovalProfile);
         // Apply Approval Profile to CA
@@ -357,6 +372,111 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
     }
 
     @Test
+    public void testProcessApprovalRequestNotAnInteger() throws Exception {
+        // Given
+        final String value = "not an integer";
+        final String requestBody = String.format("""
+        {
+          "approve": true,
+          "comment": "Approved in unit test",
+          "approval_partitions": [
+            {
+              "partition_identifier": "%s",
+              "property_list": [
+                {
+                  "label": "%s",
+                  "value": "%s"
+                }
+              ]
+            }
+          ]
+        }""", partitionId, INTEGER_LABEL, value);
+        System.out.println(requestBody);
+
+
+        // When
+        final Response actualResponse = newRequest("/v1/approval/" + addEndEntityPartitionedApprovalRequestId + "/process")
+                .request()
+                .post(Entity.entity(requestBody, "application/json"));
+
+        // Then
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), actualResponse.getStatus());
+        assertEquals("Invalid ApprovalPartitionPropertyRestRequest content, value '" + value + "' for label '" + INTEGER_LABEL + "' is not a valid integer.", actualJsonObject.get("error_message"));
+    }
+
+    @Test
+    public void testProcessApprovalRequestNotABoolean() throws Exception {
+        // Given
+        final String value = "not a boolean";
+        final String requestBody = String.format("""
+        {
+          "approve": true,
+          "comment": "Approved in unit test",
+          "approval_partitions": [
+            {
+              "partition_identifier": "%s",
+              "property_list": [
+                {
+                  "label": "%s",
+                  "value": "%s"
+                }
+              ]
+            }
+          ]
+        }""", partitionId, BOOLEAN_LABEL, value);
+        System.out.println(requestBody);
+
+
+        // When
+        final Response actualResponse = newRequest("/v1/approval/" + addEndEntityPartitionedApprovalRequestId + "/process")
+                .request()
+                .post(Entity.entity(requestBody, "application/json"));
+
+        // Then
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), actualResponse.getStatus());
+        assertEquals("Invalid ApprovalPartitionPropertyRestRequest content, value '"+value+"' for label '" + BOOLEAN_LABEL + "' is not a boolean. Use 'true' or 'false'.", actualJsonObject.get("error_message"));
+    }
+
+
+    @Test
+    public void testProcessApprovalRequestNotALong() throws Exception {
+        // Given
+        final String value = "not a boolean";
+        final String requestBody = String.format("""
+        {
+          "approve": true,
+          "comment": "Approved in unit test",
+          "approval_partitions": [
+            {
+              "partition_identifier": "%s",
+              "property_list": [
+                {
+                  "label": "%s",
+                  "value": "%s"
+                }
+              ]
+            }
+          ]
+        }""", partitionId, LONG_LABEL, value);
+        System.out.println(requestBody);
+
+        // When
+        final Response actualResponse = newRequest("/v1/approval/" + addEndEntityPartitionedApprovalRequestId + "/process")
+                .request()
+                .post(Entity.entity(requestBody, "application/json"));
+
+        // Then
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), actualResponse.getStatus());
+        assertEquals("Invalid ApprovalPartitionPropertyRestRequest content, value '"+value+"' for label '" + LONG_LABEL + "' is not a valid Long.", actualJsonObject.get("error_message"));
+    }
+
+    @Test
     public void testProcessApprovalRequestAlreadyProcessed() throws Exception {
         // Given
         final RaApprovalRequestInfo raApprovalRequestInfo = raMasterApiSession.getApprovalRequest(alwaysAllowToken, addEndEntityApprovalRequestId);
@@ -468,7 +588,7 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
         final JSONObject partition = (JSONObject) partitions.get(0);
         assertEquals("Approval action should be PENDING", "PENDING", partition.get("approval_action"));
         final JSONArray properties = (JSONArray) partition.get("property_list");
-        assertEquals("Should have one property", 1, properties.size());
+        assertEquals("Should have 4 properties", 4, properties.size());
         final JSONObject property = (JSONObject) properties.get(0);
         assertEquals("Property label ", "Radio test", property.get("label"));
         assertEquals("Property type ", "RadioButton", property.get("type"));
