@@ -353,7 +353,7 @@ public class ApprovalRestResource extends BaseRestResource {
             handleException(Response.Status.BAD_REQUEST, "Approval request has expired", e);
         } catch (ApprovalRequestExecutionException e) {
             handleException(Response.Status.INTERNAL_SERVER_ERROR, "Error executing approval request: " + e.getMessage(), e);
-        } catch (ApprovalException | AdminAlreadyApprovedRequestException | SelfApprovalException e) {
+        } catch (ApprovalException | AdminAlreadyApprovedRequestException | SelfApprovalException | IllegalArgumentException e) {
             handleException(Response.Status.BAD_REQUEST, e.getMessage(), e);
         } catch (RestException e) {
             throw e; // RestException is re-thrown as is
