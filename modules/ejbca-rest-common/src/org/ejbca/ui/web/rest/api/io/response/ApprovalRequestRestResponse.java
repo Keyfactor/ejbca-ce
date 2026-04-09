@@ -33,6 +33,7 @@ import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestStatus;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
+import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 
@@ -48,7 +49,7 @@ public class ApprovalRequestRestResponse extends ProcessApprovalRestResponse {
 
     @Schema(description = "End Entity profile name", example = "ExampleEEP")
     private String endEntityProfileName;
-    
+
     @Schema(description = "Issuer Distinguished Name", example = "CN=ExampleCA,O=Sample,C=SE")
     private String issuerDn;
 
@@ -380,7 +381,7 @@ public class ApprovalRequestRestResponse extends ProcessApprovalRestResponse {
 
 
         // Build approval steps
-        final List<ApprovalStepRestResponse> steps = buildApprovalSteps(requestInfo);
+        final List<ApprovalStepRestResponse> performedSteps = buildApprovalPerformedSteps(requestInfo);
 
 
         final Date requestDate = new Date(approvalData.getRequestDate().getTime());
@@ -395,23 +396,48 @@ public class ApprovalRequestRestResponse extends ProcessApprovalRestResponse {
                 .expirationDate(dateFormat.format(expirationDate))
                 .endEntityName(endEntityName)
                 .status(status)
-                .steps(steps);
+                .totalSteps(requestInfo.getStepCount())
+                .performedSteps(performedSteps);
         if (requestInfo.getNextApprovalStep() != null) {
-            final List<ApprovalPartitionRestResponse.ApprovalPartitionStep> partitions = new ArrayList<>();
-            for (ApprovalPartition partition : requestInfo.getNextApprovalStep().getPartitionList()) {
-                if (requestInfo.getApprovalProfile().canView(requestInfo.getRolesTokenIsMemberOf(), partition) ||
-                        requestInfo.getApprovalProfile().canApprove(requestInfo.getRolesTokenIsMemberOf(), partition)) {
-                    ApprovalPartitionRestResponse.ApprovalPartitionStep partitionStep = buildStepPartitionNextStep(requestInfo.getNextApprovalStep().getStepIdentifier(), partition,
-                            requestInfo.getApprovalData().getApprovals(), requestInfo.getApprovalProfile(), status.getValue());
-                    partitions.add(partitionStep);
+            final String profileType = requestInfo.getApprovalProfile().getApprovalProfileTypeIdentifier();
+            final ApprovalStepRestResponse.Builder stepBuilder = ApprovalStepRestResponse.builder()
+                    .stepNumber((requestInfo.getStepIdToOrdinalMap().get(requestInfo.getNextApprovalStep().getStepIdentifier())));
+            if (AccumulativeApprovalProfile.TYPE_IDENTIFIER.equals(profileType)) {
+                final List<ApprovalAccumulativeRestResponse> approvalList = new ArrayList<>();
+                final ApprovalPartition nextPartition = requestInfo.getNextApprovalStep()
+                        .getPartitionList().iterator().next();
+                final boolean canApprove = requestInfo.getApprovalProfile().canApprove(requestInfo.getRolesTokenIsMemberOf(), nextPartition);
+                final boolean canView = requestInfo.getApprovalProfile().canView(requestInfo.getRolesTokenIsMemberOf(), nextPartition);
+                if (canApprove || canView){
+                    approvalList.add(ApprovalAccumulativeRestResponse.builder()
+                            .approvalAction(status.getValue())
+                            .remainingApprovals(requestInfo.getApprovalData().getRemainingApprovals())
+                            .canApprove(canApprove)
+                            .build());
+                }
+                if (!approvalList.isEmpty()) {
+                    stepBuilder.approvalList(approvalList);
+                }
+            } else {
+                final List<ApprovalPartitionRestResponse.ApprovalPartitionStep> partitions = new ArrayList<>();
+                for (ApprovalPartition partition : requestInfo.getNextApprovalStep().getPartitionList()) {
+                    if (ProcessApprovalRestResponse.isPartitionAlreadyApproved(requestInfo.getNextApprovalStep()
+                                    .getStepIdentifier(), partition.getPartitionIdentifier(),
+                            requestInfo.getApprovalData().getApprovals())) {
+                        continue;
+                    }
+                    if (requestInfo.getApprovalProfile().canView(requestInfo.getRolesTokenIsMemberOf(), partition) ||
+                            requestInfo.getApprovalProfile().canApprove(requestInfo.getRolesTokenIsMemberOf(), partition)) {
+                        ApprovalPartitionRestResponse.ApprovalPartitionStep partitionStep = buildStepPartitionNextStep(requestInfo.getNextApprovalStep().getStepIdentifier(), partition,
+                                requestInfo.getApprovalData().getApprovals(), requestInfo.getApprovalProfile(), status.getValue());
+                        partitions.add(partitionStep);
+                    }
+                }
+                if (!partitions.isEmpty()) {
+                    stepBuilder.partitionList(partitions);
                 }
             }
-            if (!partitions.isEmpty()) {
-                final ApprovalStepRestResponse.Builder stepBuilder = ApprovalStepRestResponse.builder()
-                        .stepNumber(steps.size() + 1)
-                        .partitionList(partitions);
-                builder.nextStep(stepBuilder.build());
-            }
+            builder.nextStep(stepBuilder.build());
         }
         builder.certificateProfileName(requestInfo.getCertificateProfileName())
                 .endEntityProfileName(requestInfo.getEndEntityProfileName());

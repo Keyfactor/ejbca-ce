@@ -16,14 +16,19 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
+import org.ejbca.core.model.approval.profile.PartitionedApprovalProfile;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for {@link ProcessApprovalRestResponse}.
@@ -35,8 +40,12 @@ public class ProcessApprovalRestResponseUnitTest {
     private static final int PARTITION_ID_2 = 20;
     private static final String APPROVAL_STATUS = "WAITING_FOR_APPROVAL";
 
-    private ApprovalProfile createApprovalProfile() {
-        return new AccumulativeApprovalProfile("testProfile");
+    private ApprovalProfile createApprovalProfileAccumulative() {
+        return new AccumulativeApprovalProfile("accumulativeTestProfile");
+    }
+
+    private ApprovalProfile createApprovalProfilePartitioned() {
+        return new PartitionedApprovalProfile("partitionedTestProfile");
     }
 
     /**
@@ -48,7 +57,7 @@ public class ProcessApprovalRestResponseUnitTest {
         // Given: an approval for partition 1, and we are building partition 2
         final Approval approvalForPartition1 = new Approval("comment", STEP_ID, PARTITION_ID_1);
         final ApprovalPartition partition2 = new ApprovalPartition(PARTITION_ID_2);
-        final ApprovalProfile approvalProfile = createApprovalProfile();
+        final ApprovalProfile approvalProfile = createApprovalProfilePartitioned();
 
         // When
         final List<ApprovalPartitionRestResponse.ApprovalPartitionStep> result =
@@ -68,7 +77,7 @@ public class ProcessApprovalRestResponseUnitTest {
         // Given: an approval for partition 1, and we are building partition 1
         final Approval approvalForPartition1 = new Approval("comment", STEP_ID, PARTITION_ID_1);
         final ApprovalPartition partition1 = new ApprovalPartition(PARTITION_ID_1);
-        final ApprovalProfile approvalProfile = createApprovalProfile();
+        final ApprovalProfile approvalProfile = createApprovalProfilePartitioned();
 
         // When
         final List<ApprovalPartitionRestResponse.ApprovalPartitionStep> result =
@@ -92,7 +101,7 @@ public class ProcessApprovalRestResponseUnitTest {
         final List<Approval> approvals = Arrays.asList(approvalForPartition1, approvalForPartition2);
         final ApprovalPartition partition1 = new ApprovalPartition(PARTITION_ID_1);
         final ApprovalPartition partition2 = new ApprovalPartition(PARTITION_ID_2);
-        final ApprovalProfile approvalProfile = createApprovalProfile();
+        final ApprovalProfile approvalProfile = createApprovalProfilePartitioned();
 
         // When
         final List<ApprovalPartitionRestResponse.ApprovalPartitionStep> resultForPartition1 =
@@ -103,5 +112,32 @@ public class ProcessApprovalRestResponseUnitTest {
         // Then: each partition should have exactly one approval, not two
         assertEquals("Partition 1 should have exactly one approval", 1, resultForPartition1.size());
         assertEquals("Partition 2 should have exactly one approval", 1, resultForPartition2.size());
+    }
+
+    /**
+     * Verifies that buildAccumulativeApprovals includes the approval matching the stepId
+     * with correct approvalAction, approvalDate, and approvalAdmin.
+     */
+    @Test
+    public void testBuildAccumulativeApprovals_matchingStepIdIncludedWithCorrectFields() {
+        // Given
+        final String expectedAdmin = "CN=TestAdmin,O=TestOrg";
+        final AuthenticationToken mockAdmin = mock(AuthenticationToken.class);
+        when(mockAdmin.toString()).thenReturn(expectedAdmin);
+
+        final Approval approval = new Approval("test comment", STEP_ID, PARTITION_ID_1);
+        approval.setApprovalAdmin(true, mockAdmin);
+
+        // When
+        final List<ApprovalAccumulativeRestResponse> result =
+                ProcessApprovalRestResponse.buildAccumulativeApprovals(
+                        STEP_ID, Collections.singletonList(approval), APPROVAL_STATUS);
+
+        // Then
+        assertEquals("Expected exactly one approval for matching stepId", 1, result.size());
+        final ApprovalAccumulativeRestResponse response = result.get(0);
+        assertEquals("APPROVED", response.getApprovalAction());
+        assertNotNull("approvalDate should not be null", response.getApprovalDate());
+        assertEquals(expectedAdmin, response.getApprovalAdmin());
     }
 }
