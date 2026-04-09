@@ -47,6 +47,7 @@ public class OAuth2Principal implements Principal, Serializable {
     private HashSet<String> kfRoles;
     private final String givenName;
     private final String familyName;
+    private final String keyId;
 
     private OAuth2Principal(final Builder builder) {
         this.oauthProviderId = builder.oauthProviderId;
@@ -62,6 +63,7 @@ public class OAuth2Principal implements Principal, Serializable {
         this.kfRoles = new HashSet<>(builder.kfRoles);
         this.givenName = builder.givenName;
         this.familyName = builder.familyName;
+        this.keyId = builder.keyId;
     }
 
     /**
@@ -97,6 +99,10 @@ public class OAuth2Principal implements Principal, Serializable {
     public String getOid() { return oid; }
     /** Returns the audience list (corresponding to the "aud" attribute in the token). Never null. */
     public Collection<String> getAudience() { return audience; }
+
+    public String getKeyId() {
+        return keyId;
+    }
 
     public String getPreferredUsername() { return preferredUsername; }
     public String getEmail() { return email; }
@@ -136,7 +142,8 @@ public class OAuth2Principal implements Principal, Serializable {
                 roles.equals(other.roles) &&
                 kfRoles.equals(other.kfRoles) &&
                 StringUtils.equals(givenName, other.givenName) &&
-                StringUtils.equals(familyName, other.familyName);
+                StringUtils.equals(familyName, other.familyName) &&
+                StringUtils.equals(keyId, other.keyId);
     }
 
     @Override
@@ -164,6 +171,7 @@ public class OAuth2Principal implements Principal, Serializable {
         private final Collection<String> kfRoles = new HashSet<>();
         private String givenName;
         private String familyName;
+        private String keyId;
 
         public Builder setOauthProviderId(final int oauthProviderId) {
             this.oauthProviderId = oauthProviderId;
@@ -211,6 +219,11 @@ public class OAuth2Principal implements Principal, Serializable {
 
         public Builder setFamilyName(final String familyName) {
             this.familyName = familyName;
+            return this;
+        }
+
+        public Builder setKeyId(final String keyId) {
+            this.keyId = keyId;
             return this;
         }
 

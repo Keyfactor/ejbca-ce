@@ -18,8 +18,10 @@ import java.util.Objects;
 import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
+import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.matchvalues.OAuth2AccessMatchValue;
+import org.cesecore.config.OAuthConfiguration;
 
 /**
  * Authentication token for OAuth2 with JWT
@@ -61,6 +63,10 @@ public class OAuth2AuthenticationToken extends NestableAuthenticationToken {
 
     @Override
     public boolean matches(final AccessUserAspect accessUser) throws AuthenticationFailedException {
+        return matches(accessUser, null);
+    }
+
+    public  boolean matches(final AccessUserAspect accessUser, OAuthConfiguration oAuthConfiguration) throws AuthenticationFailedException {
         // Protect against spoofing by checking if this token was created locally
         if (!super.isCreatedInThisJvm()) {
             return false;
@@ -70,8 +76,23 @@ public class OAuth2AuthenticationToken extends NestableAuthenticationToken {
             return false;
         }
         if (!principal.getOauthProviderId().equals(accessUser.getOauthProviderId())) {
-            log.debug("Role token oauth provider id does not match.");
-            return false;
+            //check keyId
+            if (oAuthConfiguration != null && principal.getKeyId() != null) {
+                boolean found = false;
+                for(OAuthKeyInfo oauthKeyInfo : oAuthConfiguration.getOauthKeys().values()) {
+                    if (oauthKeyInfo.getKeys()!= null && oauthKeyInfo.getKeys().containsKey(principal.getKeyId())) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    log.debug("Role token oauth provider id does not match.");
+                    return false;
+                }
+            } else {
+                log.debug("Role token oauth provider id does not match.");
+                return false;
+            }
         }
         final OAuth2AccessMatchValue matchWith = (OAuth2AccessMatchValue) getMatchValueFromDatabaseValue(accessUser.getMatchWith());
         if (matchWith == null) {
