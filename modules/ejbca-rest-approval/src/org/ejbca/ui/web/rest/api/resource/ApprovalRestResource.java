@@ -95,6 +95,11 @@ public class ApprovalRestResource extends BaseRestResource {
                         Response.Status.NOT_FOUND.getStatusCode(),
                         "Approval request with ID '" + requestId + "' not found, or user not authorized to view.");
             }
+            //CA activation approval is disabled via REST API
+            if (isCaActivationApproval(approvalRequestInfo)) {
+                throw new RestException(Response.Status.FORBIDDEN.getStatusCode(),
+                        "CA activation approval requests cannot be viewed through REST API.");
+            }
 
             final ApprovalRequestStatus status = ApprovalRequestStatus.fromIntWithCombinedStates(approvalRequestInfo.getStatus());
             final ApprovalRequestStatusRestResponse response = ApprovalRequestStatusRestResponse.builder()
@@ -133,6 +138,10 @@ public class ApprovalRestResource extends BaseRestResource {
             final SearchApprovalRestResponse searchApprovalRestResponse = new SearchApprovalRestResponse();
 
             for (RaApprovalRequestInfo approvalRequestInfo : approvalRequestInfoList) {
+                //CA Activation approval is disabled via REST API
+                if (isCaActivationApproval(approvalRequestInfo)) {
+                    continue;
+                }
                 final SearchApprovalRestResponse.Approval approval = SearchApprovalRestResponse.Approval.builder()
                         .requestId(approvalRequestInfo.getId())
                         .requestDate(approvalRequestInfo.getApprovalData().getRequestDate())
@@ -290,6 +299,12 @@ public class ApprovalRestResource extends BaseRestResource {
                         "Approval request with ID '" + requestId + "' not found, or user not authorized to view.");
             }
 
+            //CA activation approval is disabled via REST API
+            if (isCaActivationApproval(approvalRequestInfo)) {
+                throw new RestException(Response.Status.FORBIDDEN.getStatusCode(),
+                        "CA activation approval requests cannot be viewed through REST API.");
+            }
+
             final ApprovalRequestRestResponse response = ApprovalRequestRestResponse.buildApprovalResponse(approvalRequestInfo);
             return Response.ok(response).build();
         } catch (AuthorizationDeniedException e) {
@@ -329,6 +344,11 @@ public class ApprovalRestResource extends BaseRestResource {
         if (approvalRequestInfo == null) {
             throw new RestException(Response.Status.NOT_FOUND.getStatusCode(),
                     "Approval request with ID " + requestId + " not found or unauthorized");
+        }
+        //CA activation approval is disabled via REST API
+        if (isCaActivationApproval(approvalRequestInfo)) {
+            throw new RestException(Response.Status.FORBIDDEN.getStatusCode(),
+                    "CA activation approval requests cannot be processed through REST API.");
         }
 
         // Check if the request can be processed
@@ -390,6 +410,16 @@ public class ApprovalRestResource extends BaseRestResource {
         // Build the response
         final ProcessApprovalRestResponse response = ProcessApprovalRestResponse.buildApprovalResponse(updatedRequestInfo);
         return Response.ok(response).build();
+    }
+
+    /**
+     * Determines if a given approval request is related to CA activation.
+     *
+     * @param approvalRequestInfo The approval request information to check.
+     * @return True if the request is for CA activation, false otherwise.
+     */
+    private boolean isCaActivationApproval(final RaApprovalRequestInfo approvalRequestInfo) {
+        return approvalRequestInfo.getApprovalData().getApprovalType() == ApprovalDataVO.APPROVALTYPE_ACTIVATECATOKEN;
     }
 
 }

@@ -243,9 +243,14 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
         final int expectedStatus = ApprovalDataVO.STATUS_WAITINGFORAPPROVAL;
         final ApprovalRequestStatus expectedApprovalStatus = ApprovalRequestStatus.PENDING;
 
+        final ApprovalDataVO mockApprovalData = EasyMock.createMock(ApprovalDataVO.class);
+        EasyMock.expect(mockApprovalData.getApprovalType()).andReturn(ApprovalDataVO.APPROVALTYPE_ADDENDENTITY).anyTimes();
+        EasyMock.replay(mockApprovalData);
+
         final RaApprovalRequestInfo mockApprovalRequestInfo = EasyMock.createMock(RaApprovalRequestInfo.class);
         EasyMock.expect(mockApprovalRequestInfo.getStatus()).andReturn(expectedStatus).anyTimes();
         EasyMock.expect(mockApprovalRequestInfo.getId()).andReturn(approvalRequestId).anyTimes();
+        EasyMock.expect(mockApprovalRequestInfo.getApprovalData()).andReturn(mockApprovalData).anyTimes();
         EasyMock.replay(mockApprovalRequestInfo);
 
         EasyMock.expect(raMasterApiSessionMock.getApprovalRequest(EasyMock.anyObject(AuthenticationToken.class), EasyMock.eq(approvalRequestId)))
@@ -265,6 +270,7 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
 
         EasyMock.verify(raMasterApiSessionMock);
         EasyMock.verify(mockApprovalRequestInfo);
+        EasyMock.verify(mockApprovalData);
     }
 
     @Test
