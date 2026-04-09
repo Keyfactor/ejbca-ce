@@ -115,8 +115,9 @@ public class ImportCaCertMBean extends BaseManagedBean implements Serializable {
         caInfoDto.setSignedBy(CAInfo.SIGNEDBYEXTERNALCA);
         caInfoDto.setHeaders(new ArrayList<>());
         caInfoDto.setUpstreamUrl("");
-        caInfoDto.setUsername("");
-        caInfoDto.setPassword("");
+        caInfoDto.setOauthTokenUrl("");
+        caInfoDto.setOauthClientName("");
+        caInfoDto.setOauthClientSecret("");
         caInfoDto.setUpstreamCa("");
         caInfoDto.setUpstreamTemplate("");
         caInfoDto.setSansJson("");

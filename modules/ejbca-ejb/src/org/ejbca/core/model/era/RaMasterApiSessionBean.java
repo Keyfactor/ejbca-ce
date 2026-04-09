@@ -403,9 +403,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time
      */
     private int activeCaIdCache = -1;
+    private boolean proxyCaDefintionPresent = false;
 
     @Override
     public boolean isBackendAvailable() {
+        
+        if (proxyCaDefintionPresent) {
+            return true;
+        }
+        
         if (activeCaIdCache != -1) {
             CAInfo activeCa = caSession.getCAInfoInternal(activeCaIdCache);
             if (activeCa != null) {
@@ -417,7 +423,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 log.debug("Fail to get info for cached CA with ID " + activeCaIdCache);
             }
         }
-
+        
         // If the cached activeCaIdCache was not active, or didn't exist, we move on to check all in the list
         for (int caId : caSession.getAllCaIds()) {
             if (caSession.getCAInfoInternal(caId).getStatus() == CAConstants.CA_ACTIVE) {
@@ -425,6 +431,16 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 return true;
             }
         }
+        
+        try {
+            // Use reflection to determine if it is a ProxyCA instance
+            Class.forName("org.ejbca.ca.proxyca.ProxyCaImpl");
+            proxyCaDefintionPresent = true;
+            return true;
+        } catch (ClassNotFoundException e) {
+            log.debug("No Proxy CA definition found.");
+        }
+        
         return false;
     }
 

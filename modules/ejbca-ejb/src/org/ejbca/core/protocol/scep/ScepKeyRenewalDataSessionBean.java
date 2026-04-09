@@ -82,7 +82,7 @@ public class ScepKeyRenewalDataSessionBean implements ScepKeyRenewalDataSessionL
                         var cryptoTokenId = scepConfiguration.getEncryptionCryptoTokenId(alias);
                         var encryptionKeyAlias = scepConfiguration.getEncryptionKeyAlias(alias);
                         var encryptionCertificate = scepRaCertificateIssuer.issueEncryptionCertificate(authenticationToken, caName,
-                                cryptoTokenId, encryptionKeyAlias);
+                                cryptoTokenId, encryptionKeyAlias, scepConfiguration.getProxyCaEncryptionCertTemplate(alias));
                         var pemEncryptionCertificate = CertTools.getPemFromCertificate(encryptionCertificate);
                         log.info(String.format("Renewed SCEP certificate %s %s %s", encryptionCertificate.getSubjectX500Principal(),
                                 encryptionCertificate.getNotAfter(), encryptionCertificate.getSerialNumber()));
@@ -93,8 +93,7 @@ public class ScepKeyRenewalDataSessionBean implements ScepKeyRenewalDataSessionL
                         var caName = scepConfiguration.getRADefaultCA(alias);
                         var cryptoTokenId = scepConfiguration.getSigningCryptoTokenId(alias);
                         var signingKeyAlias = scepConfiguration.getSigningKeyAlias(alias);
-                        var signingCertificate = scepRaCertificateIssuer.issueSigningCertificate(authenticationToken, caName, cryptoTokenId,
-                                signingKeyAlias);
+                        var signingCertificate = scepRaCertificateIssuer.issueSigningCertificate(authenticationToken, caName, cryptoTokenId, signingKeyAlias, scepConfiguration.getProxyCaSigningCertTemplate(alias));
                         var pemSigningCertificate = CertTools.getPemFromCertificate(signingCertificate);
                         log.info(String.format("Renewed SCEP certificate %s %s %s", signingCertificate.getSubjectX500Principal(),
                                 signingCertificate.getNotAfter(), signingCertificate.getSerialNumber()));
@@ -125,7 +124,7 @@ public class ScepKeyRenewalDataSessionBean implements ScepKeyRenewalDataSessionL
                             X509Certificate encryptionCertificate = scepConfiguration.getEncryptionCertificateForCa(alias, ca);
                             if (shouldRenew(encryptionCertificate)) {
                                 var newEncryptionCertificate = scepRaCertificateIssuer.issueEncryptionCertificate(authenticationToken, ca,
-                                        encryptionCryptoTokenId, encryptionKeyAlias);
+                                        encryptionCryptoTokenId, encryptionKeyAlias, scepConfiguration.getProxyCaEncryptionCertTemplate(alias));
                                 var pemCertificate = CertTools.getPemFromCertificate(newEncryptionCertificate);
                                 log.info(String.format("Renewed SCEP encryption certificate %s %s %s",
                                         newEncryptionCertificate.getSubjectX500Principal().toString(), newEncryptionCertificate.getNotAfter(),
@@ -145,7 +144,7 @@ public class ScepKeyRenewalDataSessionBean implements ScepKeyRenewalDataSessionL
                             X509Certificate SigningCertificate = scepConfiguration.getSigningCertificateForCa(alias, ca);
                             if (shouldRenew(SigningCertificate)) {
                                 var newSigningCertificate = scepRaCertificateIssuer.issueSigningCertificate(authenticationToken, ca,
-                                        signingCryptoTokenId, signingKeyAlias);
+                                        signingCryptoTokenId, signingKeyAlias, scepConfiguration.getProxyCaSigningCertTemplate(alias));
                                 var pemCertificate = CertTools.getPemFromCertificate(newSigningCertificate);
                                 log.info(String.format("Renewed SCEP signing certificate %s %s %s",
                                         newSigningCertificate.getSubjectX500Principal().toString(), newSigningCertificate.getNotAfter(),
