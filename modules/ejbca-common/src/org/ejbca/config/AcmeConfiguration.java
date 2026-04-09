@@ -19,6 +19,7 @@ import org.cesecore.accounts.AccountBindingException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.UsernameGenerateMode;
 import org.ejbca.core.protocol.acme.AcmeChallenge;
 import org.ejbca.core.protocol.acme.AcmeIdentifier;
@@ -29,9 +30,12 @@ import org.ejbca.core.protocol.dnssec.DnsSecDefaults;
 import java.io.Serializable;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.text.ParseException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,7 +57,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final long serialVersionUID = 1L;
 
     protected static final InternalResources intres = InternalResources.getInstance();
-    protected static final float LATEST_VERSION = 15;
+    protected static final float LATEST_VERSION = 16;
 
     private static final String KEY_RA_NAMEGENERATIONSCHEME = "ra.namegenerationscheme";
     private static final String KEY_RA_NAMEGENERATIONPARAMS = "ra.namegenerationparameters";
@@ -102,6 +106,10 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String KEY_ENABLED_RENEWAL_INFO = "enabledRenewalInfo";
     private static final String KEY_SUGGESTED_RENEWAL_START = "suggestedRenewalStart";
     private static final String KEY_SUGGESTED_RENEWAL_END = "suggestedRenewalEnd";
+    private static final String KEY_ENABLE_ARI_EARLY_RENEWAL = "enableAriEarlyRenewal";
+    private static final String KEY_ARI_EARLY_RENEWAL_CUTOFF_DATE = "ariEarlyRenewalCutoffDate";
+    private static final String KEY_ARI_EARLY_RENEWAL_START_DATE = "ariEarlyRenewalStartDate";
+    private static final String KEY_ARI_EARLY_RENEWAL_END_DATE = "ariEarlyRenewalEndDate";
     private static final String KEY_USE_CAA_ACCOUNT_URI_VALIDATION = "useCaaAccountUriValidation";
     private static final String KEY_USE_CAA_VALIDATION_METHODS_VALIDATION = "useCaaValidationMethodsValidation";
 
@@ -146,6 +154,8 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     public static final String DEFAULT_SUGGESTED_RENEWAL_START = "5d";
     public static final String DEFAULT_SUGGESTED_RENEWAL_END = "1d";
 
+    public static final boolean DEFAULT_ENABLE_ARI_EARLY_RENEWAL = false;
+
     private static final String[] DEFAULT_TLS_APLN_PROTOCOLS_ENABLED = new String[]{ "TLSv1.2", "TLSv1.3" };
     
     private static final boolean DEFAULT_KEY_USE_CAA_ACCOUNT_URI_VALIDATION = false;
@@ -173,7 +183,12 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
             // New version of the class, upgrade.
             log.info(intres.getLocalizedMessage("acmeconfiguration.upgrade", getVersion()));
 
-            // v14. Renewal Info
+            // v16. Early Mass-Renewal
+            if (data.get(KEY_ENABLE_ARI_EARLY_RENEWAL) == null) {
+                setEnableAriEarlyRenewal(DEFAULT_ENABLE_ARI_EARLY_RENEWAL); // Off by default. Other mass-renewal settings are irrelevant when it's turned off.
+            }
+
+            // v14-v15. Renewal Info
             if (data.get(KEY_ENABLED_RENEWAL_INFO) == null) {
                 setEnabledRenewalInfo(DEFAULT_ENABLED_RENEWAL_INFO);
             }
@@ -649,7 +664,59 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     public void setSuggestedRenewalEnd(final String suggestedRenewalEnd) {
         super.data.put(KEY_SUGGESTED_RENEWAL_END, suggestedRenewalEnd);
     }
-    
+
+    public boolean isEnableAriEarlyRenewal() { return Boolean.valueOf((String) super.data.get(KEY_ENABLE_ARI_EARLY_RENEWAL)); }
+    public void setEnableAriEarlyRenewal(final boolean enable) { super.data.put(KEY_ENABLE_ARI_EARLY_RENEWAL, String.valueOf(enable)); }
+
+    private Instant checkAndReturnDate(final String dateString) {
+        if (StringUtils.isBlank(dateString)) {
+            throw new IllegalArgumentException("Date string cannot be blank");
+        }
+        try {
+            return ValidityDate.parseAsIso8601(dateString).toInstant();
+        } catch (ParseException e) {
+            throw new IllegalArgumentException("Invalid date: " + e.getMessage(), e);
+        }
+    }
+
+    private String reformatDate(final String dateString) {
+        var instant = checkAndReturnDate(dateString);
+        var timezone = ValidityDate.extractTimeZone(dateString, ValidityDate.TIMEZONE_SERVER);
+        return ValidityDate.formatAsISO8601(Date.from(instant), timezone);
+    }
+
+    public String getAriEarlyRenewalCutoffDateAsString() { return (String) super.data.get(KEY_ARI_EARLY_RENEWAL_CUTOFF_DATE); }
+    /** Certificates that were issued before this time will have to be renewed. RFC-3339 format (YYYY-MM-DD HH:MM:SS+ZZ:ZZ), timezone defaults to UTC. */
+    public void setAriEarlyRenewalCutoffDateAsString(String cutoffDate) {
+        if (StringUtils.isBlank(cutoffDate)) {
+            cutoffDate = ValidityDate.formatAsISO8601ServerTZ(System.currentTimeMillis(), null);
+        } else {
+            final Instant cutoffTime = checkAndReturnDate(cutoffDate);
+            if (cutoffTime.isAfter(Instant.now())) {
+                throw new IllegalArgumentException("Cut-off date may not be in the future (leave blank for current time): " + cutoffDate);
+            }
+        }
+        super.data.put(KEY_ARI_EARLY_RENEWAL_CUTOFF_DATE, reformatDate(cutoffDate));
+    }
+    /** Certificates that were issued before this time will have to be renewed */
+    public Instant getAriEarlyRenewalCutoffDate() { return checkAndReturnDate(getAriEarlyRenewalCutoffDateAsString()); }
+
+    public String getAriEarlyRenewalStartDateAsString() { return (String) super.data.get(KEY_ARI_EARLY_RENEWAL_START_DATE); }
+    /** ARI-capable clients will be told to renew early within this window. RFC-3339 format (YYYY-MM-DD HH:MM:SS+ZZ:ZZ), timezone defaults to UTC. */
+    public void setAriEarlyRenewalStartDateAsString(final String startDate) {
+        super.data.put(KEY_ARI_EARLY_RENEWAL_START_DATE, reformatDate(startDate));
+    }
+    /** ARI-capable clients will be told to renew early within this window. */
+    public Instant getAriEarlyRenewalStartDate() { return checkAndReturnDate(getAriEarlyRenewalStartDateAsString()); }
+
+    public String getAriEarlyRenewalEndDateAsString() { return (String) super.data.get(KEY_ARI_EARLY_RENEWAL_END_DATE); }
+    /** ARI-capable clients will be told to renew early within this window. RFC-3339 format (YYYY-MM-DD HH:MM:SS+ZZ:ZZ), timezone defaults to UTC. */
+    public void setAriEarlyRenewalEndDateAsString(final String endDate) {
+        super.data.put(KEY_ARI_EARLY_RENEWAL_END_DATE, reformatDate(endDate));
+    }
+    /* ARI-capable clients will be told to renew early within this window. */
+    public Instant getAriEarlyRenewalEndDate() { return checkAndReturnDate(getAriEarlyRenewalEndDateAsString()); }
+
     public boolean isUseMpicService() {
         return Boolean.valueOf((String) super.data.get(KEY_USE_MPIC_SERVICE));
     }
