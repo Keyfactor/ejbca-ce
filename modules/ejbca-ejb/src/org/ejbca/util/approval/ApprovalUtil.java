@@ -27,7 +27,7 @@ public class ApprovalUtil {
      */
     public static boolean isRedactPii(List<ApprovalDataText> approvalDataTexts) {
         for (ApprovalDataText text : approvalDataTexts) {
-            if (text.getHeader().equalsIgnoreCase(ApprovalDataText.REDACT_PII) && text.getData().equalsIgnoreCase("TRUE")) {
+            if (text.getHeader().equalsIgnoreCase(ApprovalDataText.ApprovalDataHeader.REDACTPII.name()) && text.getData().equalsIgnoreCase("TRUE")) {
                 return true;
             }
         }
@@ -45,7 +45,8 @@ public class ApprovalUtil {
         final boolean redactPii = isRedactPii(texts);
 
         for (ApprovalDataText text : texts) {
-            if (text.getHeader().equalsIgnoreCase(ApprovalDataText.SUBJECT_DN) || text.getHeader().equalsIgnoreCase(ApprovalDataText.SUBJECT_ALT_NAME)) {
+            if (text.getHeader().equalsIgnoreCase(ApprovalDataText.ApprovalDataHeader.SUBJECTDN.name())
+                    || text.getHeader().equalsIgnoreCase(ApprovalDataText.ApprovalDataHeader.SUBJECTALTNAME.name())) {
                 map.put(text.getHeader(), redactPii ? LogRedactionUtils.REDACTED_CONTENT : text.getData());
             } else {
                 map.put(text.getHeader(), text.getData());

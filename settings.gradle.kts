@@ -350,6 +350,7 @@ if (edition == "ee") {
         "modules:ssh:common",
         "modules:ssh:war",
         "modules:msae",
+        "modules:ejbca-rest-approval",
         "modules:ejbca-rest-coap",
         "modules:ejbca-rest-configdump",
         "modules:ejbca-rest-cryptotoken",

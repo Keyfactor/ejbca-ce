@@ -13,6 +13,10 @@
   ],
   "tags": [
     {
+      "name": "v1/approval",
+      "description": "Approval Management REST API V1"
+    },
+    {
       "name": "v1/ca_management",
       "description": "CA Management API"
     },
@@ -71,9 +75,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "application/json": {
-
-              }
+              "application/json": {}
             }
           }
         }
@@ -96,9 +98,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "application/json": {
-
-              }
+              "application/json": {}
             }
           }
         }
@@ -111,9 +111,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "application/json": {
-
-              }
+              "application/json": {}
             }
           }
         }
@@ -136,9 +134,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "application/json": {
-
-              }
+              "application/json": {}
             }
           }
         }
@@ -170,9 +166,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "application/json": {
-
-              }
+              "application/json": {}
             }
           }
         }
@@ -194,9 +188,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "application/json": {
-
-              }
+              "application/json": {}
             }
           }
         }
@@ -228,9 +220,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "application/json": {
-
-              }
+              "application/json": {}
             }
           }
         }
@@ -243,9 +233,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "application/json": {
-
-              }
+              "application/json": {}
             }
           }
         }
@@ -268,9 +256,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "application/json": {
-
-              }
+              "application/json": {}
             }
           }
         }
@@ -317,9 +303,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "application/json": {
-
-              }
+              "application/json": {}
             }
           }
         }
@@ -358,12 +342,8 @@
           "default": {
             "description": "default response",
             "content": {
-              "application/pem-certificate-chain": {
-
-              },
-              "application/pkcs7-mime": {
-
-              }
+              "application/pem-certificate-chain": {},
+              "application/pkcs7-mime": {}
             }
           }
         }
@@ -410,9 +390,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "application/json": {
-
-              }
+              "application/json": {}
             }
           }
         }
@@ -434,9 +412,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "application/json": {
-
-              }
+              "application/json": {}
             }
           }
         }
@@ -465,9 +441,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "application/json": {
-
-              }
+              "application/json": {}
             }
           }
         }
@@ -514,9 +488,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "application/json": {
-
-              }
+              "application/json": {}
             }
           }
         }
@@ -547,9 +519,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "application/json": {
-
-              }
+              "application/json": {}
             }
           }
         }
@@ -580,9 +550,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "application/json": {
-
-              }
+              "application/json": {}
             }
           }
         }
@@ -613,9 +581,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "application/json": {
-
-              }
+              "application/json": {}
             }
           }
         }
@@ -637,9 +603,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "application/json": {
-
-              }
+              "application/json": {}
             }
           }
         }
@@ -668,9 +632,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "application/json": {
-
-              }
+              "application/json": {}
             }
           }
         }
@@ -690,9 +652,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "application/json": {
-
-              }
+              "application/json": {}
             }
           }
         }
@@ -723,9 +683,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "application/json": {
-
-              }
+              "application/json": {}
             }
           }
         }
@@ -772,9 +730,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "application/json": {
-
-              }
+              "application/json": {}
             }
           }
         }
@@ -813,9 +769,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "application/json": {
-
-              }
+              "application/json": {}
             }
           }
         }
@@ -845,9 +799,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "application/json": {
-
-              }
+              "application/json": {}
             }
           }
         }
@@ -878,9 +830,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "application/json": {
-
-              }
+              "application/json": {}
             }
           }
         }
@@ -919,8 +869,260 @@
           "default": {
             "description": "default response",
             "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/v1/approval/{request_id}": {
+      "get": {
+        "tags": [
+          "v1/approval"
+        ],
+        "summary": "Get approval request data",
+        "description": "Returns the specified approval request. ",
+        "operationId": "getApprovalRequest",
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "description": "The ID of the approval request",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "example": 12345
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Approval request retrieved successfully",
+            "content": {
               "application/json": {
-
+                "schema": {
+                  "$ref": "#/components/schemas/ApprovalRequestRestResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request ID provided",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "403": {
+            "description": "Authorization denied",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "404": {
+            "description": "Approval request not found",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/v1/approval/{request_id}/status": {
+      "get": {
+        "tags": [
+          "v1/approval"
+        ],
+        "summary": "Get the status of an approval request",
+        "description": "Returns the status of the specified approval request. \n Possible status values: PENDING, APPROVED, REJECTED, EXPIRED. ",
+        "operationId": "getApprovalRequestStatus",
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "description": "The ID of the approval request",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "example": 12345
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Approval request status retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApprovalRequestStatusRestResponse"
+                },
+                "examples": {
+                  "Pending": {
+                    "description": "Pending",
+                    "value": {
+                      "request_id": 12345,
+                      "status": "PENDING"
+                    }
+                  },
+                  "Approved": {
+                    "description": "Approved",
+                    "value": {
+                      "request_id": 12345,
+                      "status": "APPROVED"
+                    }
+                  },
+                  "Rejected": {
+                    "description": "Rejected",
+                    "value": {
+                      "request_id": 12345,
+                      "status": "REJECTED"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request ID provided",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "403": {
+            "description": "Authorization denied",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "404": {
+            "description": "Approval request not found",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/v1/approval/search": {
+      "post": {
+        "tags": [
+          "v1/approval"
+        ],
+        "summary": "Get the approval data for this admin",
+        "description": "Returns approval data for to the current admin.",
+        "operationId": "getSearchResults",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchApprovalRestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful search of approval data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchApprovalRestResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid search data provided",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "403": {
+            "description": "Authorization denied for the current admin",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/v1/approval/{request_id}/process": {
+      "post": {
+        "tags": [
+          "v1/approval"
+        ],
+        "summary": "Process (approve or reject) an approval request",
+        "description": "Allows an administrator to approve or reject an approval request given a request ID.",
+        "operationId": "processApprovalRequest",
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "description": "The ID of the approval request to process",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The approval/rejection decision",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProcessApprovalRestRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Approval request processed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessApprovalRestResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or approval request cannot be processed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Authorization denied"
+          },
+          "404": {
+            "description": "Approval request not found"
+          },
+          "409": {
+            "description": "Approval request cannot be processed due to current status"
+          }
+        }
+      }
+    },
+    "/v1/approval/status": {
+      "get": {
+        "tags": [
+          "v1/approval"
+        ],
+        "summary": "Get the status of this REST Resource",
+        "description": "Returns status, API version and EJBCA version.",
+        "operationId": "status_2",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestResourceStatusRestResponse"
+                }
               }
             }
           }
@@ -986,7 +1188,7 @@
         ],
         "summary": "Get the status of this REST Resource",
         "description": "Returns status, API version and EJBCA version.",
-        "operationId": "status_2",
+        "operationId": "status_3",
         "responses": {
           "200": {
             "description": "Successful response",
@@ -1006,7 +1208,7 @@
         "tags": [
           "v1/ca"
         ],
-        "description": "Create CRL(main, partition and delta) issued by this CA",
+        "description": "Create CRL (main, partition and delta) issued by this CA. Operation will only be called on local CA's for this EJBCA instance, not on upstream instances that this instance is acting as RA/VA for.",
         "operationId": "createCrl",
         "parameters": [
           {
@@ -1048,7 +1250,7 @@
         "tags": [
           "v1/ca"
         ],
-        "description": "Create a CSR for the CA",
+        "description": "Create a CSR for the CA.Operation will only be called on local CA's for this EJBCA instance, not on upstream instances that this instance is acting as RA/VA for.",
         "operationId": "generateCsr",
         "parameters": [
           {
@@ -1101,9 +1303,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "*/*": {
-
-              }
+              "*/*": {}
             }
           }
         }
@@ -1166,7 +1366,7 @@
         "tags": [
           "v1/ca"
         ],
-        "description": "Import a certificate revocation list (CRL) for a CA",
+        "description": "Import a certificate revocation list (CRL) for a CA. Operation will only be called on local CA's for this EJBCA instance, not on upstream instances that this instance is acting as RA/VA for.",
         "operationId": "importCrl",
         "parameters": [
           {
@@ -1252,7 +1452,7 @@
         ],
         "summary": "Get the status of this REST Resource",
         "description": "Returns status, API version and EJBCA version.",
-        "operationId": "status_3",
+        "operationId": "status_4",
         "responses": {
           "200": {
             "description": "Successful operation",
@@ -1636,7 +1836,7 @@
         ],
         "summary": "Get the status of this REST Resource",
         "description": "Returns status, API version and EJBCA version.",
-        "operationId": "status_4",
+        "operationId": "status_5",
         "responses": {
           "200": {
             "description": "Successful operation",
@@ -1829,7 +2029,7 @@
         ],
         "summary": "Get the status of this REST Resource",
         "description": "Returns status, API version and EJBCA version.",
-        "operationId": "status_5",
+        "operationId": "status_6",
         "responses": {
           "200": {
             "description": "Successful operation",
@@ -1904,7 +2104,7 @@
           {
             "name": "exclude",
             "in": "query",
-            "description": "Names of items/types to exclude in the export, separated by semicolon. Type and name is separated by a colon, and wildcards \"\\*\" are allowed. Both are case-insensitive. E.g. exclude=\"\\*:Example CA;cryptotoken:Example\\*;systemconfiguration:\\*\".\n\nSupported types are: ACMECONFIG/acme-config, AUTOENROLLMENTCONFIG/autoenrollment-config, CA/certification-authorities, CRYPTOTOKEN/crypto-tokens, PUBLISHER/publishers, APPROVALPROFILE/approval-profiles, CERTPROFILE/certificate-profiles, EEPROFILE/end-entity-profiles, SERVICE/services, ROLE/admin-roles, KEYBINDING/internal-key-bindings, ADMINPREFS/admin-preferences, OCSPCONFIG/ocsp-configuration, PEERCONNECTOR/peer-connectors, SCEPCONFIG/scep-config, CMPCONFIG/cmp-config, ESTCONFIG/est-config, VALIDATOR/validators, CTLOG/ct-logs, CTCONFIG/global-ct-configuration, EXTENDEDKEYUSAGE/extended-key-usage, CERTEXTENSION/custom-certificate-extensions,  OAUTHKEY/trusted-oauth-providers, AVAILABLEPROTOCOLS/available-protocols,  EXTERNALACCOUNTBINDING/external-account-bindings, CACONFIG",
+            "description": "Names of items/types to exclude in the export, separated by semicolon. Type and name is separated by a colon, and wildcards \"\\*\" are allowed. Both are case-insensitive. E.g. exclude=\"\\*:Example CA;cryptotoken:Example\\*;systemconfiguration:\\*\".\n\nSupported types are: ACMECONFIG/acme-config, AUTOENROLLMENTCONFIG/autoenrollment-config, CA/certification-authorities, CRYPTOTOKEN/crypto-tokens, PUBLISHER/publishers, APPROVALPROFILE/approval-profiles, CERTPROFILE/certificate-profiles, EEPROFILE/end-entity-profiles, EEPROFILECONFIG/global-endentityprofile-configuration,  SERVICE/services, ROLE/admin-roles, KEYBINDING/internal-key-bindings, ADMINPREFS/admin-preferences, OCSPCONFIG/ocsp-configuration, PEERCONNECTOR/peer-connectors, SCEPCONFIG/scep-config, CMPCONFIG/cmp-config, ESTCONFIG/est-config, VALIDATOR/validators, CTLOG/ct-logs, CTCONFIG/global-ct-configuration, EXTENDEDKEYUSAGE/extended-key-usage, CERTEXTENSION/custom-certificate-extensions,  OAUTHKEY/trusted-oauth-providers, AVAILABLEPROTOCOLS/available-protocols,  EXTERNALACCOUNTBINDING/external-account-bindings, GLOBALCESECORECONFIG/global-cesecore-configuration, OAUTH/allowed-oauth-hostnames, CACONFIG/global-ca-configuration, GLOBALCONFIG/global-configuration",
             "schema": {
               "uniqueItems": true,
               "type": "array",
@@ -1969,12 +2169,12 @@
             "description": "How to handle already existing configuration. Options are abort,skip,yes",
             "schema": {
               "type": "string",
-              "default": "abort",
               "enum": [
                 "yes",
                 "skip",
                 "abort"
-              ]
+              ],
+              "default": "abort"
             }
           },
           {
@@ -1983,12 +2183,12 @@
             "description": "How to resolve missing references. Options are abort,skip,default",
             "schema": {
               "type": "string",
-              "default": "abort",
               "enum": [
                 "abort",
                 "skip",
                 "useDefault"
-              ]
+              ],
+              "default": "abort"
             }
           },
           {
@@ -2037,7 +2237,7 @@
           {
             "name": "type",
             "in": "path",
-            "description": "Configuration type to export.\n\nSupported types are: ACMECONFIG/acme-config, AUTOENROLLMENTCONFIG/autoenrollment-config, CA/certification-authorities,  CRYPTOTOKEN/crypto-tokens, PUBLISHER/publishers, APPROVALPROFILE/approval-profiles, CERTPROFILE/certificate-profiles, EEPROFILE/end-entity-profiles, SERVICE/services, ROLE/admin-roles, KEYBINDING/internal-key-bindings, ADMINPREFS/admin-preferences, OCSPCONFIG/ocsp-configuration, PEERCONNECTOR/peer-connectors, SCEPCONFIG/scep-config, CMPCONFIG/cmp-config, ESTCONFIG/est-config, VALIDATOR/validators, CTLOG/ct-logs, CTCONFIG/global-ct-configuration, EXTENDEDKEYUSAGE/extended-key-usage, CERTEXTENSION/custom-certificate-extensions,  OAUTHKEY/trusted-oauth-providers, AVAILABLEPROTOCOLS/available-protocols,  EXTERNALACCOUNTBINDING/external-account-bindings, CACONFIG",
+            "description": "Configuration type to export.\n\nSupported types are: ACMECONFIG/acme-config, AUTOENROLLMENTCONFIG/autoenrollment-config, CA/certification-authorities,  CRYPTOTOKEN/crypto-tokens, PUBLISHER/publishers, APPROVALPROFILE/approval-profiles, CERTPROFILE/certificate-profiles, EEPROFILE/end-entity-profiles, EEPROFILECONFIG/global-endentityprofile-configuration, SERVICE/services, ROLE/admin-roles, KEYBINDING/internal-key-bindings, ADMINPREFS/admin-preferences, OCSPCONFIG/ocsp-configuration, PEERCONNECTOR/peer-connectors, SCEPCONFIG/scep-config, CMPCONFIG/cmp-config, ESTCONFIG/est-config, VALIDATOR/validators, CTLOG/ct-logs, CTCONFIG/global-ct-configuration,  EXTENDEDKEYUSAGE/extended-key-usage, CERTEXTENSION/custom-certificate-extensions,  OAUTHKEY/trusted-oauth-providers, AVAILABLEPROTOCOLS/available-protocols,  EXTERNALACCOUNTBINDING/external-account-bindings, GLOBALCESECORECONFIG/global-cesecore-configuration, OAUTH/allowed-oauth-hostnames, CACONFIG/global-ca-configuration GLOBALCONFIG/global-configuration",
             "required": true,
             "schema": {
               "type": "string"
@@ -2098,7 +2298,7 @@
           {
             "name": "type",
             "in": "path",
-            "description": "Configuration type to export.\n\nSupported types are: ACMECONFIG/acme-config, AUTOENROLLMENTCONFIG/autoenrollment-config, CA/certification-authorities,  CRYPTOTOKEN/crypto-tokens, PUBLISHER/publishers, APPROVALPROFILE/approval-profiles, CERTPROFILE/certificate-profiles, EEPROFILE/end-entity-profiles, SERVICE/services, ROLE/admin-roles, KEYBINDING/internal-key-bindings, ADMINPREFS/admin-preferences, OCSPCONFIG/ocsp-configuration, PEERCONNECTOR/peer-connectors, SCEPCONFIG/scep-config, CMPCONFIG/cmp-config, ESTCONFIG/est-config, VALIDATOR/validators, CTLOG/ct-logs, CTCONFIG/global-ct-configuration, EXTENDEDKEYUSAGE/extended-key-usage, CERTEXTENSION/custom-certificate-extensions,  OAUTHKEY/trusted-oauth-providers, AVAILABLEPROTOCOLS/available-protocols,  EXTERNALACCOUNTBINDING/external-account-bindings, CACONFIG",
+            "description": "Configuration type to export.\n\nSupported types are: ACMECONFIG/acme-config, AUTOENROLLMENTCONFIG/autoenrollment-config, CA/certification-authorities,  CRYPTOTOKEN/crypto-tokens, PUBLISHER/publishers, APPROVALPROFILE/approval-profiles, CERTPROFILE/certificate-profiles, EEPROFILE/end-entity-profiles, EEPROFILECONFIG/global-endentityprofile-configuration, SERVICE/services, ROLE/admin-roles, KEYBINDING/internal-key-bindings, ADMINPREFS/admin-preferences, OCSPCONFIG/ocsp-configuration, PEERCONNECTOR/peer-connectors, SCEPCONFIG/scep-config, CMPCONFIG/cmp-config, ESTCONFIG/est-config, VALIDATOR/validators, CTLOG/ct-logs, CTCONFIG/global-ct-configuration,  EXTENDEDKEYUSAGE/extended-key-usage, CERTEXTENSION/custom-certificate-extensions,  OAUTHKEY/trusted-oauth-providers, AVAILABLEPROTOCOLS/available-protocols,  EXTERNALACCOUNTBINDING/external-account-bindings, GLOBALCESECORECONFIG/global-cesecore-configuration OAUTH/allowed-oauth-hostnames, CACONFIG/global-ca-configuration GLOBALCONFIG/global-configuration",
             "required": true,
             "schema": {
               "type": "string"
@@ -2207,7 +2407,7 @@
           {
             "name": "exclude",
             "in": "query",
-            "description": "Names of items/types to exclude in the export, separated by semicolon. Type and name is separated by a colon, and wildcards \"\\*\" are allowed. Both are case-insensitive. E.g. exclude=\"\\*:Example CA;cryptotoken:Example\\*;systemconfiguration:\\*\".\n\nSupported types are: ACMECONFIG/acme-config, AUTOENROLLMENTCONFIG/autoenrollment-config, CA/certification-authorities,  CRYPTOTOKEN/crypto-tokens, PUBLISHER/publishers, APPROVALPROFILE/approval-profiles, CERTPROFILE/certificate-profiles, EEPROFILE/end-entity-profiles, SERVICE/services, ROLE/admin-roles, KEYBINDING/internal-key-bindings, ADMINPREFS/admin-preferences, OCSPCONFIG/ocsp-configuration, PEERCONNECTOR/peer-connectors, SCEPCONFIG/scep-config, CMPCONFIG/cmp-config, ESTCONFIG/est-config, VALIDATOR/validators, CTLOG/ct-logs, CTCONFIG/global-ct-configuration, EXTENDEDKEYUSAGE/extended-key-usage, CERTEXTENSION/custom-certificate-extensions,  OAUTHKEY/trusted-oauth-providers, AVAILABLEPROTOCOLS/available-protocols,  EXTERNALACCOUNTBINDING/external-account-bindings",
+            "description": "Names of items/types to exclude in the export, separated by semicolon. Type and name is separated by a colon, and wildcards \"\\*\" are allowed. Both are case-insensitive. E.g. exclude=\"\\*:Example CA;cryptotoken:Example\\*;systemconfiguration:\\*\".\n\nSupported types are: ACMECONFIG/acme-config, AUTOENROLLMENTCONFIG/autoenrollment-config, CA/certification-authorities,  CRYPTOTOKEN/crypto-tokens, PUBLISHER/publishers, APPROVALPROFILE/approval-profiles, CERTPROFILE/certificate-profiles, EEPROFILE/end-entity-profiles, EEPROFILECONFIG/global-endentityprofile-configuration, SERVICE/services, ROLE/admin-roles, KEYBINDING/internal-key-bindings, ADMINPREFS/admin-preferences, OCSPCONFIG/ocsp-configuration, PEERCONNECTOR/peer-connectors, SCEPCONFIG/scep-config, CMPCONFIG/cmp-config, ESTCONFIG/est-config, VALIDATOR/validators, CTLOG/ct-logs, CTCONFIG/global-ct-configuration,  EXTENDEDKEYUSAGE/extended-key-usage, CERTEXTENSION/custom-certificate-extensions,  OAUTHKEY/trusted-oauth-providers, AVAILABLEPROTOCOLS/available-protocols,  EXTERNALACCOUNTBINDING/external-account-bindings, GLOBALCESECORECONFIG/global-cesecore-configuration, OAUTH/allowed-oauth-hostnames, CACONFIG/global-ca-configuration GLOBALCONFIG/global-configuration",
             "schema": {
               "uniqueItems": true,
               "type": "array",
@@ -2277,22 +2477,22 @@
                   "overwrite": {
                     "type": "string",
                     "description": "How to handle already existing configuration. Options are abort,skip,yes",
-                    "default": "abort",
                     "enum": [
                       "yes",
                       "skip",
                       "abort"
-                    ]
+                    ],
+                    "default": "abort"
                   },
                   "resolve": {
                     "type": "string",
                     "description": "How to resolve missing references. Options are abort,skip,default",
-                    "default": "abort",
                     "enum": [
                       "abort",
                       "skip",
                       "useDefault"
-                    ]
+                    ],
+                    "default": "abort"
                   }
                 }
               }
@@ -2320,7 +2520,7 @@
         ],
         "summary": "Get the status of this REST Resource",
         "description": "Returns status, API version and EJBCA version.",
-        "operationId": "status_6",
+        "operationId": "status_7",
         "responses": {
           "200": {
             "description": "Successful operation",
@@ -2473,7 +2673,7 @@
         ],
         "summary": "Get the status of this REST Resource",
         "description": "Returns status, API version and EJBCA version.",
-        "operationId": "status_7",
+        "operationId": "status_8",
         "responses": {
           "200": {
             "description": "Successful operation",
@@ -2671,7 +2871,7 @@
         ],
         "summary": "Get the status of this REST Resource",
         "description": "Returns status, API version and EJBCA version.",
-        "operationId": "status_8",
+        "operationId": "status_9",
         "responses": {
           "200": {
             "description": "Successful operation",
@@ -2779,7 +2979,7 @@
         ],
         "summary": "Get the status of this REST Resource",
         "description": "Returns status, API version and EJBCA version.",
-        "operationId": "status_9",
+        "operationId": "status_10",
         "responses": {
           "200": {
             "description": "Successful operation",
@@ -2864,7 +3064,7 @@
         ],
         "summary": "Get the status of this REST Resource",
         "description": "Returns status, API version and EJBCA version.",
-        "operationId": "status_10",
+        "operationId": "status_11",
         "responses": {
           "200": {
             "description": "Successful response",
@@ -2931,9 +3131,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "*/*": {
-
-              }
+              "*/*": {}
             }
           }
         }
@@ -2963,9 +3161,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "*/*": {
-
-              }
+              "*/*": {}
             }
           }
         }
@@ -2986,9 +3182,7 @@
           "default": {
             "description": "default response",
             "content": {
-              "*/*": {
-
-              }
+              "*/*": {}
             }
           }
         }
@@ -3048,16 +3242,608 @@
             "description": "Reason code",
             "format": "int32",
             "example": 2,
-            "enum": [null]
+            "enum": [
+              null
+            ]
           },
           "delete": {
             "type": "boolean",
             "description": "Delete",
             "example": true,
-            "enum": [false]
+            "enum": [
+              false
+            ]
           }
         },
         "description": "End Entity revocation request. Available reason codes: \n 0 - Unspecified,\n 1 - Key Compromise,\n 2 - CA Compromise,\n 3 - Affiliation Changed,\n 4 - Superseded,\n 5 - Cessation of Operation,\n 6 - Certificate Hold,\n 8 - Remove from CRL,\n 9 - Privileges Withdrawn,\n 10 - AA Compromise"
+      },
+      "ApprovalAccumulativeRestResponse": {
+        "type": "object",
+        "properties": {
+          "approval_action": {
+            "type": "string",
+            "description": "The action taken on this approval (e.g., APPROVED, REJECTED, PENDING)"
+          },
+          "approval_date": {
+            "type": "string",
+            "description": "The date when the approval action was taken",
+            "example": "2025-01-01 14:55:00+01:00"
+          },
+          "approval_admin": {
+            "type": "string",
+            "description": "The admin who performed the approval action",
+            "example": "CN=RAAdmin"
+          },
+          "approval_comment": {
+            "type": "string",
+            "description": "Comment provided with the approval action",
+            "example": "Approved after verification"
+          },
+          "remaining_approvals": {
+            "type": "integer",
+            "description": "Number of remaining approvals required",
+            "format": "int32",
+            "example": 2
+          },
+          "can_approve": {
+            "type": "boolean",
+            "description": "If the current user is authorized to perform this approval"
+          }
+        },
+        "description": "Information about accumulative approvals"
+      },
+      "ApprovalPartitionPropertyRestResponse": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "description": "Property label"
+          },
+          "value": {
+            "type": "string",
+            "description": "Property value"
+          },
+          "type": {
+            "type": "string",
+            "description": "Property type"
+          },
+          "possible_values": {
+            "type": "array",
+            "description": "Property possible values",
+            "items": {
+              "type": "string",
+              "description": "Property possible values"
+            }
+          }
+        },
+        "description": "Information about an approval partition properties"
+      },
+      "ApprovalPartitionStep": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Partition name",
+            "example": "Partition name"
+          },
+          "partition_identifier": {
+            "type": "integer",
+            "description": "Partition identifier",
+            "format": "int32",
+            "example": 123456
+          },
+          "approval_action": {
+            "type": "string",
+            "description": "The action taken on this step (e.g., APPROVED, REJECTED, PENDING)",
+            "example": "APPROVED"
+          },
+          "approval_date": {
+            "type": "string",
+            "description": "The date when the approval action was taken",
+            "example": "2025-01-01 14:55:00+01:00"
+          },
+          "approval_admin": {
+            "type": "string",
+            "description": "The admin who performed the approval action",
+            "example": "CN=RAAdmin"
+          },
+          "approval_comment": {
+            "type": "string",
+            "description": "Comment provided with the approval action",
+            "example": "Approved after verification"
+          },
+          "property_list": {
+            "type": "array",
+            "description": "Partition properties provided with the approval action",
+            "items": {
+              "$ref": "#/components/schemas/ApprovalPartitionPropertyRestResponse"
+            }
+          }
+        },
+        "description": "Partitions provided with the approval step"
+      },
+      "ApprovalRequestRestResponse": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "description": "The unique identifier of the approval request",
+            "example": "1234"
+          },
+          "request_type": {
+            "type": "string",
+            "description": "The type of the approval request",
+            "example": "Add End Entity"
+          },
+          "request_date": {
+            "type": "string",
+            "description": "The date when the request was created",
+            "example": "2025-01-01 13:59:00+01:00"
+          },
+          "expiration_date": {
+            "type": "string",
+            "description": "The date when the request expires",
+            "example": "2025-01-02 13:59:00+01:00"
+          },
+          "end_entity_name": {
+            "type": "string",
+            "description": "The end entity name associated with the request",
+            "example": "username"
+          },
+          "status": {
+            "type": "string",
+            "description": "The status of the approval request",
+            "example": "PENDING",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "REJECTED",
+              "EXPIRED",
+              "EXPIRED_AND_NOTIFIED",
+              "EXECUTED",
+              "EXECUTION_FAILED",
+              "EXECUTION_DENIED",
+              "UNKNOWN",
+              "PENDING",
+              "APPROVED",
+              "REJECTED",
+              "EXPIRED",
+              "EXPIRED_AND_NOTIFIED",
+              "EXECUTED",
+              "EXECUTION_FAILED",
+              "EXECUTION_DENIED"
+            ]
+          },
+          "total_steps": {
+            "type": "integer",
+            "description": "The total number of approval steps",
+            "format": "int32",
+            "example": 1
+          },
+          "performed_steps": {
+            "type": "array",
+            "description": "The list of performed approval steps with their status",
+            "items": {
+              "$ref": "#/components/schemas/ApprovalStepRestResponse"
+            }
+          },
+          "next_step": {
+            "$ref": "#/components/schemas/ApprovalStepRestResponse"
+          },
+          "certificate_profile_name": {
+            "type": "string",
+            "description": "Certificate profile name",
+            "example": "ENDUSER"
+          },
+          "end_entity_profile_name": {
+            "type": "string",
+            "description": "End Entity profile name",
+            "example": "ExampleEEP"
+          },
+          "issuer_dn": {
+            "type": "string",
+            "description": "Issuer Distinguished Name",
+            "example": "CN=ExampleCA,O=Sample,C=SE"
+          },
+          "subject_dn": {
+            "type": "string",
+            "description": "Subject Distinguished Name",
+            "example": "CN=ExampleCA,O=Sample,C=SE"
+          },
+          "key_algorithm": {
+            "type": "string",
+            "description": "Key algorithm",
+            "example": "RSA 2048"
+          },
+          "token": {
+            "type": "string",
+            "description": "Keystore type property",
+            "example": "P12"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Revocation reason",
+            "example": "Unspecified"
+          },
+          "ca_name": {
+            "type": "string",
+            "description": "Ca Name",
+            "example": "ManagementCA"
+          },
+          "serial_number": {
+            "type": "string",
+            "description": "Serial Number",
+            "example": "12345"
+          },
+          "email": {
+            "type": "string",
+            "description": "E-mail",
+            "example": "a@domain.com"
+          },
+          "invalidity_date": {
+            "type": "string",
+            "description": "Invalidity Date",
+            "example": "yyyy-MM-dd HH:mm:ssXXX"
+          },
+          "key_recoverable": {
+            "type": "string",
+            "description": "Key Recoverable",
+            "example": "Yes"
+          },
+          "subject_name_log_redaction": {
+            "type": "string",
+            "description": "Subject Name Log Redaction (key recovery)",
+            "example": "false"
+          },
+          "revocation_date": {
+            "type": "string",
+            "description": "Revocation Date",
+            "example": "yyyy-MM-dd HH:mm:ssXXX"
+          },
+          "end_entity_status": {
+            "type": "string",
+            "description": "End Entity Status ",
+            "example": "NEW"
+          },
+          "send_notification": {
+            "type": "string",
+            "description": "Send Notification ",
+            "example": "Yes"
+          },
+          "subject_directory_attributes": {
+            "type": "string",
+            "description": "Subject Directory Attributes",
+            "example": "NOVALUE"
+          },
+          "subject_alternative_name": {
+            "type": "string",
+            "description": "Subject Alternative Name",
+            "example": "NOVALUE"
+          },
+          "acme_account_id": {
+            "type": "string",
+            "description": "ACME Account Id",
+            "example": "1"
+          },
+          "ca_id": {
+            "type": "string",
+            "description": "ACME CA ID",
+            "example": "1"
+          },
+          "end_entity_profile_id": {
+            "type": "string",
+            "description": "ACME End Entity Profile ID",
+            "example": "1"
+          },
+          "name_constraints_excluded": {
+            "type": "string",
+            "description": "Name Constraints Excluded",
+            "example": "ABC"
+          },
+          "name_constraints_permitted": {
+            "type": "string",
+            "description": "Name Constraints Permitted",
+            "example": "ABC"
+          },
+          "certificate_extension_data": {
+            "type": "string",
+            "description": "Certificate Extension Data",
+            "example": "1.5.6.value=Value"
+          }
+        },
+        "description": "Response containing approval request information"
+      },
+      "ApprovalStepRestResponse": {
+        "type": "object",
+        "properties": {
+          "step_number": {
+            "type": "integer",
+            "description": "The step number",
+            "format": "int32",
+            "example": 1
+          },
+          "partition_list": {
+            "type": "array",
+            "description": "Partitions provided with the approval step",
+            "items": {
+              "$ref": "#/components/schemas/ApprovalPartitionStep"
+            }
+          },
+          "approval_list": {
+            "type": "array",
+            "description": "Approvals provided with the approval step",
+            "items": {
+              "$ref": "#/components/schemas/ApprovalAccumulativeRestResponse"
+            }
+          }
+        },
+        "description": "Information about an approval step"
+      },
+      "ApprovalRequestStatusRestResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "The status of the approval request",
+            "example": "PENDING",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "REJECTED",
+              "EXPIRED",
+              "EXPIRED_AND_NOTIFIED",
+              "EXECUTED",
+              "EXECUTION_FAILED",
+              "EXECUTION_DENIED",
+              "UNKNOWN",
+              "PENDING",
+              "APPROVED",
+              "REJECTED",
+              "EXPIRED",
+              "EXPIRED_AND_NOTIFIED",
+              "EXECUTED",
+              "EXECUTION_FAILED",
+              "EXECUTION_DENIED"
+            ]
+          },
+          "request_id": {
+            "type": "integer",
+            "description": "The request ID",
+            "format": "int32",
+            "example": 12345
+          }
+        },
+        "description": "Response containing approval request status"
+      },
+      "Approval": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "integer",
+            "description": "Approval request id",
+            "format": "int32",
+            "example": 12345
+          },
+          "request_date": {
+            "type": "string",
+            "description": "Approval request date",
+            "format": "date-time"
+          },
+          "expiration_date": {
+            "type": "string",
+            "description": "Approval expiration date",
+            "format": "date-time"
+          },
+          "request_type": {
+            "type": "string",
+            "description": "Approval request type",
+            "example": "Add End Entity"
+          },
+          "requested_by": {
+            "type": "string",
+            "description": "Approval request initiator admin",
+            "example": "SuperAdmin"
+          },
+          "can_be_approved_by_me": {
+            "type": "boolean",
+            "description": "Can this approval request be approved by current admin?",
+            "example": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Approval status to search",
+            "example": "APPROVED"
+          }
+        }
+      },
+      "SearchApprovalRestResponse": {
+        "type": "object",
+        "properties": {
+          "approvals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Approval"
+            }
+          }
+        }
+      },
+      "SearchApprovalRestRequest": {
+        "type": "object",
+        "properties": {
+          "searching_waiting": {
+            "type": "boolean",
+            "description": "Search for waiting approvals for this admin",
+            "example": true
+          },
+          "searching_processed": {
+            "type": "boolean",
+            "description": "Search for historical approvals for this admin",
+            "example": true
+          },
+          "searching_expired": {
+            "type": "boolean",
+            "description": "Search the expired approvals",
+            "example": true
+          },
+          "created_on_or_after": {
+            "type": "string",
+            "description": "Start date of the approvals to search",
+            "example": "2017-01-01"
+          },
+          "created_on_or_before": {
+            "type": "string",
+            "description": "End date of the approvals to search",
+            "example": "2017-01-01"
+          },
+          "days_requests_expire_in": {
+            "type": "string",
+            "description": "Number of days remaining before approval request expires ",
+            "example": "100"
+          },
+          "subject_dn": {
+            "type": "string",
+            "description": "Custom Subject Distinguished Name for search",
+            "example": "CN=John Doe,SURNAME=Doe,GIVENNAME=John,C=SE"
+          },
+          "email": {
+            "type": "string",
+            "description": "Custom Email for search",
+            "example": "john@doe.com"
+          }
+        }
+      },
+      "ProcessApprovalRestResponse": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "description": "The unique identifier of the approval request",
+            "example": "1234"
+          },
+          "request_type": {
+            "type": "string",
+            "description": "The type of the approval request",
+            "example": "Add End Entity"
+          },
+          "request_date": {
+            "type": "string",
+            "description": "The date when the request was created",
+            "example": "2025-01-01 13:59:00+01:00"
+          },
+          "expiration_date": {
+            "type": "string",
+            "description": "The date when the request expires",
+            "example": "2025-01-02 13:59:00+01:00"
+          },
+          "end_entity_name": {
+            "type": "string",
+            "description": "The end entity name associated with the request",
+            "example": "username"
+          },
+          "status": {
+            "type": "string",
+            "description": "The status of the approval request",
+            "example": "PENDING",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "REJECTED",
+              "EXPIRED",
+              "EXPIRED_AND_NOTIFIED",
+              "EXECUTED",
+              "EXECUTION_FAILED",
+              "EXECUTION_DENIED",
+              "UNKNOWN",
+              "PENDING",
+              "APPROVED",
+              "REJECTED",
+              "EXPIRED",
+              "EXPIRED_AND_NOTIFIED",
+              "EXECUTED",
+              "EXECUTION_FAILED",
+              "EXECUTION_DENIED"
+            ]
+          },
+          "total_steps": {
+            "type": "integer",
+            "description": "The total number of approval steps",
+            "format": "int32",
+            "example": 1
+          },
+          "performed_steps": {
+            "type": "array",
+            "description": "The list of performed approval steps with their status",
+            "items": {
+              "$ref": "#/components/schemas/ApprovalStepRestResponse"
+            }
+          },
+          "next_step": {
+            "$ref": "#/components/schemas/ApprovalStepRestResponse"
+          }
+        },
+        "description": "Response after processing an approval request"
+      },
+      "ApprovalPartitionPropertyRestRequest": {
+        "required": [
+          "label"
+        ],
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "description": "Property label"
+          },
+          "value": {
+            "type": "string",
+            "description": "Property value"
+          }
+        },
+        "description": "Information about an approval partition properties"
+      },
+      "ApprovalPartitionRestRequest": {
+        "type": "object",
+        "properties": {
+          "partition_identifier": {
+            "type": "integer",
+            "description": "Partition identifier",
+            "format": "int32",
+            "example": 123456
+          },
+          "property_list": {
+            "type": "array",
+            "description": "Partition properties provided with the approval action",
+            "items": {
+              "$ref": "#/components/schemas/ApprovalPartitionPropertyRestRequest"
+            }
+          }
+        },
+        "description": "Information about approval partitions"
+      },
+      "ProcessApprovalRestRequest": {
+        "required": [
+          "approve"
+        ],
+        "type": "object",
+        "properties": {
+          "approve": {
+            "type": "boolean",
+            "description": "Whether to approve (true) or reject (false) the request",
+            "example": true
+          },
+          "comment": {
+            "type": "string",
+            "description": "Optional comment for the approval/rejection action",
+            "example": "Approved after verification"
+          },
+          "approval_partitions": {
+            "type": "array",
+            "description": "Partition list with properties provided on approving/rejecting partitioned approval request",
+            "items": {
+              "$ref": "#/components/schemas/ApprovalPartitionRestRequest"
+            }
+          }
+        },
+        "description": "Request to process (approve or reject) an approval request"
       },
       "RestResourceStatusRestResponse": {
         "type": "object",
@@ -3905,7 +4691,9 @@
             "description": "Revocation reason",
             "format": "int32",
             "example": -1,
-            "enum": [null]
+            "enum": [
+              null
+            ]
           },
           "serialNumber": {
             "type": "string",
@@ -4254,8 +5042,6 @@
             "description": "A search property",
             "enum": [
               "QUERY",
-              "USERNAME",
-              "SUBJECT_DN",
               "END_ENTITY_PROFILE",
               "CERTIFICATE_PROFILE",
               "CA",

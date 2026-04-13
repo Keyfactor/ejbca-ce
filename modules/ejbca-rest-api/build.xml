@@ -42,6 +42,7 @@
         <path location="${mod.ejbca-rest-cryptotoken.lib}"/>
         <path location="${mod.ejbca-rest-camanagement.lib}"/>
         <path location="${mod.ejbca-rest-endentity.lib}"/>
+        <path location="${mod.ejbca-rest-approval.lib}"/>
 		<path location="${mod.ejbca-rest-ssh.lib}"/>
 		<path location="${mod.ejbca-rest-system.lib}"/>
 		<path location="${mod.ejbca-ws.lib}"/>
@@ -96,6 +97,7 @@
 			<lib file="${mod.ejbca-rest-cryptotoken.lib}"/>
 			<lib file="${mod.ejbca-rest-camanagement.lib}"/>
 			<lib file="${mod.ejbca-rest-endentity.lib}"/>
+            <lib file="${mod.ejbca-rest-approval.lib}"/>
 			<lib file="${mod.ejbca-rest-ssh.lib}"/>
 			<lib file="${mod.ejbca-rest-system.lib}"/>
     	</war>

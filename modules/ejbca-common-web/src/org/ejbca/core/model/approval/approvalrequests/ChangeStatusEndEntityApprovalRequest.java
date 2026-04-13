@@ -193,16 +193,16 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 	@Override
 	public List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
-		retval.add(new ApprovalDataText("USERNAME",username,true,false));
-		retval.add(new ApprovalDataText("STATUS",EndEntityConstants.getTranslatableStatusText(newstatus),true,true));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.USERNAME.name(),username,true,false));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.STATUS.name(),EndEntityConstants.getTranslatableStatusText(newstatus),true,true));
 		return retval;
 	}
 
 	@Override
 	public List<ApprovalDataText> getOldRequestDataAsText(AuthenticationToken admin) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
-		retval.add(new ApprovalDataText("USERNAME",username,true,false));
-		retval.add(new ApprovalDataText("STATUS",EndEntityConstants.getTranslatableStatusText(oldstatus),true,true));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.USERNAME.name(),username,true,false));
+		retval.add(new ApprovalDataText(ApprovalDataText.ApprovalDataHeader.STATUS.name(),EndEntityConstants.getTranslatableStatusText(oldstatus),true,true));
 		return retval;
 	}
 

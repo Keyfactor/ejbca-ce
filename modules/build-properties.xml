@@ -158,6 +158,8 @@
     <property name="mod.ejbca-rest-configdump.lib" location="${mod.dist.path}/ejbca-rest-configdump.jar" />
     <property name="mod.ejbca-rest-ca.path" location="${mod.path}/ejbca-rest-ca" />
     <property name="mod.ejbca-rest-ca.lib" location="${mod.dist.path}/ejbca-rest-ca.jar" />
+    <property name="mod.ejbca-rest-approval.path" location="${mod.path}/ejbca-rest-approval" />
+    <property name="mod.ejbca-rest-approval.lib" location="${mod.dist.path}/ejbca-rest-approval.jar" />
     <property name="mod.ejbca-rest-cryptotoken.path" location="${mod.path}/ejbca-rest-cryptotoken" />
     <property name="mod.ejbca-rest-cryptotoken.lib" location="${mod.dist.path}/ejbca-rest-cryptotoken.jar" />
     <property name="mod.ejbca-rest-camanagement.path" location="${mod.path}/ejbca-rest-camanagement" />
@@ -605,7 +607,11 @@
     <condition property="mod.ejbca-rest-cryptotoken.exists">
         <available file="${mod.ejbca-rest-cryptotoken.path}/build.xml"/>
     </condition>
-	
+
+    <condition property="mod.ejbca-rest-approval.exists">
+        <available file="${mod.ejbca-rest-approval.path}/build.xml"/>
+    </condition>
+
     <condition property="mod.ejbca-rest-camanagement.exists">
         <available file="${mod.ejbca-rest-camanagement.path}/build.xml"/>
     </condition>

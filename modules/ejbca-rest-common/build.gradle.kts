@@ -19,6 +19,7 @@ dependencies {
     compileOnly(libs.jackson.annotations)
     compileOnly(libs.jackson.core)
     compileOnly(libs.jackson.databind)
+    compileOnly(libs.hibernate.validator)
     compileOnly(libs.swagger.annotations)
     compileOnly(libs.jakartaee.api)
     compileOnly(libs.jakarta.xml.bind.api)

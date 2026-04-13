@@ -18,6 +18,7 @@ dependencies {
     compileOnly(libs.jakartaee.api)
     compileOnly(libs.x509.common.util)
     compileOnly(libs.bundles.jackson)
+    implementation(project(path = ":modules:ejbca-rest-approval", configuration = "archives"))
     implementation(project(path = ":modules:ejbca-rest-common", configuration = "archives"))
     implementation(project(path = ":modules:ejbca-rest-ca", configuration = "archives"))
     implementation(project(path = ":modules:ejbca-rest-certificate", configuration = "archives"))
