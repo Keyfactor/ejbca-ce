@@ -4,6 +4,7 @@ plugins {
 
 dependencies {
     compileOnly(project(":modules:cesecore-common"))
+    compileOnly(project(":modules:cesecore-entity"))
     compileOnly(project(":modules:cesecore-ejb-interface"))
     compileOnly(project(":modules:ejbca-common"))
     compileOnly(project(":modules:ejbca-common-web"))

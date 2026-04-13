@@ -23,11 +23,22 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.dto.RoleDataDto;
+import org.cesecore.util.ui.DynamicUiProperty;
+import org.cesecore.util.ui.MultiLineString;
+import org.cesecore.util.ui.PropertyValidationException;
+import org.cesecore.util.ui.RadioButton;
+import org.cesecore.util.ui.UrlString;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -36,6 +47,7 @@ import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.ApprovalRequestStatus;
 import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaApprovalResponseRequest;
@@ -43,6 +55,7 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaRequestsSearchRequest;
 import org.ejbca.core.model.era.RaRequestsSearchResponse;
 import org.ejbca.ui.web.rest.api.exception.RestException;
+import org.ejbca.ui.web.rest.api.io.request.ApprovalPartitionRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.ProcessApprovalRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.SearchApprovalRestRequest;
 import org.ejbca.ui.web.rest.api.io.response.ApprovalRequestRestResponse;
@@ -66,6 +79,10 @@ public class ApprovalRestResource extends BaseRestResource {
 
     private static final Logger log = Logger.getLogger(ApprovalRestResource.class);
 
+    // Constants for error messages
+    private static final String PERMISSION_DENIED_MESSAGE = "You don't have permission to approve partition ";
+    private static final String PARTITION_NOT_FOUND_MESSAGE = "Partition %d not found. Wrong partition identifier or partition already performed.";
+    private static final String ERROR_WRONG_TYPE = "Wrong type for property with label ";
 
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
@@ -325,11 +342,11 @@ public class ApprovalRestResource extends BaseRestResource {
      * Processes an approval request by approving or rejecting it.
      *
      * @param requestContext the HTTP servlet request context
-     * @param requestId the ID of the approval request to process
-     * @param request the request body containing the approval decision
+     * @param requestId      the ID of the approval request to process
+     * @param request        the request body containing the approval decision
      * @return Response containing the updated approval request information
      * @throws AuthorizationDeniedException if the admin is not authorized
-     * @throws RestException if the request is invalid or processing fails
+     * @throws RestException                if the request is invalid or processing fails
      */
     public Response processApprovalRequest(
             final HttpServletRequest requestContext,
@@ -337,10 +354,132 @@ public class ApprovalRestResource extends BaseRestResource {
             @Valid final ProcessApprovalRestRequest request)
             throws AuthorizationDeniedException, RestException {
 
+        // Retrieve admin token and approval request
         final AuthenticationToken admin = getAdmin(requestContext, false);
-
-        // Retrieve the approval request
         final RaApprovalRequestInfo approvalRequestInfo = raMasterApi.getApprovalRequest(admin, requestId);
+        validateIfCanProcess(requestId, approvalRequestInfo);
+
+        final RaApprovalResponseRequest.Action action = determineAction(request);
+        int stepIdentifier = approvalRequestInfo.getNextApprovalStep().getStepIdentifier();
+
+        try {
+            processApprovalPartitions(request, admin, approvalRequestInfo, stepIdentifier, action);
+        } catch (ApprovalRequestExpiredException e) {
+            handleException(Response.Status.BAD_REQUEST, "Approval request has expired", e);
+        } catch (ApprovalRequestExecutionException e) {
+            handleException(Response.Status.INTERNAL_SERVER_ERROR, "Error executing approval request: " + e.getMessage(), e);
+        } catch (ApprovalException | AdminAlreadyApprovedRequestException | SelfApprovalException | IllegalArgumentException e) {
+            handleException(Response.Status.BAD_REQUEST, e.getMessage(), e);
+        } catch (RestException e) {
+            throw e; // RestException is re-thrown as is
+        } catch (Exception e) {
+            handleException(Response.Status.INTERNAL_SERVER_ERROR, "Unexpected error processing approval request: " + e.getMessage(), e);
+        }
+
+        // Fetch updated approval request info
+        final RaApprovalRequestInfo updatedRequestInfo = raMasterApi.getApprovalRequest(admin, requestId);
+        if (updatedRequestInfo == null) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Failed to retrieve updated approval request information");
+        }
+
+        // Build and return response
+        final ProcessApprovalRestResponse response = ProcessApprovalRestResponse.buildApprovalResponse(updatedRequestInfo);
+        return Response.ok(response).build();
+    }
+
+    private RaApprovalResponseRequest.Action determineAction(final ProcessApprovalRestRequest request) {
+        return request.getApprove() ? RaApprovalResponseRequest.Action.APPROVE : RaApprovalResponseRequest.Action.REJECT;
+    }
+
+    private void processApprovalPartitions(
+            final ProcessApprovalRestRequest request,
+            final AuthenticationToken admin,
+            final RaApprovalRequestInfo approvalRequestInfo,
+            final int stepIdentifier,
+            final RaApprovalResponseRequest.Action action) throws RestException, ApprovalException, AuthorizationDeniedException, EndEntityExistsException, ApprovalRequestExecutionException, AuthenticationFailedException, AdminAlreadyApprovedRequestException, ApprovalRequestExpiredException, SelfApprovalException {
+        if (request.getApprovalPartitions() == null || request.getApprovalPartitions().isEmpty()) {
+            final RaApprovalResponseRequest responseRequest = buildRaMasterApiRequest(
+                    request, approvalRequestInfo, stepIdentifier, approvalRequestInfo.getNextApprovalStepPartition().getPartitionIdentifier(), action);
+            raMasterApi.addRequestResponse(admin, responseRequest);
+        } else {
+            for (var partitionRequest : request.getApprovalPartitions()) {
+                int partitionId = partitionRequest.getPartitionIdentifier();
+                ApprovalPartition partition = getPartition(approvalRequestInfo, stepIdentifier, partitionId);
+
+                checkRolePermissionForPartitionApproval(partition, approvalRequestInfo.getApprovalRequest().getApprovalProfile(), admin, partitionId);
+
+                updatePartitionProperties(approvalRequestInfo, partitionRequest, stepIdentifier, partitionId);
+                final RaApprovalResponseRequest responseRequest = buildRaMasterApiRequest(
+                        request, approvalRequestInfo, stepIdentifier, partitionId, action);
+
+                raMasterApi.addRequestResponse(admin, responseRequest);
+            }
+        }
+    }
+
+    private ApprovalPartition getPartition(
+            RaApprovalRequestInfo approvalRequestInfo, int stepIdentifier, int partitionId) throws RestException {
+        ApprovalPartition partition = approvalRequestInfo.getApprovalRequest()
+                .getApprovalProfile()
+                .getStep(stepIdentifier)
+                .getPartition(partitionId);
+        if (partition == null) {
+            log.info(String.format(PARTITION_NOT_FOUND_MESSAGE, partitionId));
+            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
+                    String.format(PARTITION_NOT_FOUND_MESSAGE, partitionId));
+        }
+        return partition;
+    }
+
+    private void checkRolePermissionForPartitionApproval(
+            ApprovalPartition partition,
+            ApprovalProfile approvalProfile,
+            AuthenticationToken admin,
+            int partitionId) throws RestException {
+
+        if (!canApprove(partition, approvalProfile, admin)) {
+            log.info(PERMISSION_DENIED_MESSAGE + partitionId + " by user " + admin);
+            throw new RestException(Response.Status.FORBIDDEN.getStatusCode(), PERMISSION_DENIED_MESSAGE + partitionId);
+        }
+    }
+
+    private void updatePartitionProperties(
+            RaApprovalRequestInfo approvalRequestInfo,
+            ApprovalPartitionRestRequest requestPartition,
+            int stepIdentifier,
+            int partitionId) throws RestException {
+
+        LinkedHashMap<String, DynamicUiProperty<? extends Serializable>> properties =
+                approvalRequestInfo.getApprovalRequest().getApprovalProfile()
+                        .getStep(stepIdentifier).getPartition(partitionId).getPropertyList();
+        Collection<DynamicUiProperty<? extends Serializable>> updatedProperties =
+                fillPartitionProperties(properties, requestPartition);
+        approvalRequestInfo.getApprovalRequest().getApprovalProfile()
+                .addPropertiesToPartition(stepIdentifier, partitionId, updatedProperties);
+    }
+
+    private RaApprovalResponseRequest buildRaMasterApiRequest(
+            ProcessApprovalRestRequest request,
+            RaApprovalRequestInfo approvalRequestInfo,
+            int stepIdentifier,
+            int partitionId,
+            RaApprovalResponseRequest.Action action) {
+        return new RaApprovalResponseRequest(
+                approvalRequestInfo.getId(),
+                stepIdentifier,
+                partitionId,
+                approvalRequestInfo.getApprovalRequest(),
+                request.getComment() != null ? request.getComment() : "",
+                action
+        );
+    }
+
+    private void handleException(Response.Status status, String message, Exception e) throws RestException {
+        log.info(message + ": " + e.getMessage());
+        throw new RestException(status.getStatusCode(), message, e);
+    }
+
+    private static void validateIfCanProcess(int requestId, RaApprovalRequestInfo approvalRequestInfo) throws RestException {
         if (approvalRequestInfo == null) {
             throw new RestException(Response.Status.NOT_FOUND.getStatusCode(),
                     "Approval request with ID " + requestId + " not found or unauthorized");
@@ -359,57 +498,121 @@ public class ApprovalRestResource extends BaseRestResource {
                     "Approval request cannot be processed. Current status: " + statusName);
         }
 
+        if (approvalRequestInfo.isRequestedByMe()) {
+            throw new RestException(Response.Status.FORBIDDEN.getStatusCode(),
+                    "You have created this request and cannot approve it");
+        }
+        if (approvalRequestInfo.isEditedByMe()) {
+            throw new RestException(Response.Status.FORBIDDEN.getStatusCode(),
+                    "You have edited this request and cannot approve it");
+        }
+        if (approvalRequestInfo.isApprovedByMe()) {
+            throw new RestException(Response.Status.FORBIDDEN.getStatusCode(),
+                    "You have approved part of this request and cannot approve it further");
+        }
+
         // Get the next approval step and partition
         final ApprovalPartition nextPartition = approvalRequestInfo.getNextApprovalStepPartition();
         if (nextPartition == null) {
             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
                     "No approval step available for processing");
         }
+    }
 
-        try {
-            final RaApprovalResponseRequest.Action action = request.getApprove() 
-                    ? RaApprovalResponseRequest.Action.APPROVE 
-                    : RaApprovalResponseRequest.Action.REJECT;
-
-            final RaApprovalResponseRequest responseRequest = new RaApprovalResponseRequest(
-                    requestId,
-                    approvalRequestInfo.getNextApprovalStep().getStepIdentifier(),
-                    nextPartition.getPartitionIdentifier(),
-                    approvalRequestInfo.getApprovalRequest(),
-                    request.getComment() != null ? request.getComment() : "",
-                    action
-            );
-
-            // Process the approval request
-            raMasterApi.addRequestResponse(admin, responseRequest);
-        } catch (ApprovalRequestExpiredException e) {
-            log.info("Approval request " + requestId + " has expired");
-            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
-                    "Approval request has expired");
-        } catch (ApprovalRequestExecutionException e) {
-            log.info("Error executing approval request " + requestId + ": " + e.getMessage());
-            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
-                    "Error executing approval request: " + e.getMessage());
-        } catch (ApprovalException | AdminAlreadyApprovedRequestException | SelfApprovalException e) {
-            log.info("Error processing approval request " + requestId + ": " + e.getMessage());
-            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
-                    "Error processing approval request: " + e.getMessage());
-        } catch (Exception e) {
-            log.info("Unexpected error processing approval request " + requestId + ": " + e.getMessage());
-            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
-                    "Unexpected error processing approval request: " + e.getMessage());
+    private boolean canApprove(ApprovalPartition partition, ApprovalProfile approvalProfile, AuthenticationToken authenticationToken) {
+        if (approvalProfile.canAnyoneApprovePartition(partition)) {
+            return true;
+        } else {
+            List<RoleDataDto> roles = raMasterApi.getRolesAuthenticationTokenIsMemberOfV2(authenticationToken);
+            List<Integer> roleIdsWhichCanApprove = approvalProfile.getAllowedRoleIds(partition);
+            for (RoleDataDto role : roles) {
+                if (roleIdsWhichCanApprove.contains(role.id())) {
+                    return true;
+                }
+            }
         }
+        return false;
+    }
 
-        // Retrieve the updated approval request info to populate response object
-        final RaApprovalRequestInfo updatedRequestInfo = raMasterApi.getApprovalRequest(admin, requestId);
-        if (updatedRequestInfo == null) {
-            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
-                    "Failed to retrieve updated approval request information");
+    private Collection<DynamicUiProperty<? extends Serializable>> fillPartitionProperties(
+            LinkedHashMap<String, DynamicUiProperty<? extends Serializable>> propertyList,
+            ApprovalPartitionRestRequest partition) throws RestException {
+
+        for (var partitionProperty : partition.getPropertyList()) {
+            String label = partitionProperty.getLabel();
+
+            // Validate if the property exists in the given propertyList
+            if (!propertyList.containsKey(label)) {
+                throw new RestException(
+                        Response.Status.BAD_REQUEST.getStatusCode(),
+                        "No property with label " + label + " found in partition"
+                );
+            }
+
+            DynamicUiProperty<Serializable> uiProperty = (DynamicUiProperty<Serializable>) propertyList.get(label);
+            String propertyValue = partitionProperty.getValue();
+
+            if (propertyValue == null || propertyValue.isEmpty()) {
+                continue; // Skip empty or null values
+            }
+
+            // Parse and set the value
+            Serializable parsedValue = parseValue(uiProperty.getType().getSimpleName(), propertyValue, label);
+            try {
+                uiProperty.setValue(parsedValue);
+            } catch (PropertyValidationException e) {
+                throw new RestException(
+                        Response.Status.BAD_REQUEST.getStatusCode(),
+                        ERROR_WRONG_TYPE + label
+                );
+            }
         }
+        return propertyList.values();
+    }
 
-        // Build the response
-        final ProcessApprovalRestResponse response = ProcessApprovalRestResponse.buildApprovalResponse(updatedRequestInfo);
-        return Response.ok(response).build();
+    // Extracted method to handle value parsing
+    private Serializable parseValue(String type, String value, String label) throws RestException {
+        switch (type) {
+            case "String":
+                return value;
+            case "Integer":
+                try {
+                    return Integer.parseInt(value);
+                } catch (NumberFormatException e) {
+                    throw new RestException(
+                            Response.Status.BAD_REQUEST.getStatusCode(),
+                            "Invalid ApprovalPartitionPropertyRestRequest content, value '" + value + "' for label '" + label + "' is not a valid integer."
+                    );
+                }
+            case "Boolean":
+                if (!value.equalsIgnoreCase("true") && !value.equalsIgnoreCase("false")) {
+                    throw new RestException(
+                            Response.Status.BAD_REQUEST.getStatusCode(),
+                            "Invalid ApprovalPartitionPropertyRestRequest content, value '" + value + "' for label '" + label + "' is not a boolean. Use 'true' or 'false'."
+                    );
+                }
+                return Boolean.parseBoolean(value);
+            case "Long":
+                try {
+                    return Long.parseLong(value);
+                } catch (NumberFormatException e) {
+                    throw new RestException(
+                            Response.Status.BAD_REQUEST.getStatusCode(),
+                            "Invalid ApprovalPartitionPropertyRestRequest content, value '" + value + "' for label '" + label + "' is not a valid Long."
+                    );
+                }
+            case "RadioButton":
+                return new RadioButton(value);
+            case "MultiLineString":
+                return new MultiLineString(value);
+            case "UrlString":
+                return new UrlString(value);
+            default:
+                throw new RestException(
+                        Response.Status.BAD_REQUEST.getStatusCode(),
+                        "Unknown type for property with label " + label
+                );
+        }
     }
 
     /**

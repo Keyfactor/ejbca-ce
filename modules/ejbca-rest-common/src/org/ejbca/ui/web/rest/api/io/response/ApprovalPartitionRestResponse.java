@@ -42,8 +42,11 @@ public class ApprovalPartitionRestResponse {
 
     public static class ApprovalPartitionStep {
 
-        @Schema(description = "Partition name", example = "APPROVED")
+        @Schema(description = "Partition name", example = "Partition name")
         private String name;
+
+        @Schema(description = "Partition identifier", example = "0123456")
+        private int partitionIdentifier;
 
         @Schema(description = "The action taken on this step (e.g., APPROVED, REJECTED, PENDING)", example = "APPROVED")
         private String approvalAction;
@@ -67,6 +70,10 @@ public class ApprovalPartitionRestResponse {
 
         public String getName() {
             return name;
+        }
+
+        public int getPartitionIdentifier() {
+            return partitionIdentifier;
         }
 
         public String getApprovalAction() {
@@ -128,6 +135,11 @@ public class ApprovalPartitionRestResponse {
 
             public Builder propertyList(final List<ApprovalPartitionPropertyRestResponse> propertyList) {
                 response.propertyList = propertyList;
+                return this;
+            }
+
+            public Builder partitionIdentifier(final int partitionIdentifier) {
+                response.partitionIdentifier = partitionIdentifier;
                 return this;
             }
 
