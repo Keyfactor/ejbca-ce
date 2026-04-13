@@ -77,6 +77,9 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationTokenMetaData;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.WebPrincipal;
+import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
+import org.cesecore.authentication.oauth.OAuthKeyInfo;
+import org.cesecore.authentication.oauth.OauthRequestHelper;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
@@ -144,8 +147,12 @@ import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.dto.RoleDataDto;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
+import org.cesecore.keybind.KeyBindingFinder;
+import org.cesecore.keybind.KeyBindingNotFoundException;
 import org.cesecore.keys.keyimport.KeyImportFailure;
 import org.cesecore.keys.keyimport.KeyImportRequestData;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.validation.CaaIdentitiesValidator;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.Validator;
@@ -361,6 +368,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private EtsiEcaOperationsSessionLocal ecaOperationsSession;
     @EJB
     private KeyImportSessionLocal keyImportSession;
+    @EJB
+    private InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -395,9 +406,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>20<td>=<td>9.3.0
      * <tr><th>21<td>=<td>9.3.4
      * <tr><th>22<td>=<td>9.4.1
+     * <tr><th>23<td>=<td>9.6.0
      * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 22;
+    private static final int RA_MASTER_API_VERSION = 23;
 
     /**
      * Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time
@@ -4152,8 +4164,24 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public Long getCertificateCount(AuthenticationToken authenticationToken, Boolean isActive) throws AuthorizationDeniedException {
+    public Long getCertificateCount(final AuthenticationToken authenticationToken, final Boolean isActive) throws AuthorizationDeniedException {
         return certificateDataSession.getCertificateCount(authenticationToken, isActive);
+    }
+
+    @Override
+    public OAuthGrantResponseInfo requestOAuthToken(final OAuthKeyInfo oAuthKeyInfo, final String code, final String redirectUri)
+            throws IOException, CryptoTokenOfflineException, KeyBindingNotFoundException {
+        final OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(
+                new KeyBindingFinder(internalKeyBindingMgmtSession, certificateStoreSession, cryptoTokenManagementSession, caSession));
+        return oauthRequestHelper.sendTokenRequest(oAuthKeyInfo, code, redirectUri);
+    }
+
+    @Override
+    public OAuthGrantResponseInfo sendOAuthRefreshTokenRequest(final String refreshToken, final OAuthKeyInfo oAuthKeyInfo, final String redirectUri)
+            throws IOException, CryptoTokenOfflineException, KeyBindingNotFoundException {
+        final OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(
+                new KeyBindingFinder(internalKeyBindingMgmtSession, certificateStoreSession, cryptoTokenManagementSession, caSession));
+        return oauthRequestHelper.sendRefreshTokenRequest(refreshToken, oAuthKeyInfo, redirectUri);
     }
 
     private GlobalEndEntityProfileConfiguration getGlobalEEPConfiguration() {
