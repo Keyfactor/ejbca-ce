@@ -479,7 +479,7 @@ public class ApprovalRestResource extends BaseRestResource {
         throw new RestException(status.getStatusCode(), message, e);
     }
 
-    private static void validateIfCanProcess(int requestId, RaApprovalRequestInfo approvalRequestInfo) throws RestException {
+    private void validateIfCanProcess(int requestId, RaApprovalRequestInfo approvalRequestInfo) throws RestException {
         if (approvalRequestInfo == null) {
             throw new RestException(Response.Status.NOT_FOUND.getStatusCode(),
                     "Approval request with ID " + requestId + " not found or unauthorized");
