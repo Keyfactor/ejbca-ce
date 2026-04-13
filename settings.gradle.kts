@@ -46,6 +46,8 @@ dependencyResolutionManagement {
             library("bcutil", ":bcutil:jdk18on-1.83")
             library("ejbca-ws-client-gen", ":ejbca-ws-client-gen:1")
             library("caffeine", ":caffeine:3.1.6")
+            library("cbor", ":cbor:4.5.2")
+    		library("numbers", ":numbers:1.8.2")
             library("jakartaee-api", ":jakarta.jakartaee-api:10.0.0")
             library("jakarta.xml.ws-api", ":jakarta.xml.ws-api:4.0.1")
             library("cert.cvc", ":cert-cvc:1.6.3")

@@ -135,6 +135,8 @@ dependencies {
     earlib(libs.snakeyaml)
     earlib(libs.guava)
     earlib(libs.caffeine)
+    earlib(libs.cbor)
+    earlib(libs.numbers)
     earlib(libs.jsch)
     earlib(libs.jna)
     earlib(libs.kerb4j.server.common)

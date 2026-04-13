@@ -66,6 +66,12 @@ public interface AcmeOrder {
 
     String getUsername();
     
+    boolean isDeviceAttestation();
+    
+    String getDeviceAttestationSubjectCn();
+    
+    void setDeviceAttestationSubjectCn(String cn);
+    
     List<String> getAuthorizationUrls();
     
     void setAuthorizationUrls(List<String> urls);

@@ -13,6 +13,8 @@
 package org.ejbca.core.protocol.acme;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,7 +82,11 @@ public interface AcmeChallenge {
         DNS_DNS_01(AcmeIdentifierTypes.DNS, "dns-01", "ca-tbr-7"),
         DNS_DNS_ACCOUNT_01(AcmeIdentifierTypes.DNS, "dns-account-01"),
         DNS_TLS_ALPN_01(AcmeIdentifierTypes.DNS, "tls-alpn-01", "ca-tbr-20"),
-        IP_HTTP_01(AcmeIdentifierTypes.IP, "http-01", "ca-tbr-19");
+        IP_HTTP_01(AcmeIdentifierTypes.IP, "http-01", "ca-tbr-19"),
+        PERMANENT_IDENTIFIER_DEVICE_ATTESTATION(AcmeIdentifierTypes.PERMANENT_IDENTIFIER, "device-attest-01", "device-attest-01"),
+        HARDWARE_MODULE_NAME_DEVICE_ATTESTATION(AcmeIdentifierTypes.HARDWARE_MODULE, "device-attest-01", "device-attest-01");
+
+        public static List<String> DISTINCT_CHALLENGE_TYPES;
 
         private static final String REQUEST_V2_VALIDATION_METHOD_ACME_HTTP_01 = "acme-http-01";
         private static final String REQUEST_V2_VALIDATION_METHOD_ACME_DNS_01 = "acme-dns-01";
@@ -101,7 +107,7 @@ public interface AcmeChallenge {
             this.challengeType = challengeType;
             this.cabForumType = null;
         }
-        
+
         AcmeChallengeType(final AcmeIdentifierTypes acmeIdentifierType, final String challengeType, final String cabForumType) {
             this.acmeIdentifierType = acmeIdentifierType;
             this.challengeType = challengeType;
@@ -111,7 +117,24 @@ public interface AcmeChallenge {
         public AcmeIdentifierTypes getAcmeIdentifierType() { return acmeIdentifierType; }
         public String getChallengeType() { return challengeType; }
         public String getCabForumType() { return cabForumType; }
-        
+
+        public static List<String> getDistinctChallengeTypes() {
+            if (DISTINCT_CHALLENGE_TYPES != null) {
+                return DISTINCT_CHALLENGE_TYPES;
+            }
+            synchronized(AcmeChallengeType.class) {
+                if (DISTINCT_CHALLENGE_TYPES != null) {
+                    return DISTINCT_CHALLENGE_TYPES;
+                }
+                final Set<String> result = new HashSet<>();
+                for (AcmeChallengeType type : AcmeChallenge.AcmeChallengeType.values()) {
+                    result.add(type.getChallengeType());
+                }
+                DISTINCT_CHALLENGE_TYPES = Collections.unmodifiableList(new ArrayList<>(result));
+                return DISTINCT_CHALLENGE_TYPES;
+            }
+        }
+
         public static List<String> getDnsIdentifierChallengeTypes(AcmeIdentifier.AcmeIdentifierTypes identifierType) {
             final List<String> result = new ArrayList<>();
             for (AcmeChallengeType type : AcmeChallenge.AcmeChallengeType.values()) {
@@ -145,7 +168,7 @@ public interface AcmeChallenge {
         public static String getMpicChallengeType(String challengeName) {
             return CHALLENGE_TO_MPIC_CHALLENGE_MAPPING.get(challengeName);
         }
-        
+
         public static void expandChallengeTypes(final Set<String> types) {
             for (AcmeChallengeType type : AcmeChallenge.AcmeChallengeType.values()) {
                 if (type.getCabForumType() != null && types.contains(type.getCabForumType())) {
