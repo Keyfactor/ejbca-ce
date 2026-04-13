@@ -13,6 +13,8 @@
 package org.cesecore.certificates.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -97,5 +99,19 @@ public class ValidityDateUnitTest {
         Assert.assertNull("Invalid relative time format accepted.", 
                 ValidityDate.getDateFromRelativeTime("100:10", startDate, true));
         
+    }
+
+    @Test
+    public void extractTimeZone() {
+        assertNull("Specified default timezone (null) should be returned as-is", ValidityDate.extractTimeZone("2025-12-31", null));
+        assertNull("Specified default timezone (null) should be returned as-is", ValidityDate.extractTimeZone("2025-12-31 13:45:56", null));
+        var defaultTimeZone = TimeZone.getDefault();
+        assertSame("Specified default timezone should be returned as-is", defaultTimeZone, ValidityDate.extractTimeZone("2025-12-31 13:45:56", defaultTimeZone));
+        assertEquals("Expected UTC timezone for string ending with Z", ValidityDate.TIMEZONE_UTC, ValidityDate.extractTimeZone("2025-12-31 13:45:56Z", null));
+        assertEquals("Expected UTC timezone for string ending with +00:00", ValidityDate.TIMEZONE_UTC, ValidityDate.extractTimeZone("2025-12-31 13:45:56+00:00", null));
+        assertEquals("Expected UTC timezone for string ending with -00:00", ValidityDate.TIMEZONE_UTC, ValidityDate.extractTimeZone("2025-12-31 13:45:56-00:00", null));
+        assertEquals("Expected UTC + 1 hour timezone", 60*60*1000, ValidityDate.extractTimeZone("2025-12-31 13:45:56+01:00", null).getRawOffset());
+        assertEquals("Expected UTC - 1 hour timezone", -60*60*1000, ValidityDate.extractTimeZone("2025-12-31 13:45:56-01:00", null).getRawOffset());
+        assertEquals("Expected UTC + 5:30 hour timezone", (5*60 + 30)*60*1000, ValidityDate.extractTimeZone("2025-12-31 13:45:56+05:30", null).getRawOffset());
     }
 }

@@ -22,6 +22,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
@@ -42,6 +43,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
@@ -55,7 +57,11 @@ import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.cmp.PKIStatusInfo;
+import org.bouncycastle.asn1.cms.CMSObjectIdentifiers;
 import org.bouncycastle.asn1.cms.EnvelopedData;
+import org.bouncycastle.asn1.cms.KEMRecipientInfo;
+import org.bouncycastle.asn1.cms.OtherRecipientInfo;
+import org.bouncycastle.asn1.cms.RecipientInfo;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.crmf.EncryptedKey;
 import org.bouncycastle.asn1.crmf.EncryptedValue;
@@ -458,6 +464,7 @@ public class CrmfRequestSystemTest extends CmpTestCase {
         final PKIBody pkiBody = pkiMessage.getBody();
         final int tag = pkiBody.getType();
         // Do some sanity checks in the message (also see CrmfResponseMessageUnitTest
+        assertEquals("Response should be an initializationResp", PKIBody.TYPE_INIT_REP, tag);
         final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
         final CertResponse certResponse = certRepMessage.getResponse()[0];
         assertNotNull("Response should contain certificate response", certRepMessage);
@@ -476,11 +483,19 @@ public class CrmfRequestSystemTest extends CmpTestCase {
         assertTrue("We expect an encrypted cert, but the response doesn't have one.", certOrEncCert.hasEncryptedCertificate());
         final EncryptedKey encrCert = certOrEncCert.getEncryptedCert();
         ASN1Encodable asn1 = encrCert.getValue();
-        // Should be a CMS EnvelopedData
+        // Should be a CMS EnvelopedData, and it should use HKDF_SHA256 as KDF, which is the only MUST support in RFC9936
         assertEquals("Encrypted value should be a CMS EnvelopedData", EnvelopedData.class.getName(), asn1.getClass().getName());
-
-        // TODO: CmpPKIBodyConstants can be removed and replaced by BC PKIBody
-        assertEquals("Response should be an initializationResp", CmpPKIBodyConstants.INITIALIZATIONRESPONSE, tag);
+        EnvelopedData ed = (EnvelopedData)asn1;
+        ASN1Set recipientInfos = ed.getRecipientInfos();
+        assertEquals("There should be only one RecipientInfo in the returned EnvelopedData", 1, recipientInfos.size());
+        Enumeration<?> e = recipientInfos.getObjects();
+        while (e.hasMoreElements()) {
+            RecipientInfo ri = RecipientInfo.getInstance(e.nextElement());
+            OtherRecipientInfo ori = OtherRecipientInfo.getInstance(ri.getInfo());
+            assertEquals("RecipientInfo (in OtherRecipientInfo) should be KEMRecipientInfo", CMSObjectIdentifiers.id_ori_kem, ori.getType());
+            KEMRecipientInfo kemri = KEMRecipientInfo.getInstance(ori.getValue());
+            assertEquals("KDF should be HKDF_SHA256", PKCSObjectIdentifiers.id_alg_hkdf_with_sha256, kemri.getKdf().getAlgorithm());
+        }
 
         // Now get the actual certificate (by decrypting it) and verify that it's signature verifies
         final CertificateRepMessage certificateRepMessage = CertificateRepMessage.fromPKIBody(pkiBody);

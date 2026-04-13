@@ -15,6 +15,8 @@ package org.ejbca.core.model.era;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.AuthenticationFailedException;
+import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
+import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.ApprovalRequestType;
@@ -45,6 +47,7 @@ import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.dto.RoleDataDto;
+import org.cesecore.keybind.KeyBindingNotFoundException;
 import org.cesecore.keys.keyimport.KeyImportFailure;
 import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.cesecore.roles.Role;
@@ -1819,6 +1822,38 @@ public interface RaMasterApi {
      */
     List<KeyImportFailure> keyImportV2(AuthenticationToken authenticationToken, KeyImportRequestData keyImportRequestData)
             throws AuthorizationDeniedException, EjbcaException, CADoesntExistsException;
+
+    /**
+     * Requests an OAuth token from the authorization server using the given key info and authorization code.
+     * If the key info references a key binding, the signing will be performed on the node that owns the key binding.
+     *
+     * @param oAuthKeyInfo the OAuth provider configuration, potentially referencing a key binding.
+     * @param code the authorization code received from the authorization server.
+     * @param redirectUri the redirect URI used in the original authorization request.
+     * @return the OAuth grant response, or null if not supported by this node.
+     * @throws IOException if the token request fails due to a network error.
+     * @throws CryptoTokenOfflineException if the crypto token holding the key binding is offline.
+     * @throws KeyBindingNotFoundException if the referenced key binding cannot be found.
+     * @since RA Master API version 23
+     */
+    OAuthGrantResponseInfo requestOAuthToken(OAuthKeyInfo oAuthKeyInfo, String code, String redirectUri)
+            throws IOException, CryptoTokenOfflineException, KeyBindingNotFoundException;
+
+    /**
+     * Sends a refresh token request to the authorization server using the given key info and refresh token.
+     * If the key info references a key binding, the signing will be performed on the node that owns the key binding.
+     *
+     * @param refreshToken the refresh token.
+     * @param oAuthKeyInfo the OAuth provider configuration, potentially referencing a key binding.
+     * @param redirectUri the redirect URI used in the original authorization request.
+     * @return the OAuth grant response, or null if not supported by this node.
+     * @throws IOException if the token request fails due to a network error.
+     * @throws CryptoTokenOfflineException if the crypto token holding the key binding is offline.
+     * @throws KeyBindingNotFoundException if the referenced key binding cannot be found.
+     * @since RA Master API version 23
+     */
+    OAuthGrantResponseInfo sendOAuthRefreshTokenRequest(String refreshToken, OAuthKeyInfo oAuthKeyInfo, String redirectUri)
+            throws IOException, CryptoTokenOfflineException, KeyBindingNotFoundException;
 
     /**
      * Return total count of certificates in database

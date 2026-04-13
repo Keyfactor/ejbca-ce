@@ -130,18 +130,26 @@ public class RaLoginBean implements Serializable {
         if (globalConfiguration == null) {
             initGlobalConfiguration();
         }
-        OAuthKeyInfo oAuthKeyInfo = oAuthConfiguration.getOauthKeyByLabel(oauthClicked);
+        final OAuthKeyInfo oAuthKeyInfo = oAuthConfiguration.getOauthKeyByLabel(oauthClicked);
         if (oAuthKeyInfo != null) {
             try {
-                OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(internalKeyBindings, certificateStoreLocal, cryptoToken, caSession));
-                OAuthGrantResponseInfo token = oauthRequestHelper.sendTokenRequest(oAuthKeyInfo, authCode, getRedirectUri());
-                if (token.compareTokenType(HttpTools.AUTHORIZATION_SCHEME_BEARER)) {
+                final OAuthGrantResponseInfo token;
+                if (oAuthKeyInfo.getKeyBinding() != null) {
+                    // Key binding flow: proxy the token request to the node that owns the key binding (e.g. CA over peer)
+                    token = raMasterApi.requestOAuthToken(oAuthKeyInfo, authCode, getRedirectUri());
+                } else {
+                    // Client secret flow: perform the token request locally as before
+                    final OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(
+                            new KeyBindingFinder(internalKeyBindings, certificateStoreLocal, cryptoToken, caSession));
+                    token = oauthRequestHelper.sendTokenRequest(oAuthKeyInfo, authCode, getRedirectUri());
+                }
+                if (token != null && token.compareTokenType(HttpTools.AUTHORIZATION_SCHEME_BEARER)) {
                     servletRequest.getSession(true).setAttribute("ejbca.bearer.token", token.getAccessToken());
                     servletRequest.getSession(true).setAttribute("ejbca.id.token", token.getIdToken());
                     servletRequest.getSession(true).setAttribute("ejbca.refresh.token", token.getRefreshToken());
                     raAuthenticationBean.resetAuthentication();
                     HttpTools.sendRedirect(FacesContext.getCurrentInstance(), "/index.xhtml");
-                } else {
+                } else if (token != null) {
                     log.info("Received OAuth token of unsupported type '" + token.getTokenType() + "'");
                 }
             } catch (CryptoTokenOfflineException | KeyBindingNotFoundException e) {

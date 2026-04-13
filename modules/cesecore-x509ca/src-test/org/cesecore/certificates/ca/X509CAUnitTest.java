@@ -2123,37 +2123,70 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         assertEquals("2048", AlgorithmTools.getKeySpecification(usercert.getPublicKey()));
         assertEquals(AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmTools.getKeyAlgorithm(usercert.getPublicKey()));
     }
-
+    
     @Test
     public void testForbidEncryptionUsageForECCKeys() throws Exception {
+        final KeyPair keypair = KeyTools.genKeys("P-256", AlgorithmConstants.KEYALGORITHM_ECDSA);
+        testForbidEncryptionUsageForECCKeys(keypair, false);
+    }
+    
+    @Test
+    public void testForbidEncryptionUsageForECCKeysWithRsa() throws Exception {
+        final KeyPair keypair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
+        testForbidEncryptionUsageForECCKeys(keypair, true);
+    }
+    
+    @Test
+    public void testForbidEncryptionUsageForECCKeysWithEdddsa() throws Exception {
+        final KeyPair keypair = KeyTools.genKeys("Ed25519", AlgorithmConstants.KEYALGORITHM_ED25519);
+        testForbidEncryptionUsageForECCKeys(keypair, false);
+    }
+    
+    @Test
+    public void testForbidEncryptionUsageForECCKeysWithFalcon() throws Exception {
+        final KeyPair keypair = KeyTools.genKeys("FALCON1024", AlgorithmConstants.KEYALGORITHM_FALCON1024);
+        testForbidEncryptionUsageForECCKeys(keypair, false);
+    }
+    
+    @Test
+    public void testForbidEncryptionUsageForECCKeysWithMlKem() throws Exception {
+        final KeyPair keypair = KeyTools.genKeys("MLKEM1024", AlgorithmConstants.KEYALGORITHM_MLKEM1024);
+        testForbidEncryptionUsageForECCKeys(keypair, true);
+    }
+
+    private void testForbidEncryptionUsageForECCKeys(final KeyPair keypair, final boolean allowEncryption) throws Exception {
         // Given that ECDSA algorithm is used, and key encipherment and setKeyUsageForbidEncryption are selected in the Certificate Profile
         final CryptoToken cryptoToken = getNewCryptoToken();
-        final KeyPair keypair = KeyTools.genKeys("brainpoolp224r1", AlgorithmConstants.KEYALGORITHM_ECDSA);
         final X509CA x509CA = createTestCA(cryptoToken, "CN=foo");
         final EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
 
-        final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        certificateProfile.setKeyUsageForbidEncryptionUsageForECC(true);
-        certificateProfile.setKeyUsage(CertificateConstants.KEYENCIPHERMENT, true);
-        certificateProfile.setKeyUsage(CertificateConstants.DATAENCIPHERMENT, true);
+        for (int i=0; i<2; i++) {
+            
+            final boolean forbidEncryptionUsageForECC = i==0;
+            final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            certificateProfile.setKeyUsageForbidEncryptionUsageForECC(forbidEncryptionUsageForECC);
+            certificateProfile.setKeyUsage(CertificateConstants.KEYENCIPHERMENT, true);
+            certificateProfile.setKeyUsage(CertificateConstants.DATAENCIPHERMENT, true);
+    
+            try {
+                // Key Encipherment should not be true in the following certificate.
+                X509Certificate certificate = (X509Certificate) x509CA.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null,
+                                                                                           "10d", certificateProfile, "00000", cceConfig);
+    
+                assertNotNull("There should be a valid certificate", certificate);
+    
+                final boolean keyEncipherment = certificate.getKeyUsage()[CertificateConstants.KEYENCIPHERMENT];
+                final boolean dataEncipherment = certificate.getKeyUsage()[CertificateConstants.DATAENCIPHERMENT];
+                final boolean nonRepudation = certificate.getKeyUsage()[CertificateConstants.NONREPUDIATION];
 
-        try {
-            // Key Encipherment should not be true in the following certificate.
-            X509Certificate certificate = (X509Certificate) x509CA.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null,
-                                                                                       "10d", certificateProfile, "00000", cceConfig);
-
-            assertNotNull("There should be a valid certificate", certificate);
-
-            final boolean keyEncipherment = certificate.getKeyUsage()[CertificateConstants.KEYENCIPHERMENT];
-            final boolean dataEncipherment = certificate.getKeyUsage()[CertificateConstants.DATAENCIPHERMENT];
-            final boolean nonRepudation = certificate.getKeyUsage()[CertificateConstants.NONREPUDIATION];
-
-            assertEquals("Key Encipherment key usage should be false", false, keyEncipherment);
-            assertEquals("Data Encipherment key usage should be false", false, dataEncipherment);
-            assertEquals("Non Repudation key usage should be true", true, nonRepudation);
-
-        } catch (CAOfflineException e) {
-            fail("Certificate could not be created or AIA could not be parsed: " + e.getMessage());
+                final boolean expectedEcipherment = allowEncryption || !forbidEncryptionUsageForECC;
+                assertEquals("Key Encipherment key usage should be " + expectedEcipherment, expectedEcipherment, keyEncipherment);
+                assertEquals("Data Encipherment key usage should be " + expectedEcipherment, expectedEcipherment, dataEncipherment);
+                assertTrue("Non Repudiation key usage should be true", nonRepudation);
+    
+            } catch (CAOfflineException e) {
+                fail("Certificate could not be created or AIA could not be parsed: " + e.getMessage());
+            }
         }
     }
 

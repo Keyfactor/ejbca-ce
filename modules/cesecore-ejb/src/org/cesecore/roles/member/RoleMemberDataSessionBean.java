@@ -28,11 +28,14 @@ import jakarta.persistence.TypedQuery;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.OAuth2AuthenticationToken;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.AccessUserAspectImpl;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.OAuthConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.ProfileID;
 
 /**
@@ -47,6 +50,9 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
 
     @EJB
     private AccessTreeUpdateSessionLocal accessTreeUpdateSession;
+
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -232,28 +238,57 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
     public Set<Integer> getRoleIdsMatchingAuthenticationTokenOrFail(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
         final Set<Integer> roleIds = new HashSet<>();
         if (authenticationToken!=null) {
-            final List<RoleMember> roleMembers = getRoleMembersForAuthenticationToken(authenticationToken);
-            for (final RoleMember roleMemberData : roleMembers) {
-                if (authenticationToken.matches(convertToAccessUserAspect(roleMemberData))) {
-                    roleIds.add(roleMemberData.getRoleId());
+            if (authenticationToken instanceof OAuth2AuthenticationToken oAuthToken) {
+                OAuthConfiguration oAuthConfiguration = getOAuthConfiguration();
+                final List<RoleMember> roleMembers = getRoleMembersForAuthenticationToken(authenticationToken);
+                for (final RoleMember roleMemberData : roleMembers) {
+                    if (oAuthToken.matches(convertToAccessUserAspect(roleMemberData), oAuthConfiguration)) {
+                        roleIds.add(roleMemberData.getRoleId());
+                    }
+                }
+            } else {
+
+                final List<RoleMember> roleMembers = getRoleMembersForAuthenticationToken(authenticationToken);
+                for (final RoleMember roleMemberData : roleMembers) {
+                    if (authenticationToken.matches(convertToAccessUserAspect(roleMemberData))) {
+                        roleIds.add(roleMemberData.getRoleId());
+                    }
                 }
             }
         }
         return roleIds;
+    }
+
+    public OAuthConfiguration getOAuthConfiguration() {
+        return (OAuthConfiguration) globalConfigurationSession
+                .getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
     }
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Set<RoleMember> getRoleMembersMatchingAuthenticationToken(final AuthenticationToken authenticationToken) {
         final Set<RoleMember> ret = new HashSet<>();
-        if (authenticationToken!=null) {
-            for (final RoleMember roleMember : getRoleMembersForAuthenticationToken(authenticationToken)) {
-                try {
-                    if (authenticationToken.matches(convertToAccessUserAspect(roleMember))) {
-                        ret.add(roleMember);
+        if (authenticationToken != null) {
+            if (authenticationToken instanceof OAuth2AuthenticationToken oAuthToken) {
+                OAuthConfiguration oAuthConfiguration = getOAuthConfiguration();
+                for (final RoleMember roleMember : getRoleMembersForAuthenticationToken(authenticationToken)) {
+                    try {
+                        if (oAuthToken.matches(convertToAccessUserAspect(roleMember), oAuthConfiguration)) {
+                            ret.add(roleMember);
+                        }
+                    } catch (AuthenticationFailedException e) {
+                        log.debug(e.getMessage(), e);
                     }
-                } catch (AuthenticationFailedException e) {
-                    log.debug(e.getMessage(), e);
+                }
+            } else {
+                for (final RoleMember roleMember : getRoleMembersForAuthenticationToken(authenticationToken)) {
+                    try {
+                        if (authenticationToken.matches(convertToAccessUserAspect(roleMember))) {
+                            ret.add(roleMember);
+                        }
+                    } catch (AuthenticationFailedException e) {
+                        log.debug(e.getMessage(), e);
+                    }
                 }
             }
         }

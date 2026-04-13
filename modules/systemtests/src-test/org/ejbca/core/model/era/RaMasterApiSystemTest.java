@@ -61,7 +61,8 @@ public class RaMasterApiSystemTest {
     private enum EjbcaVersion implements ApiVersion {
         EJBCA_8_3_0("classes_in_8_3_0.txt"),
         EJBCA_9_3_0("classes_in_9_3_0.txt"),
-        EJBCA_9_4_1("classes_in_9_4_1.txt");
+        EJBCA_9_4_1("classes_in_9_4_1.txt"),
+        EJBCA_9_6_0("classes_in_9_6_0.txt");
 
         private final String classListFilename;
 
@@ -386,7 +387,11 @@ public class RaMasterApiSystemTest {
             // Do NOT change! - A test failure means that the API has been broken!
             new MethodApiDescriptor("getCertificateCount", "java.lang.Long", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "java.lang.Boolean"), "940551e8dbe3"),
             // Do NOT change! - A test failure means that the API has been broken!
-            new MethodApiDescriptor("getIfReadyAcmeOrder", "org.ejbca.core.protocol.acme.AcmeOrder", Arrays.asList("java.lang.String"), "287251acd17a")
+            new MethodApiDescriptor("getIfReadyAcmeOrder", "org.ejbca.core.protocol.acme.AcmeOrder", Arrays.asList("java.lang.String"), "287251acd17a"),
+            // Do NOT change! - A test failure means that the API has been broken!
+            new MethodApiDescriptor(EjbcaVersion.EJBCA_9_6_0, "sendOAuthRefreshTokenRequest", "org.cesecore.authentication.oauth.OAuthGrantResponseInfo", Arrays.asList("java.lang.String", "org.cesecore.authentication.oauth.OAuthKeyInfo", "java.lang.String"), "aae777f84d0b"),
+            // Do NOT change! - A test failure means that the API has been broken!
+            new MethodApiDescriptor(EjbcaVersion.EJBCA_9_6_0, "requestOAuthToken", "org.cesecore.authentication.oauth.OAuthGrantResponseInfo", Arrays.asList("org.cesecore.authentication.oauth.OAuthKeyInfo", "java.lang.String", "java.lang.String"), "7dc40342dfc6")
 
             // New methods should have a new MethodApiDescriptor and a "Do NOT change!" comment.
             // New methods should preferably have an EjbcaVersion.EJBCA_x_y_z and MUST have an EjbcaVersion.EJBCA_x_y_z if they use newly added types.

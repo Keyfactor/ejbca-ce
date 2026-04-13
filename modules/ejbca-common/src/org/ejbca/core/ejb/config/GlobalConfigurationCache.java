@@ -92,7 +92,10 @@ public final class GlobalConfigurationCache implements ConfigurationCache {
 
     @Override
     public ConfigurationBase getNewConfiguration() {
-       return new GlobalConfiguration();      
+       GlobalConfiguration gc = new GlobalConfiguration();
+       gc.initializeAdminWeb();
+       gc.initializeRaWeb();
+       return gc;
     }
 
 

@@ -119,8 +119,9 @@ public class CaInfoDto implements Serializable {
 
     //proxy-ca
     private String upstreamUrl;
-    private String username;
-    private String password;
+    private String oauthTokenUrl;
+    private String oauthClientName;
+    private String oauthClientSecret;
     private List<MutableTriple<Boolean, String, String>> headers;
     private String upstreamCa;
     private String upstreamTemplate;
@@ -798,20 +799,28 @@ public class CaInfoDto implements Serializable {
         this.upstreamUrl = upstreamUrl;
     }
 
-    public String getUsername() {
-        return username;
+    public String getOauthTokenUrl() {
+        return oauthTokenUrl;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setOauthTokenUrl(String oauthTokenUrl) {
+        this.oauthTokenUrl = oauthTokenUrl;
     }
 
-    public String getPassword() {
-        return password;
+    public String getOauthClientName() {
+        return oauthClientName;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setOauthClientName(String oauthClientName) {
+        this.oauthClientName = oauthClientName;
+    }
+
+    public String getOauthClientSecret() {
+        return oauthClientSecret;
+    }
+
+    public void setOauthClientSecret(String oauthClientSecret) {
+        this.oauthClientSecret = oauthClientSecret;
     }
 
     public List<MutableTriple<Boolean, String, String>> getHeaders() {
@@ -857,8 +866,9 @@ public class CaInfoDto implements Serializable {
             .setSubjectDn(getCaSubjectDN())
             .setEnrollWithCsrUrl(getUpstreamUrl())
             .setHeaders(pairs)
-            .setUsername(getUsername())
-            .setPassword(getPassword())
+            .setOauthTokenUrl(getOauthTokenUrl())
+            .setOauthClientName(getOauthClientName())
+            .setOauthClientSecret(getOauthClientSecret())
             .setCa(getUpstreamCa())
             .setSans(getSansJson())
             .build();

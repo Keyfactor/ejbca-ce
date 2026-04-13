@@ -132,12 +132,14 @@ public class CaRestResourceSwagger extends CaRestResource {
     @POST
     @Path("/{issuer_dn}/createcrl")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Operation(description = "Create CRL(main, partition and delta) issued by this CA", responses = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Successful operation",
-                    content = @Content(schema = @Schema(implementation = CreateCrlRestResponse.class))
-            )
+    @Operation(description = "Create CRL (main, partition and delta) issued by this CA. " +
+                "Operation will only be called on local CA's for this EJBCA instance, not on upstream instances that this instance is acting as RA/VA for.",
+            responses = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Successful operation",
+                        content = @Content(schema = @Schema(implementation = CreateCrlRestResponse.class))
+                )
     })
     public Response createCrl(@Context HttpServletRequest httpServletRequest,
                               @Parameter(description = "the CRL issuers DN (CAs subject DN)", required = true) @PathParam("issuer_dn") String issuerDn,
@@ -153,7 +155,8 @@ public class CaRestResourceSwagger extends CaRestResource {
     @Path("/{issuer_dn}/importcrl")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(description = "Import a certificate revocation list (CRL) for a CA",
+    @Operation(description = "Import a certificate revocation list (CRL) for a CA. " +
+                "Operation will only be called on local CA's for this EJBCA instance, not on upstream instances that this instance is acting as RA/VA for.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "CRL file was imported successfully"),
                     @ApiResponse(responseCode = "400", description = "Error while importing CRL file")
@@ -171,7 +174,8 @@ public class CaRestResourceSwagger extends CaRestResource {
     @Path("/{issuer_dn}/generatecsr")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.WILDCARD)
-    @Operation(description = "Create a CSR for the CA", 
+    @Operation(description = "Create a CSR for the CA." +
+                "Operation will only be called on local CA's for this EJBCA instance, not on upstream instances that this instance is acting as RA/VA for.",
             responses = { 
                     @ApiResponse(responseCode = "200", description = "Successful operation"),
                     @ApiResponse(responseCode = "400", description = "Error while creating the CSR") })

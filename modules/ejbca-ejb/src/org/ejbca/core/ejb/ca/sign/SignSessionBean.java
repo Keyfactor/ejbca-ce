@@ -498,10 +498,10 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         final CA ca;
         if (suppliedUserData == null) {
             ca = getCAFromRequest(admin, req, false);
-        } else {
+        } else { // here
             ca = (CA) caSession.getCANoLog(admin, suppliedUserData.getCAId(), null); // Take the CAId from the supplied userdata, if any
         }
-        if (ca.getStatus() != CAConstants.CA_ACTIVE) {
+        if (ca.getStatus() != CAConstants.CA_ACTIVE && ca.getStatus() != CAConstants.CA_EXTERNAL) {
             final String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
             throw new CAOfflineException(msg);
         }
@@ -1240,7 +1240,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                     intres.getLocalizedMessage("createcert.canotfoundissuerusername", req.getIssuerDN(), req.getUsername()));
         }
 
-        if (ca.getStatus() != CAConstants.CA_ACTIVE) {
+        if (ca.getStatus() != CAConstants.CA_ACTIVE && ca.getStatus() != CAConstants.CA_EXTERNAL) {
             String msg = intres.getLocalizedMessage("createcert.canotactive", ca.getSubjectDN());
             throw new EJBException(msg);
         }

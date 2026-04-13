@@ -157,7 +157,11 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     /** RFC-8657 section 4. validationmethods */
     private static final String VALIDATE_ACME_VALIDATION_METHODS = "VALIDATE_ACME_VALIDATION_METHODS";
     private static final String ACME_VALIDATION_METHODS = "ACME_VALIDATION_METHODS";
-    
+
+    private static final String PROXY_CA_SCEP_KEY_ALIAS = INTERNAL_KEY_PREFIX+"proxy_ca_scep_key_alias";
+    private static final String CRYPTO_TOKEN_ID = INTERNAL_KEY_PREFIX+"crypto_token_id";
+    private static final String TEMPLATE_NAME = INTERNAL_KEY_PREFIX+"template_name";
+
     /** Creates a new instance of ExtendedInformation */
     public ExtendedInformation() {
         setType(TYPE_BASIC);
@@ -910,8 +914,40 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         setSshCustomData(SSH_PRINCIPALS_IPV6, ipv6Principals);
     }
 
+    public String getCaName() {
+        return (String) data.get(CA_NAME);
+    }
+
+    public void setCaName(String caName) {
+        data.put(CA_NAME, caName);
+    }
+
+    public String getProxyCaScepKeyAlias() {
+        return (String) data.get(PROXY_CA_SCEP_KEY_ALIAS);
+    }
+
+    public void setProxyCaScepKeyAlias(String proxyCaScepKeyAlias) {
+        data.put(PROXY_CA_SCEP_KEY_ALIAS, proxyCaScepKeyAlias);
+    }
+
+    public Integer getCryptoTokenId() {
+        return (Integer) data.get(CRYPTO_TOKEN_ID);
+    }
+
+    public void setCryptoTokenId(Integer cryptoTokenId) {
+        data.put(CRYPTO_TOKEN_ID, cryptoTokenId);
+    }
+
+    public String getTemplateName() {
+        return (String) data.get(TEMPLATE_NAME);
+    }
+
+    public void setTemplateName(String templateName) {
+        data.put(TEMPLATE_NAME, templateName);
+    }
+
     /** ACME specific fields. */
-    
+
     public String getAccountBindingId() {
         return (String) data.get(ACCOUNT_BINDING_ID);
     }
@@ -919,15 +955,15 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     public void setAccountBindingId(final String accountBindingId) {
         data.put(ACCOUNT_BINDING_ID, accountBindingId);
     }
-    
+
     public boolean isValidateAcmeAccountUri() {
         return data.get(VALIDATE_ACME_ACCOUNT_URI) instanceof Boolean ? (Boolean) data.get(VALIDATE_ACME_ACCOUNT_URI) : false;
     }
-    
+
     public void setValidateAcmeAccountUri(final boolean validate) {
         data.put(VALIDATE_ACME_ACCOUNT_URI, (Boolean) validate);
     }
-    
+
     public String getAcmeAccountUri() {
         return (String) data.get(ACME_ACCOUNT_URI);
     }
@@ -935,15 +971,15 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     public void setAcmeAccountUri(final String accountUri) {
         data.put(ACME_ACCOUNT_URI, accountUri);
     }
- 
+
     public boolean isValidateAcmeValidationMethods() {
         return data.get(VALIDATE_ACME_VALIDATION_METHODS) instanceof Boolean ? (Boolean) data.get(VALIDATE_ACME_VALIDATION_METHODS) : false;
     }
-    
+
     public void setValidateAcmeValidationMethods(final boolean validate) {
         data.put(VALIDATE_ACME_VALIDATION_METHODS, (Boolean) validate);
     }
-    
+
     public String getAcmeValidationMethods() {
         return (String) data.get(ACME_VALIDATION_METHODS);
     }

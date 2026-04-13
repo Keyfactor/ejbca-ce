@@ -306,10 +306,6 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
         
         AvailableCustomCertificateExtensionsConfiguration cceConfig = getAvailableExtensionsConfig();
 
-        if (!isOidUnique(cceConfig)) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "CustomCertificateExtension OID '" + currentExtensionGUIInfo.getOid() + "' already exists in the database.", null));
-            return;
-        }
 
         if (!isDisplayNameUnique(cceConfig)) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "CustomCertificateExtension Label '" + currentExtensionGUIInfo.getDisplayName()  + "' already exists in the database.", null));
@@ -328,13 +324,6 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
         flushCurrentExtension();
     }
 
-    protected boolean isOidUnique(final AvailableCustomCertificateExtensionsConfiguration cceConfig) {
-        final String newOid = getCurrentExtensionGUIInfo().getOid();
-
-        return cceConfig.getAllAvailableCustomCertificateExtensions().stream()
-                .filter(ce -> ce.getId() != getCurrentExtensionGUIInfo().getId())
-                .noneMatch(ce -> ce.getOID().equals(newOid));
-    }
 
     protected boolean isDisplayNameUnique(final AvailableCustomCertificateExtensionsConfiguration cceConfig) {
         final String newDisplayName = getCurrentExtensionGUIInfo().getDisplayName();

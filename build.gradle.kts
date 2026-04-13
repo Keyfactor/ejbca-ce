@@ -135,6 +135,8 @@ dependencies {
     earlib(libs.snakeyaml)
     earlib(libs.guava)
     earlib(libs.caffeine)
+    earlib(libs.cbor)
+    earlib(libs.numbers)
     earlib(libs.jsch)
     earlib(libs.jna)
     earlib(libs.kerb4j.server.common)
@@ -315,6 +317,21 @@ subprojects {
 
             filter {
                 includeTestsMatching("*UnitTest")
+                isFailOnNoMatchingTests = false
+            }
+
+            java {
+                sourceSets["test"].java.srcDirs("src-test")
+                sourceSets["test"].compileClasspath += sourceSets["main"].compileClasspath
+                sourceSets["test"].runtimeClasspath += sourceSets["main"].compileClasspath
+            }
+        }
+        
+        tasks.register<Test>("runanytest") {
+            description = "Runs unit tests."
+
+            filter {
+                includeTestsMatching("*")
                 isFailOnNoMatchingTests = false
             }
 

@@ -596,8 +596,8 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
 
     @Override
     /** Invoked when the user wants to disable an InternalKeyBinding */
-    public void commandDisable() {
-        super.commandDisable();
+    public void commandDisable(final GuiInfo guiInfo) {
+        super.commandDisable(guiInfo);
         ocspResponseGeneratorSession.reloadOcspSigningCache(); // Force a reload of OcspSigningCache to make disable take effect immediately.
     }
 
@@ -954,8 +954,8 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         ocspExtensions.setWrappedData(ocspExtensionsList);
     }
 
-    public void removeOcspExtension() {
-        ocspExtensionsList.remove(getOcspExtensions().getRowData());
+    public void removeOcspExtension(final String extensionEntry) {
+        ocspExtensionsList.remove(extensionEntry);
         ocspExtensions.setWrappedData(ocspExtensionsList);
     }
 
@@ -963,12 +963,12 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         return ocspExtensionOidNameMap.get(oid) == null ? "" : ocspExtensionOidNameMap.get(oid);
     }
     
-    public String getOcspExtensionDisplayName() {
-        return getOcspExtensionNameFromOid(getOcspExtensionOid());
+    public String getOcspExtensionDisplayName(final String oid) {
+        return getOcspExtensionNameFromOid(oid);
     }
-    
-    public String getOcspExtensionOid() {
-        return getOcspExtensions().getRowData();
+
+    public String getOcspExtensionOid(final String oid) {
+        return oid;
     }
     
     public String getCurrentTrustEntryDescriptionOcspRespToSign() {
@@ -1007,8 +1007,8 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         this.currentGlobalUnknownResponse = ocspNonExistingBehavior;
     }
     
-    public String getSignOcspResponseForCasCaName() {
-        return caSession.getCAIdToNameMap().get(getSignOcspResponseForCas().getRowData().getCaId());
+    public String getSignOcspResponseForCasCaName(final InternalKeyBindingTrustEntry otherCa) {
+        return getCaSession().getCAIdToNameMap().get(otherCa.getCaId());
     }
     
 
@@ -1050,8 +1050,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
 
     /** Invoked when the user wants to remove an entry to the list of OCSP signed recipient certificate references */
     @SuppressWarnings("unchecked")
-    public void removeCaToSignOcspResponse() {
-        final InternalKeyBindingTrustEntry trustEntry = (getSignOcspResponseForCas().getRowData());
+    public void removeCaToSignOcspResponse(final InternalKeyBindingTrustEntry trustEntry) {
         final List<InternalKeyBindingTrustEntry> caIssuedCertsToSign = 
                 (List<InternalKeyBindingTrustEntry>) getSignOcspResponseForCas().getWrappedData();
         caIssuedCertsToSign.remove(trustEntry);

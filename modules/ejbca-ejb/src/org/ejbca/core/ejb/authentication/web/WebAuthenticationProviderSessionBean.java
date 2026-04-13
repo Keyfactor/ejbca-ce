@@ -63,6 +63,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.util.oauth.OAuthTools;
 
@@ -112,6 +113,8 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private InternalKeyBindingMgmtSessionLocal internalKeyBindingSession;
+    @EJB
+    private RaMasterApiProxyBeanLocal raMasterApi;
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
 
@@ -246,7 +249,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.not_yet_valid", subject, keyFingerprint));
                 return null;
             }
-            final OAuth2Principal principal = createOauthPrincipal(claims, keyInfo);
+            final OAuth2Principal principal = createOauthPrincipal(claims, keyInfo, keyId);
             final boolean usingDefaultProvider = (keyId == null);
             return new OAuth2AuthenticationToken(principal, encodedOauthBearerToken, oauthIdToken, keyFingerprint, keyInfo.getLabel(), usingDefaultProvider);
         } catch (ParseException e) {
@@ -433,7 +436,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         return true;
     }
 
-    private OAuth2Principal createOauthPrincipal(final JWTClaimsSet claims, final OAuthKeyInfo keyInfo) {
+    private OAuth2Principal createOauthPrincipal(final JWTClaimsSet claims, final OAuthKeyInfo keyInfo, final String keyId) {
         return OAuth2Principal.builder()
                 .setOauthProviderId(keyInfo.getInternalId())
                 .setIssuer(claims.getIssuer())
@@ -446,6 +449,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 .setName(safeGetClaim(claims, "name"))
                 .setEmail(safeGetClaim(claims, "email"))
                 .setEmailVerified(safeGetBooleanClaim(claims, "email_verified"))
+                .setKeyId(keyId)
                 .addRoles(claims)
                 .addKfRoles(claims)
                 .build();
@@ -515,8 +519,15 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 redirectUrl = getBaseUrl();
             }
 
-            OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenSession, caSession));
-            oAuthGrantResponseInfo = oauthRequestHelper.sendRefreshTokenRequest(refreshToken, keyInfo, redirectUrl);
+            if (keyInfo.getKeyBinding() != null) {
+                // Key binding flow: proxy the refresh token request to the node that owns the key binding
+                oAuthGrantResponseInfo = raMasterApi.sendOAuthRefreshTokenRequest(refreshToken, keyInfo, redirectUrl);
+            } else {
+                // Client secret flow: perform the refresh token request locally as before
+                final OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(
+                        new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenSession, caSession));
+                oAuthGrantResponseInfo = oauthRequestHelper.sendRefreshTokenRequest(refreshToken, keyInfo, redirectUrl);
+            }
         } catch (ParseException e) {
             LOG.info("Failed to parse OAuth2 JWT: " + e.getMessage(), e);
             return null;

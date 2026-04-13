@@ -68,6 +68,8 @@ import org.bouncycastle.util.Properties;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
+import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -98,6 +100,7 @@ import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.dto.RoleDataDto;
 import org.cesecore.dto.RoleDataDtoBuilder;
+import org.cesecore.keybind.KeyBindingNotFoundException;
 import org.cesecore.keys.keyimport.KeyImportFailure;
 import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.cesecore.roles.AccessRulesHelper;
@@ -4281,5 +4284,35 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             }
         }
         return Long.valueOf(0);
+    }
+
+    @Override
+    public OAuthGrantResponseInfo requestOAuthToken(final OAuthKeyInfo oAuthKeyInfo, final String code, final String redirectUri)
+            throws IOException, CryptoTokenOfflineException, KeyBindingNotFoundException {
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 23) {
+                try {
+                    return raMasterApi.requestOAuthToken(oAuthKeyInfo, code, redirectUri);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public OAuthGrantResponseInfo sendOAuthRefreshTokenRequest(final String refreshToken, final OAuthKeyInfo oAuthKeyInfo, final String redirectUri)
+            throws IOException, CryptoTokenOfflineException, KeyBindingNotFoundException {
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 23) {
+                try {
+                    return raMasterApi.sendOAuthRefreshTokenRequest(refreshToken, oAuthKeyInfo, redirectUri);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
     }
 }

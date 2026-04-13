@@ -33,8 +33,8 @@ import java.util.List;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-
 import com.keyfactor.util.crypto.algorithm.SignatureParameter;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -65,7 +65,7 @@ import org.bouncycastle.asn1.crmf.EncryptedKey;
 import org.bouncycastle.asn1.crmf.POPOPrivKey;
 import org.bouncycastle.asn1.crmf.ProofOfPossession;
 import org.bouncycastle.asn1.crmf.SubsequentMessage;
-import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.GeneralName;
@@ -298,7 +298,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                 throw new IllegalStateException(e);
             }
             issuerName = new GeneralName(certHolder.getIssuer());
-            subjectName = reqMsg.getRequestX500Name() != null ? 
+            subjectName = reqMsg.getRequestX500Name() != null ?
                     new GeneralName(reqMsg.getRequestX500Name()) : new GeneralName(new X500Name("CN=fooSubject"));
         } else {
             String issuer = reqMsg.getIssuerDN() != null ? reqMsg.getIssuerDN() : "CN=fooIssuer";
@@ -378,7 +378,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                                                 final CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
                                                 // note: use cert req ID as key ID, don't want to use issuer/serial in this case!
                                                 edGen.addRecipientInfoGenerator(new JceKEMRecipientInfoGenerator(new ASN1Integer(reqMsg.getRequestId()).getEncoded(),
-                                                        cert.getPublicKey(),CMSAlgorithm.AES256_WRAP).setKDF(new AlgorithmIdentifier(NISTObjectIdentifiers.id_shake256)));
+                                                        cert.getPublicKey(),CMSAlgorithm.AES256_WRAP).setKDF(new AlgorithmIdentifier(PKCSObjectIdentifiers.id_alg_hkdf_with_sha256)));
                                                 // Encrypt into EnvelopedData
                                                 CMSEnvelopedData encryptedCert = edGen.generate(
                                                         new CMSProcessableCMPCertificate(cmpcert),

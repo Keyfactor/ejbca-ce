@@ -122,7 +122,7 @@
             <basic fetch="EAGER" name="updateTime"><column name="updateTime" column-definition="DECIMAL(20,0)" nullable="false"/></basic>
             <basic fetch="EAGER" name="subjectKeyId"><column name="subjectKeyId" column-definition="VARCHAR(255)"/></basic>
             <basic fetch="EAGER" name="accountBindingId"><column name="accountBindingId" column-definition="VARCHAR(255)" nullable="true"/></basic>
-            <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR(2000)" nullable="true"/></basic>
+            <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR(8000)" nullable="true"/></basic>
             <basic fetch="EAGER" name="zzzRowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
             <basic fetch="EAGER" name="zzzCertificateRequest"><column name="certificateRequest" column-definition="TEXT"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
@@ -157,7 +157,7 @@
             <basic fetch="EAGER" name="updateTime"><column name="updateTime" column-definition="DECIMAL(20,0)" nullable="false"/></basic>
             <basic fetch="EAGER" name="subjectKeyId"><column name="subjectKeyId" column-definition="VARCHAR(255)"/></basic>
             <basic fetch="EAGER" name="accountBindingId"><column name="accountBindingId" column-definition="VARCHAR(255)" nullable="true"/></basic>
-            <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR(2000)" nullable="true"/></basic>
+            <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR(8000)" nullable="true"/></basic>
             <basic fetch="EAGER" name="zzzRowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
             <basic fetch="EAGER" name="zzzCertificateRequest"><column name="certificateRequest" column-definition="TEXT"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
@@ -379,7 +379,7 @@
             <id name="username"><column name="username" column-definition="VARCHAR(255)"/></id>
             <basic fetch="EAGER" name="subjectDN"><column name="subjectDN" column-definition="VARCHAR(400)"/></basic>
             <basic fetch="EAGER" name="caId"><column name="cAId" column-definition="INTEGER" nullable="false"/></basic>
-            <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR(2000)"/></basic>
+            <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR(8000)"/></basic>
             <basic fetch="EAGER" name="subjectEmail"><column name="subjectEmail" column-definition="VARCHAR(255)"/></basic>
             <basic fetch="EAGER" name="status"><column name="status" column-definition="INTEGER" nullable="false"/></basic>
             <basic fetch="EAGER" name="type"><column name="type" column-definition="INTEGER" nullable="false"/></basic>

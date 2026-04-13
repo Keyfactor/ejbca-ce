@@ -19,9 +19,9 @@ import org.cesecore.accounts.AccountBindingException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.UsernameGenerateMode;
 import org.ejbca.core.protocol.acme.AcmeChallenge;
-import org.ejbca.core.protocol.acme.AcmeIdentifier;
 import org.ejbca.core.protocol.acme.eab.AcmeExternalAccountBinding;
 import org.ejbca.core.protocol.acme.eab.AcmeExternalAccountBindingFactory;
 import org.ejbca.core.protocol.dnssec.DnsSecDefaults;
@@ -29,9 +29,12 @@ import org.ejbca.core.protocol.dnssec.DnsSecDefaults;
 import java.io.Serializable;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.text.ParseException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,7 +56,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final long serialVersionUID = 1L;
 
     protected static final InternalResources intres = InternalResources.getInstance();
-    protected static final float LATEST_VERSION = 15;
+    protected static final float LATEST_VERSION = 17;
 
     private static final String KEY_RA_NAMEGENERATIONSCHEME = "ra.namegenerationscheme";
     private static final String KEY_RA_NAMEGENERATIONPARAMS = "ra.namegenerationparameters";
@@ -82,7 +85,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String KEY_MPIC_PERSPECTIVE_COUNT = "useMpicPerspectiveCount";
     private static final String KEY_MPIC_QUORUM_COUNT = "useMpicQuorumCount";
     private static final String KEY_MPIC_ATTEMPT_COUNT = "useMpicAttempCount";
-    private static final String KEY_DNS_IDENTIFIER_CHALLENGE_TYPES = "dnsIdentifierChallengeTypes";
+    private static final String KEY_CHALLENGE_TYPES = "dnsIdentifierChallengeTypes";
     private static final String KEY_DNS_RESOLVER = "dnsResolver";
     private static final String KEY_DNSSEC_TRUST_ANCHOR = "dnssecTrustAnchor";
     private static final String KEY_DNS_PORT = "dnsPort";
@@ -99,9 +102,16 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String KEY_APPROVAL_FOR_KEY_CHANGE_ID = "approvalForKeyChangeId";
     private static final String KEY_CLIENT_AUTHENTICATION_REQUIRED = "clientAuthenticationRequired";
     private static final String KEY_PREFERRED_ROOT_CA_SUBJECTDN = "preferredrootcasubjectdn";
+    private static final String KEY_DEVICE_ATTESTATION_ACE_ROOT = "deviceAttestationAcaRoot";
+
     private static final String KEY_ENABLED_RENEWAL_INFO = "enabledRenewalInfo";
     private static final String KEY_SUGGESTED_RENEWAL_START = "suggestedRenewalStart";
     private static final String KEY_SUGGESTED_RENEWAL_END = "suggestedRenewalEnd";
+    private static final String KEY_CONFIGURATION_TYPE = "configurationType";
+    private static final String KEY_ENABLE_ARI_EARLY_RENEWAL = "enableAriEarlyRenewal";
+    private static final String KEY_ARI_EARLY_RENEWAL_CUTOFF_DATE = "ariEarlyRenewalCutoffDate";
+    private static final String KEY_ARI_EARLY_RENEWAL_START_DATE = "ariEarlyRenewalStartDate";
+    private static final String KEY_ARI_EARLY_RENEWAL_END_DATE = "ariEarlyRenewalEndDate";
     private static final String KEY_USE_CAA_ACCOUNT_URI_VALIDATION = "useCaaAccountUriValidation";
     private static final String KEY_USE_CAA_VALIDATION_METHODS_VALIDATION = "useCaaValidationMethodsValidation";
 
@@ -124,7 +134,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     public static final int DEFAULT_KEY_MPIC_PERSPECTIVE_COUNT = 2;
     public static final int DEFAULT_KEY_MPIC_QUORUM_COUNT = 1;
     public static final int DEFAULT_KEY_MPIC_ATTEMPT_COUNT = 1;
-    public static final String DEFAULT_DNS_IDENTIFIER_CHALLENGE_TYPES = "any-dns-challenge";
+    public static final String DEFAULT_CHALLENGE_TYPES = "any-dns-challenge";
 
     private static final String DEFAULT_TERMS_OF_SERVICE_URL = "https://example.com/acme/terms";
     private static final String DEFAULT_TERMS_OF_SERVICE_CHANGE_URL = "https://example.com/acme/termsChanged";
@@ -141,13 +151,17 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     public static final int DEFAULT_APPROVAL_FOR_KEY_CHANGE_ID = -1;
     private static final boolean DEFAULT_CLIENT_AUTHENTICATION_REQUIRED = false;
     public static final String DEFAULT_PREFERRED_ROOT_CA_SUBJECTDN = "default";
+    public static final String DEFAULT_DEVICE_ATTESTATION_ACA_ROOT = "";
 
     public static final boolean DEFAULT_ENABLED_RENEWAL_INFO = true;
     public static final String DEFAULT_SUGGESTED_RENEWAL_START = "5d";
     public static final String DEFAULT_SUGGESTED_RENEWAL_END = "1d";
 
+    public static final boolean DEFAULT_ENABLE_ARI_EARLY_RENEWAL = false;
+
     private static final String[] DEFAULT_TLS_APLN_PROTOCOLS_ENABLED = new String[]{ "TLSv1.2", "TLSv1.3" };
-    
+    public static final String DEFAULT_CONFIGURATION_TYPE = ConfigurationType.TLS.name();
+
     private static final boolean DEFAULT_KEY_USE_CAA_ACCOUNT_URI_VALIDATION = false;
     private static final boolean DEFAULT_KEY_USE_CAA_VALIDATION_METHODS_VALIDATION = false;
 
@@ -173,7 +187,20 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
             // New version of the class, upgrade.
             log.info(intres.getLocalizedMessage("acmeconfiguration.upgrade", getVersion()));
 
-            // v14. Renewal Info
+            // v17. ACME device attestation.
+            if (data.get(KEY_DEVICE_ATTESTATION_ACE_ROOT) == null) {
+                setDeviceAttestationAcaRoot(DEFAULT_DEVICE_ATTESTATION_ACA_ROOT);
+            }
+            if (data.get(KEY_CONFIGURATION_TYPE) == null) {
+                setConfigurationType(DEFAULT_CONFIGURATION_TYPE);
+            }
+
+            // v16. Early Mass-Renewal
+            if (data.get(KEY_ENABLE_ARI_EARLY_RENEWAL) == null) {
+                setEnableAriEarlyRenewal(DEFAULT_ENABLE_ARI_EARLY_RENEWAL); // Off by default. Other mass-renewal settings are irrelevant when it's turned off.
+            }
+
+            // v14-v15. Renewal Info
             if (data.get(KEY_ENABLED_RENEWAL_INFO) == null) {
                 setEnabledRenewalInfo(DEFAULT_ENABLED_RENEWAL_INFO);
             }
@@ -225,8 +252,8 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
                 data.put(KEY_PREFERRED_ROOT_CA_SUBJECTDN, String.valueOf(DEFAULT_PREFERRED_ROOT_CA_SUBJECTDN));
             }
             // v9. Added DNS identifier chaleenge Types selection.
-            if (data.get(KEY_DNS_IDENTIFIER_CHALLENGE_TYPES) == null) {
-                data.put(KEY_DNS_IDENTIFIER_CHALLENGE_TYPES, DEFAULT_DNS_IDENTIFIER_CHALLENGE_TYPES);
+            if (data.get(KEY_CHALLENGE_TYPES) == null) {
+                data.put(KEY_CHALLENGE_TYPES, DEFAULT_CHALLENGE_TYPES);
             }
             // v8. ACME EAB with multiple keys -> multiple EAB.
             try {
@@ -310,6 +337,79 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
 
     public void setConfigurationId(final String configurationId) {
         this.configurationId = configurationId;
+    }
+
+    /**
+     * Certificate configuration type, currently TLS or Device Attestation.
+     * Default is TLS
+     */
+    public enum ConfigurationType {
+        TLS,
+        DEVICE_ATTESTATION;
+        public static ConfigurationType fromName(final String name) {
+            if (name == null) {
+                return TLS;
+            }
+            final String normalized = name.trim();
+            if (normalized.isEmpty()) {
+                return TLS;
+            }
+            for (final ConfigurationType type : values()) {
+                if (type.name().equalsIgnoreCase(normalized)) {
+                    return type;
+                }
+            }
+            return TLS;
+        }
+    }
+
+    /**
+     * Method returning currently configured certificate configuration type as a ConfigurationType object
+     * @return the certificate configuration type
+     */
+    public ConfigurationType getConfigurationTypeEnum() {
+        return ConfigurationType.fromName((String) data.get(KEY_CONFIGURATION_TYPE));
+    }
+
+    /**
+     * Sets the certificate configuration type to persist
+     * @param configurationType the configuration type to set
+     */
+    public void setConfigurationType(final ConfigurationType configurationType) {
+        final ConfigurationType typeToStore = configurationType == null ? ConfigurationType.fromName(DEFAULT_CONFIGURATION_TYPE) : configurationType;
+        data.put(KEY_CONFIGURATION_TYPE, typeToStore.name());
+    }
+
+    /**
+     * Getter for configuration type as String
+     * @return the configuration type as String
+     */
+    public String getConfigurationType() {
+        return getConfigurationTypeEnum().name();
+    }
+
+    /**
+     * Setter for configuration type
+     * @param configurationType the configuration type to set as String
+     */
+    public void setConfigurationType(final String configurationType) {
+        setConfigurationType(ConfigurationType.fromName(configurationType));
+    }
+
+    /**
+     * Method checking if certificate configuration type is TLS
+     * @return true if configuration type is TLS
+     */
+    public boolean isTypeTls() {
+        return getConfigurationTypeEnum() == ConfigurationType.TLS;
+    }
+
+    /**
+     * Method checking if certificate configuration type is Device Attestation
+     * @return true if configuration type is Device Attestation
+     */
+    public boolean isTypeDeviceAttestation() {
+        return getConfigurationTypeEnum() == ConfigurationType.DEVICE_ATTESTATION;
     }
 
     /**
@@ -649,7 +749,59 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     public void setSuggestedRenewalEnd(final String suggestedRenewalEnd) {
         super.data.put(KEY_SUGGESTED_RENEWAL_END, suggestedRenewalEnd);
     }
-    
+
+    public boolean isEnableAriEarlyRenewal() { return Boolean.valueOf((String) super.data.get(KEY_ENABLE_ARI_EARLY_RENEWAL)); }
+    public void setEnableAriEarlyRenewal(final boolean enable) { super.data.put(KEY_ENABLE_ARI_EARLY_RENEWAL, String.valueOf(enable)); }
+
+    private Instant checkAndReturnDate(final String dateString) {
+        if (StringUtils.isBlank(dateString)) {
+            throw new IllegalArgumentException("Date string cannot be blank");
+        }
+        try {
+            return ValidityDate.parseAsIso8601(dateString).toInstant();
+        } catch (ParseException e) {
+            throw new IllegalArgumentException("Invalid date: " + e.getMessage(), e);
+        }
+    }
+
+    private String reformatDate(final String dateString) {
+        var instant = checkAndReturnDate(dateString);
+        var timezone = ValidityDate.extractTimeZone(dateString, ValidityDate.TIMEZONE_SERVER);
+        return ValidityDate.formatAsISO8601(Date.from(instant), timezone);
+    }
+
+    public String getAriEarlyRenewalCutoffDateAsString() { return (String) super.data.get(KEY_ARI_EARLY_RENEWAL_CUTOFF_DATE); }
+    /** Certificates that were issued before this time will have to be renewed. RFC-3339 format (YYYY-MM-DD HH:MM:SS+ZZ:ZZ), timezone defaults to UTC. */
+    public void setAriEarlyRenewalCutoffDateAsString(String cutoffDate) {
+        if (StringUtils.isBlank(cutoffDate)) {
+            cutoffDate = ValidityDate.formatAsISO8601ServerTZ(System.currentTimeMillis(), null);
+        } else {
+            final Instant cutoffTime = checkAndReturnDate(cutoffDate);
+            if (cutoffTime.isAfter(Instant.now())) {
+                throw new IllegalArgumentException("Cut-off date may not be in the future (leave blank for current time): " + cutoffDate);
+            }
+        }
+        super.data.put(KEY_ARI_EARLY_RENEWAL_CUTOFF_DATE, reformatDate(cutoffDate));
+    }
+    /** Certificates that were issued before this time will have to be renewed */
+    public Instant getAriEarlyRenewalCutoffDate() { return checkAndReturnDate(getAriEarlyRenewalCutoffDateAsString()); }
+
+    public String getAriEarlyRenewalStartDateAsString() { return (String) super.data.get(KEY_ARI_EARLY_RENEWAL_START_DATE); }
+    /** ARI-capable clients will be told to renew early within this window. RFC-3339 format (YYYY-MM-DD HH:MM:SS+ZZ:ZZ), timezone defaults to UTC. */
+    public void setAriEarlyRenewalStartDateAsString(final String startDate) {
+        super.data.put(KEY_ARI_EARLY_RENEWAL_START_DATE, reformatDate(startDate));
+    }
+    /** ARI-capable clients will be told to renew early within this window. */
+    public Instant getAriEarlyRenewalStartDate() { return checkAndReturnDate(getAriEarlyRenewalStartDateAsString()); }
+
+    public String getAriEarlyRenewalEndDateAsString() { return (String) super.data.get(KEY_ARI_EARLY_RENEWAL_END_DATE); }
+    /** ARI-capable clients will be told to renew early within this window. RFC-3339 format (YYYY-MM-DD HH:MM:SS+ZZ:ZZ), timezone defaults to UTC. */
+    public void setAriEarlyRenewalEndDateAsString(final String endDate) {
+        super.data.put(KEY_ARI_EARLY_RENEWAL_END_DATE, reformatDate(endDate));
+    }
+    /* ARI-capable clients will be told to renew early within this window. */
+    public Instant getAriEarlyRenewalEndDate() { return checkAndReturnDate(getAriEarlyRenewalEndDateAsString()); }
+
     public boolean isUseMpicService() {
         return Boolean.valueOf((String) super.data.get(KEY_USE_MPIC_SERVICE));
     }
@@ -730,36 +882,37 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         }
     }
 
-    public String getDnsIdentifiersChallengeTypes() {
-        return (String) super.data.get(KEY_DNS_IDENTIFIER_CHALLENGE_TYPES);
+    public String getChallengeTypes() {
+        return (String) super.data.get(KEY_CHALLENGE_TYPES);
     }
 
-    public List<String> getDnsIdentifiersChallengeTypesList() {
+    public List<String> getChallengeTypesList() {
         final List<String> result = new ArrayList<>();
-        final String types = getDnsIdentifiersChallengeTypes();
+        final String types = getChallengeTypes();
         if (types != null && types.length() > 0) {
             result.addAll(Arrays.asList(types.split(",")));
         }
         return result;
     }
 
-    public void setDnsIdentifiersChallengeTypes(String types) throws AcmeChallengeTypeException {
+    public void setChallengeTypes(String types) throws AcmeChallengeTypeException {
         if (types != null && !types.trim().isEmpty()) {
             // Remove duplicates.
             Set<String> challengeTypes = Stream.of(types.trim().split(",")).collect(Collectors.toSet());
             // Check value range.
-            final List<String> availableChallengeTypes = AcmeChallenge.AcmeChallengeType.getDnsIdentifierChallengeTypes(AcmeIdentifier.AcmeIdentifierTypes.DNS);
-            availableChallengeTypes.add(DEFAULT_DNS_IDENTIFIER_CHALLENGE_TYPES);
+            final List<String> availableChallengeTypes = new ArrayList<>();
+            availableChallengeTypes.add(DEFAULT_CHALLENGE_TYPES);
+            availableChallengeTypes.addAll(AcmeChallenge.AcmeChallengeType.getDistinctChallengeTypes());
             if (!availableChallengeTypes.containsAll(challengeTypes)) {
                 throw new AcmeChallengeTypeException("Invalid ACME DNS identifier challenge type. Use one of: " + availableChallengeTypes);
             }
             // Normalize selection any.
             if (challengeTypes.size() >= availableChallengeTypes.size() - 1) {
-                challengeTypes = Collections.singleton(AcmeConfiguration.DEFAULT_DNS_IDENTIFIER_CHALLENGE_TYPES);
+                challengeTypes = Collections.singleton(DEFAULT_CHALLENGE_TYPES);
             }
-            super.data.put(KEY_DNS_IDENTIFIER_CHALLENGE_TYPES, challengeTypes.stream().collect(Collectors.joining(",")));
+            super.data.put(KEY_CHALLENGE_TYPES, challengeTypes.stream().collect(Collectors.joining(",")));
         } else {
-            super.data.put(KEY_DNS_IDENTIFIER_CHALLENGE_TYPES, DEFAULT_DNS_IDENTIFIER_CHALLENGE_TYPES);
+            super.data.put(KEY_CHALLENGE_TYPES, DEFAULT_CHALLENGE_TYPES);
         }
     }
 
@@ -909,24 +1062,32 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         data.put(KEY_PREFERRED_ROOT_CA_SUBJECTDN, preferredRootCaSubjectDn);
     }
 
+    public String getDeviceAttestationAcaRoot() {
+        return (String) super.data.get(KEY_DEVICE_ATTESTATION_ACE_ROOT);
+    }
+
+    public void setDeviceAttestationAcaRoot(String url) {
+        super.data.put(KEY_DEVICE_ATTESTATION_ACE_ROOT, url);
+    }
+
     public String[] getTlsAlpnProtocolsEnabled() {
         return DEFAULT_TLS_APLN_PROTOCOLS_ENABLED;
     }
-    
+
     public void setUseCaaAccountUriValidation(final boolean use) {
         super.data.put(KEY_USE_CAA_ACCOUNT_URI_VALIDATION, String.valueOf(use));
     }
-    
+
     public boolean isUseCaaAccountUriValidation() {
-        return super.data.get(KEY_USE_CAA_ACCOUNT_URI_VALIDATION) != null && Boolean.valueOf((String) super.data.get(KEY_USE_CAA_ACCOUNT_URI_VALIDATION)); 
+        return super.data.get(KEY_USE_CAA_ACCOUNT_URI_VALIDATION) != null && Boolean.valueOf((String) super.data.get(KEY_USE_CAA_ACCOUNT_URI_VALIDATION));
     }
-    
+
     public void setUseCaaValidationMethodsValidation(final boolean use) {
         super.data.put(KEY_USE_CAA_VALIDATION_METHODS_VALIDATION, String.valueOf(use));
     }
-    
+
     public boolean isUseCaaValidationMethodsValidation() {
-        return super.data.get(KEY_USE_CAA_VALIDATION_METHODS_VALIDATION) != null && Boolean.valueOf((String) super.data.get(KEY_USE_CAA_VALIDATION_METHODS_VALIDATION)); 
+        return super.data.get(KEY_USE_CAA_VALIDATION_METHODS_VALIDATION) != null && Boolean.valueOf((String) super.data.get(KEY_USE_CAA_VALIDATION_METHODS_VALIDATION));
     }
 
     /**
@@ -956,7 +1117,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         setMpicPerspectiveCount(DEFAULT_KEY_MPIC_PERSPECTIVE_COUNT);
         setMpicQuorumCount(DEFAULT_KEY_MPIC_QUORUM_COUNT);
         setMpicAttemptCount(DEFAULT_KEY_MPIC_ATTEMPT_COUNT);
-        data.put(KEY_DNS_IDENTIFIER_CHALLENGE_TYPES, DEFAULT_DNS_IDENTIFIER_CHALLENGE_TYPES);
+        data.put(KEY_CHALLENGE_TYPES, DEFAULT_CHALLENGE_TYPES);
         setWebSiteUrl(DEFAULT_WEBSITE_URL);
         setAriRetryAfter(DEFAULT_ARI_RETRY_AFTER);
         setOrderValidity(DEFAULT_ORDER_VALIDITY);
@@ -969,10 +1130,12 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         setApprovalForKeyChangeId(DEFAULT_APPROVAL_FOR_KEY_CHANGE_ID);
         setClientAuthenticationRequired(DEFAULT_CLIENT_AUTHENTICATION_REQUIRED);
         setPreferredRootCaSubjectDn(DEFAULT_PREFERRED_ROOT_CA_SUBJECTDN);
+        setDeviceAttestationAcaRoot(DEFAULT_DEVICE_ATTESTATION_ACA_ROOT);
         setEnabledRenewalInfo(DEFAULT_ENABLED_RENEWAL_INFO);
         setSuggestedRenewalStart(DEFAULT_SUGGESTED_RENEWAL_START);
         setSuggestedRenewalEnd(DEFAULT_SUGGESTED_RENEWAL_END);
         setUseCaaAccountUriValidation(DEFAULT_KEY_USE_CAA_ACCOUNT_URI_VALIDATION);
         setUseCaaValidationMethodsValidation(DEFAULT_KEY_USE_CAA_VALIDATION_METHODS_VALIDATION);
+        setConfigurationType(DEFAULT_CONFIGURATION_TYPE);
     }
 }
