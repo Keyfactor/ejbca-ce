@@ -18,6 +18,7 @@ package org.ejbca.core.protocol.acme.response;
  * @see https://tools.ietf.org/html/rfc8555#section-6.7
  */
 public enum AcmeProblem {
+    PROBLEM_BAD_ATTESTATION_STATEMENT("badAttestationStatement", "The attestation statement is invalid (e.g. not signed by an attestation authority trusted by the CA)"),
     PROBLEM_BAD_CSR("badCSR", "The CSR is unacceptable (e.g., due to a short key)"),
     PROBLEM_BAD_NONCE("badNonce", "The client sent an unacceptable anti-replay nonce"),
     PROBLEM_BAD_SIGNATURE_ALGORITHM("badSignatureAlgorithm", "The JWS was signed with an algorithm the server does not support"),
