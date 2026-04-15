@@ -88,7 +88,7 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public void flushId(Integer id) {
-        CryptoTokenCache.INSTANCE.shouldCheckForUpdates(id);
+        CryptoTokenCache.INSTANCE.removeEntry(id);
         if (log.isDebugEnabled()) {
             log.debug("Flushed CryptoToken cache entry " + id);
         }
