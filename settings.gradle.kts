@@ -97,7 +97,7 @@ dependencyResolutionManagement {
             library("commons-fileupload2", ":commons-fileupload2-jakarta-servlet6:2.0.0-M4")
             library("commons-fileupload2-core", ":commons-fileupload2-core:2.0.0-M4")
             library("jacknji11", ":jacknji11:1.3.1")
-            library("p11ng", ":p11ng:0.30.0")
+            library("p11ng", ":p11ng:0.30.1")
             library("protobuf-java", ":protobuf-java:3.25.5")
             library("ctlog", ":ctlog:0.1.7")
             library("commons-beanutils", ":commons-beanutils:1.9.4")
