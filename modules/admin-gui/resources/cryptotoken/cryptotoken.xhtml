@@ -706,7 +706,7 @@
         </ui:fragment>
 
         <h:form id="currentCryptoTokenAliasesForm" rendered="#{cryptoTokenMBean.currentCryptoToken.active}">
-            <p:dataTable value="#{cryptoTokenMBean.keyPairGuiList}"
+            <p:dataTable value="#{cryptoTokenMBean.keyPairGuiInfos}"
                          id="keyPairList"
                          var="keyPairGuiInfo"
                          rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty}"
@@ -788,17 +788,17 @@
                     </f:facet>
                     <div class="action-buttons">
                         <h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_INIT}"
-                                         action="#{cryptoTokenMBean.initializeKey}"
+                                         action="#{cryptoTokenMBean.initializeKey(keyPairGuiInfo.alias)}"
                                          rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}"
                                          disabled="#{keyPairGuiInfo.placeholder or keyPairGuiInfo.initialized}"/>
                         <h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_AUTH}"
-                                         action="#{cryptoTokenMBean.actionAuthorizeStart}"
+                                         action="#{cryptoTokenMBean.actionAuthorizeStart(keyPairGuiInfo.alias)}"
                                          rendered="#{cryptoTokenMBean.currentCryptoToken.showAuthorizationInfo}"
                                          disabled="#{keyPairGuiInfo.placeholder}">
                             <f:ajax execute="@this selectPaddingSchemeMenu" render=":modalBlockContainer"/>
                         </h:commandButton>
                         <h:commandButton id="test" value="#{web.text.CRYPTOTOKEN_KPM_TEST}"
-                                         action="#{cryptoTokenMBean.testKeyPair}"
+                                         action="#{cryptoTokenMBean.testKeyPair(keyPairGuiInfo.alias)}"
                                          rendered="#{cryptoTokenMBean.allowedToKeyTest}"
                                          disabled="#{keyPairGuiInfo.placeholder}"/>
                         <h:commandButton id="remove" value="#{web.text.CRYPTOTOKEN_KPM_REMOVE}"
@@ -807,7 +807,7 @@
                         <h:commandButton
                                 id="genFromTemplate"
                                 value="#{web.text.CRYPTOTOKEN_KPM_GENFROMTEMPLATE}"
-                                action="#{cryptoTokenMBean.generateFromTemplate}"
+                                action="#{cryptoTokenMBean.generateFromTemplate(keyPairGuiInfo.alias)}"
                                 rendered="#{keyPairGuiInfo.placeholder &amp;&amp; cryptoTokenMBean.allowedToKeyGeneration}"/>
                         <h:commandButton
                                 id="downPub"
