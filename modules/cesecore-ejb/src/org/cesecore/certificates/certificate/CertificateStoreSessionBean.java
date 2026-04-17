@@ -1937,6 +1937,153 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public Map<BigInteger, CertificateDataWrapper> getCertificateDataByIssuerAndSernos(final String issuerDn, final Collection<BigInteger> serialNumbers) {
+        final Map<BigInteger, CertificateDataWrapper> result = new LinkedHashMap<>();
+        if (serialNumbers == null || serialNumbers.isEmpty()) {
+            return result;
+        }
+        final String dn = DnComponents.stringToBCDNString(StringTools.strip(issuerDn));
+        // Chunk serial numbers to avoid exceeding database IN-clause limits (Oracle limit is 1000)
+        final int chunkSize = 500;
+        final List<BigInteger> serialList = new ArrayList<>(serialNumbers);
+        for (int i = 0; i < serialList.size(); i += chunkSize) {
+            final List<BigInteger> chunk = serialList.subList(i, Math.min(i + chunkSize, serialList.size()));
+            final List<String> serialStrings = new ArrayList<>(chunk.size());
+            for (final BigInteger serno : chunk) {
+                serialStrings.add(serno.toString());
+            }
+            final List<CertificateData> certs = certificateDataSession.findByIssuerDNAndSerialNumbers(dn, serialStrings);
+            for (final CertificateData certData : certs) {
+                final BigInteger serno = new BigInteger(certData.getSerialNumber());
+                if (!result.containsKey(serno)) {
+                    if (CesecoreConfiguration.useBase64CertTable()) {
+                        final Base64CertData base64CertData = Base64CertData.findByFingerprint(entityManager, certData.getFingerprint());
+                        result.put(serno, new CertificateDataWrapper(certData, base64CertData));
+                    } else {
+                        result.put(serno, new CertificateDataWrapper(certData, null));
+                    }
+                }
+            }
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Bulk lookup of " + serialNumbers.size() + " serial numbers for issuer '" + dn + "' found " + result.size() + " existing entries.");
+        }
+        return result;
+    }
+
+    private static final int BATCH_CHUNK_SIZE = 500;
+    private static final int MAX_LIMITED_ENTRIES = 1000000;
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public void persistLimitedCertificateDataBatch(final AuthenticationToken admin, final int caId, final String issuerDn, final String caFingerprint,
+            final Map<BigInteger, CertificateDataWrapper> existingCertificates, final List<LimitedCertificateEntry> limitedEntries) throws AuthorizationDeniedException {
+        if (limitedEntries == null || limitedEntries.isEmpty()) {
+            return;
+        }
+        if (limitedEntries.size() > MAX_LIMITED_ENTRIES) {
+            throw new IllegalArgumentException("Number of limited entries (" + limitedEntries.size()
+                    + ") exceeds the maximum allowed size (" + MAX_LIMITED_ENTRIES + ").");
+        }
+        // Authorization is checked once here; the chunk method re-checks but this provides an early fail
+        if (!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caId)) {
+            final String msg = INTRES.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caId);
+            throw new AuthorizationDeniedException(msg);
+        }
+        int totalPersisted = 0;
+        int totalUpdated = 0;
+        int totalDeleted = 0;
+        int totalSkipped = 0;
+        // Process in chunks, each in its own transaction, to avoid long-running transactions
+        for (int i = 0; i < limitedEntries.size(); i += BATCH_CHUNK_SIZE) {
+            final List<LimitedCertificateEntry> chunk = limitedEntries.subList(i, Math.min(i + BATCH_CHUNK_SIZE, limitedEntries.size()));
+            final int[] result = certificateStoreSession.persistLimitedCertificateDataChunk(admin, caId, issuerDn, caFingerprint, existingCertificates, chunk);
+            totalPersisted += result[0];
+            totalUpdated += result[1];
+            totalDeleted += result[2];
+            totalSkipped += result[3];
+        }
+        if (log.isInfoEnabled()) {
+            log.info("Batch persisted limited CertificateData for issuer '" + issuerDn + "': " + totalPersisted + " new, " + totalUpdated + " updated, "
+                    + totalDeleted + " deleted, " + totalSkipped + " skipped.");
+        }
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public int[] persistLimitedCertificateDataChunk(final AuthenticationToken admin, final int caId, final String issuerDn, final String caFingerprint,
+            final Map<BigInteger, CertificateDataWrapper> existingCertificates, final List<LimitedCertificateEntry> limitedEntries) throws AuthorizationDeniedException {
+        if (!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caId)) {
+            final String msg = INTRES.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caId);
+            throw new AuthorizationDeniedException(msg);
+        }
+        int persisted = 0;
+        int updated = 0;
+        int deleted = 0;
+        int skipped = 0;
+        for (final LimitedCertificateEntry entry : limitedEntries) {
+            final BigInteger serialNumber = entry.getSerialNumber();
+            final String limitedFingerprint = getLimitedCertificateDataFingerprint(issuerDn, serialNumber);
+            final CertificateDataWrapper cdw = existingCertificates.get(serialNumber);
+            if (cdw == null) {
+                if (entry.getReasonCode() == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL) {
+                    deleteLimitedCertificateData(limitedFingerprint);
+                    deleted++;
+                } else {
+                    final CertificateData limitedCertificateData = new CertificateData();
+                    limitedCertificateData.setFingerprint(limitedFingerprint);
+                    limitedCertificateData.setSerialNumber(serialNumber.toString());
+                    limitedCertificateData.setIssuer(issuerDn);
+                    limitedCertificateData.setSubjectDN("CN=limited");
+                    limitedCertificateData.setUsername(null);
+                    limitedCertificateData.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
+                    limitedCertificateData.setStatus(CertificateConstants.CERT_REVOKED);
+                    limitedCertificateData.setRevocationReason(entry.getReasonCode());
+                    limitedCertificateData.setRevocationDate(entry.getRevocationDate());
+                    limitedCertificateData.setInvalidityDate(entry.getInvalidityDate());
+                    limitedCertificateData.setUpdateTime(System.currentTimeMillis());
+                    limitedCertificateData.setCaFingerprint(caFingerprint);
+                    entityManager.persist(limitedCertificateData);
+                    persisted++;
+                }
+            } else if (limitedFingerprint.equals(cdw.getCertificateData().getFingerprint())) {
+                if (entry.getReasonCode() == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL) {
+                    deleteLimitedCertificateData(limitedFingerprint);
+                    deleted++;
+                } else {
+                    // Use entityManager.find() to get a managed entity, since the entity from existingCertificates
+                    // may have been detached by a previous entityManager.clear() call during batch processing.
+                    final CertificateData limitedCertificateData = entityManager.find(CertificateData.class, limitedFingerprint);
+                    if (limitedCertificateData == null) {
+                        log.warn("Limited CertificateData with fingerprint " + limitedFingerprint + " was expected but not found in database. Skipping.");
+                        skipped++;
+                    } else if (limitedCertificateData.getRevocationDate() != entry.getRevocationDate().getTime()
+                            || limitedCertificateData.getRevocationReason() != entry.getReasonCode()
+                            || (entry.getInvalidityDate() != null && limitedCertificateData.getInvalidityDateNeverNull() != entry.getInvalidityDate().getTime())) {
+                        limitedCertificateData.setStatus(CertificateConstants.CERT_REVOKED);
+                        limitedCertificateData.setRevocationReason(entry.getReasonCode());
+                        limitedCertificateData.setRevocationDate(entry.getRevocationDate());
+                        limitedCertificateData.setInvalidityDate(entry.getInvalidityDate());
+                        limitedCertificateData.setUpdateTime(System.currentTimeMillis());
+                        entityManager.merge(limitedCertificateData);
+                        updated++;
+                    } else {
+                        skipped++;
+                    }
+                }
+            } else {
+                // Not a limited entry — skip, will be handled individually by the caller
+                skipped++;
+            }
+        }
+        // Flush and clear at the end of each chunk to free persistence context memory
+        entityManager.flush();
+        entityManager.clear();
+        return new int[]{persisted, updated, deleted, skipped};
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void reloadCaCertificateCache() {
         if (log.isDebugEnabled()) {
             log.debug("Reloading CA certificate cache.");
