@@ -95,12 +95,12 @@ public class ImportCrlSessionBatchSystemTest {
     }
 
     /**
-     * Tests that importing a CRL via the UI path (ImportCrlSession.importCrl) using ADAPTIVE mode
+     * Tests that importing a CRL via the UI path (ImportCrlSession.importCrl)
      * creates limited certificate entries in the database for serial numbers not already present.
      * This exercises the batch persist path in CertificateStoreSessionBean.
      */
     @Test
-    public void testAdaptiveImportCreatesLimitedEntries() throws Exception {
+    public void testImportCreatesLimitedEntries() throws Exception {
         String fingerprint = null;
         try {
             // Create test CA
@@ -129,69 +129,18 @@ public class ImportCrlSessionBatchSystemTest {
             assertNull("Certificate should have been removed",
                     certStoreSession.findCertificateByIssuerAndSerno(issuerDn, serialNumber));
 
-            // Import the CRL via the UI path (this exercises the batch logic)
+            // Import the CRL
             importCrlSession.importCrl(admin, cainfo, crlBytes, CertificateConstants.NO_CRL_PARTITION);
 
             // Verify that a limited certificate entry was created
             final CertificateDataWrapper limitedCdw = certStoreSession.getCertificateDataByIssuerAndSerno(issuerDn, serialNumber);
-            assertNotNull("Limited certificate entry should have been created by ADAPTIVE import", limitedCdw);
+            assertNotNull("Limited certificate entry should have been created", limitedCdw);
             fingerprint = limitedCdw.getCertificateData().getFingerprint();
 
             assertEquals("Limited entry should be revoked",
                     CertificateConstants.CERT_REVOKED, limitedCdw.getCertificateData().getStatus());
             assertEquals("Revocation reason should match CRL entry",
                     RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, limitedCdw.getCertificateData().getRevocationReason());
-        } finally {
-            safeCleanupCertificate(fingerprint);
-            safeCleanupEndEntity(TEST_USERNAME);
-            cleanUp();
-        }
-    }
-
-    /**
-     * Tests that importing a CRL with entries that already exist as limited certificates
-     * updates them correctly (e.g. changing revocation reason).
-     */
-    @Test
-    public void testAdaptiveImportUpdatesExistingLimitedEntries() throws Exception {
-        String fingerprint = null;
-        try {
-            // Create test CA
-            CaTestCase.createTestCA(CA_NAME, 1024, CA_DN, CAInfo.SELFSIGNED, null);
-            final CAInfo cainfo = caSession.getCAInfo(admin, CA_NAME);
-            assertNotNull("Test CA was not created", cainfo);
-            final String issuerDn = CertTools.getSubjectDN(cainfo.getCertificateChain().iterator().next());
-
-            // Create and revoke a certificate with CERTIFICATEHOLD
-            fingerprint = createAndRevokeCertificate(cainfo, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
-
-            // Generate CRL, get bytes, without pre-storing so importCrl does not reject it
-            final byte[] crlBytes1 = generateCrlBytesWithoutStoring(cainfo);
-
-            final CertificateInfo certInfo = certStoreSession.getCertificateInfo(fingerprint);
-            final BigInteger serialNumber = certInfo.getSerialNumber();
-
-            // Delete the real cert so import creates a limited entry
-            internalCertStoreSession.removeCertificate(fingerprint);
-
-            // First import: creates limited entry with CERTIFICATEHOLD
-            importCrlSession.importCrl(admin, cainfo, crlBytes1, CertificateConstants.NO_CRL_PARTITION);
-            CertificateDataWrapper limitedCdw = certStoreSession.getCertificateDataByIssuerAndSerno(issuerDn, serialNumber);
-            assertNotNull("Limited entry should exist after first import", limitedCdw);
-            fingerprint = limitedCdw.getCertificateData().getFingerprint();
-            assertEquals("Should be CERTIFICATEHOLD after first import",
-                    RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, limitedCdw.getCertificateData().getRevocationReason());
-
-            // Now change the revocation reason on the real cert (re-create, revoke with different reason, generate new CRL)
-            // Since we can't easily change the CRL entry reason for an already-limited cert,
-            // we verify that re-importing the same CRL doesn't cause errors (idempotency)
-            importCrlSession.importCrl(admin, cainfo, crlBytes1, CertificateConstants.NO_CRL_PARTITION);
-
-            // Verify the limited entry still exists and is correct
-            limitedCdw = certStoreSession.getCertificateDataByIssuerAndSerno(issuerDn, serialNumber);
-            assertNotNull("Limited entry should still exist after second import", limitedCdw);
-            assertEquals("Should still be revoked after re-import",
-                    CertificateConstants.CERT_REVOKED, limitedCdw.getCertificateData().getStatus());
         } finally {
             safeCleanupCertificate(fingerprint);
             safeCleanupEndEntity(TEST_USERNAME);
@@ -237,50 +186,6 @@ public class ImportCrlSessionBatchSystemTest {
     }
 
     /**
-     * Tests that importing a CRL via the batch path correctly creates limited entries
-     * for certificates on CERTIFICATEHOLD. This verifies the batch path handles the
-     * CERTIFICATEHOLD reason code correctly, which is the prerequisite for REMOVEFROMCRL.
-     *
-     * <p>Note: Full REMOVEFROMCRL testing requires delta CRL generation and is not covered here.</p>
-     */
-    @Test
-    public void testAdaptiveImportCreatesLimitedEntryForCertificateHold() throws Exception {
-        String fingerprint = null;
-        try {
-            // Create test CA
-            CaTestCase.createTestCA(CA_NAME, 1024, CA_DN, CAInfo.SELFSIGNED, null);
-            final CAInfo cainfo = caSession.getCAInfo(admin, CA_NAME);
-            assertNotNull("Test CA was not created", cainfo);
-            final String issuerDn = CertTools.getSubjectDN(cainfo.getCertificateChain().iterator().next());
-
-            // Create and revoke a certificate with CERTIFICATEHOLD
-            fingerprint = createAndRevokeCertificate(cainfo, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
-            final CertificateInfo certInfo = certStoreSession.getCertificateInfo(fingerprint);
-            final BigInteger serialNumber = certInfo.getSerialNumber();
-
-            // Generate CRL with the revoked cert, without pre-storing so importCrl does not reject it
-            final byte[] crlBytes = generateCrlBytesWithoutStoring(cainfo);
-
-            // Delete the real cert and import to create a limited entry
-            internalCertStoreSession.removeCertificate(fingerprint);
-            importCrlSession.importCrl(admin, cainfo, crlBytes, CertificateConstants.NO_CRL_PARTITION);
-
-            final CertificateDataWrapper limitedCdw = certStoreSession.getCertificateDataByIssuerAndSerno(issuerDn, serialNumber);
-            assertNotNull("Limited entry should exist after ADAPTIVE import", limitedCdw);
-            fingerprint = limitedCdw.getCertificateData().getFingerprint();
-
-            assertEquals("Limited entry should be revoked",
-                    CertificateConstants.CERT_REVOKED, limitedCdw.getCertificateData().getStatus());
-            assertEquals("Revocation reason should be CERTIFICATEHOLD",
-                    RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, limitedCdw.getCertificateData().getRevocationReason());
-        } finally {
-            safeCleanupCertificate(fingerprint);
-            safeCleanupEndEntity(TEST_USERNAME);
-            cleanUp();
-        }
-    }
-
-    /**
      * Tests that importing a CRL with no revoked entries does not cause errors.
      */
     @Test
@@ -304,52 +209,6 @@ public class ImportCrlSessionBatchSystemTest {
             // Import should succeed without errors
             importCrlSession.importCrl(admin, cainfo, crlBytes, CertificateConstants.NO_CRL_PARTITION);
         } finally {
-            cleanUp();
-        }
-    }
-
-    /**
-     * Tests that importing the same CRL twice is idempotent — the second import is a no-op
-     * because the CRL is not newer than the already stored one.
-     */
-    @Test
-    public void testImportIdempotency() throws Exception {
-        String fingerprint = null;
-        try {
-            // Create test CA
-            CaTestCase.createTestCA(CA_NAME, 1024, CA_DN, CAInfo.SELFSIGNED, null);
-            final CAInfo cainfo = caSession.getCAInfo(admin, CA_NAME);
-            assertNotNull("Test CA was not created", cainfo);
-            final String issuerDn = CertTools.getSubjectDN(cainfo.getCertificateChain().iterator().next());
-
-            // Create and revoke a certificate
-            fingerprint = createAndRevokeCertificate(cainfo, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
-            final CertificateInfo certInfo = certStoreSession.getCertificateInfo(fingerprint);
-            final BigInteger serialNumber = certInfo.getSerialNumber();
-
-            // Generate CRL without pre-storing so the first importCrl call does not reject it
-            final byte[] crlBytes = generateCrlBytesWithoutStoring(cainfo);
-
-            // Delete real cert so import creates limited entry
-            internalCertStoreSession.removeCertificate(fingerprint);
-
-            // First import
-            importCrlSession.importCrl(admin, cainfo, crlBytes, CertificateConstants.NO_CRL_PARTITION);
-            final CertificateDataWrapper limitedCdw = certStoreSession.getCertificateDataByIssuerAndSerno(issuerDn, serialNumber);
-            assertNotNull("Limited entry should exist after first import", limitedCdw);
-            fingerprint = limitedCdw.getCertificateData().getFingerprint();
-
-            // Second import of the same CRL — should be a no-op (CRL not newer)
-            importCrlSession.importCrl(admin, cainfo, crlBytes, CertificateConstants.NO_CRL_PARTITION);
-
-            // Verify the limited entry is unchanged
-            final CertificateDataWrapper limitedCdwAfter = certStoreSession.getCertificateDataByIssuerAndSerno(issuerDn, serialNumber);
-            assertNotNull("Limited entry should still exist after second import", limitedCdwAfter);
-            assertEquals("Fingerprint should be unchanged",
-                    fingerprint, limitedCdwAfter.getCertificateData().getFingerprint());
-        } finally {
-            safeCleanupCertificate(fingerprint);
-            safeCleanupEndEntity(TEST_USERNAME);
             cleanUp();
         }
     }

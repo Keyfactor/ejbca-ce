@@ -1947,7 +1947,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             return result;
         }
         final String dn = DnComponents.stringToBCDNString(StringTools.strip(issuerDn));
-        // Chunk serial numbers to avoid exceeding database IN-clause limits (Oracle limit is 1000)
+        // Chunk serial numbers to avoid exceeding database IN-clause limits
         final int chunkSize = 500;
         final List<BigInteger> serialList = new ArrayList<>(serialNumbers);
         for (int i = 0; i < serialList.size(); i += chunkSize) {
