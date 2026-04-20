@@ -52,6 +52,7 @@ import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.internal.CaCertificateCacheLocal;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -102,6 +103,9 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     /** Internal localization of logs and errors */
     private static final InternalResources INTRES = InternalResources.getInstance();
     private static final int TIMERID_CACERTIFICATECACHE = 1;
+
+    private static final int BATCH_CHUNK_SIZE = 500;
+    private static final int MAX_LIMITED_ENTRIES = 10000000;
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -1971,9 +1975,6 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         return result;
     }
 
-    private static final int BATCH_CHUNK_SIZE = 500;
-    private static final int MAX_LIMITED_ENTRIES = 1000000;
-
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void persistLimitedCertificateDataBatch(final AuthenticationToken admin, final int caId, final String issuerDn, final String caFingerprint,
@@ -2044,11 +2045,18 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                     limitedCertificateData.setUpdateTime(System.currentTimeMillis());
                     limitedCertificateData.setCaFingerprint(caFingerprint);
                     entityManager.persist(limitedCertificateData);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Adding limited CertificateData entry with fingerprint=" + limitedFingerprint + ", serialNumber=" + serialNumber + ", issuerDn='" + issuerDn + "'");
+                    }
                     persisted++;
                 }
             } else if (limitedFingerprint.equals(cdw.getCertificateData().getFingerprint())) {
                 if (entry.getReasonCode() == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL) {
                     deleteLimitedCertificateData(limitedFingerprint);
+                    existingCertificates.remove(serialNumber);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Deleting limited CertificateData entry with fingerprint=" + limitedFingerprint + ", serialNumber=" + serialNumber + ", issuerDn='" + issuerDn + "'");
+                    }
                     deleted++;
                 } else {
                     // Use entityManager.find() to get a managed entity, since the entity from existingCertificates
@@ -2057,22 +2065,31 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                     if (limitedCertificateData == null) {
                         log.warn("Limited CertificateData with fingerprint " + limitedFingerprint + " was expected but not found in database. Skipping.");
                         skipped++;
-                    } else if (limitedCertificateData.getRevocationDate() != entry.getRevocationDate().getTime()
+                    } else if (entry.getRevocationDate() != null && (limitedCertificateData.getRevocationDate() != entry.getRevocationDate().getTime()
                             || limitedCertificateData.getRevocationReason() != entry.getReasonCode()
-                            || (entry.getInvalidityDate() != null && limitedCertificateData.getInvalidityDateNeverNull() != entry.getInvalidityDate().getTime())) {
+                            || (entry.getInvalidityDate() != null && limitedCertificateData.getInvalidityDateNeverNull() != entry.getInvalidityDate().getTime()))) {
                         limitedCertificateData.setStatus(CertificateConstants.CERT_REVOKED);
                         limitedCertificateData.setRevocationReason(entry.getReasonCode());
                         limitedCertificateData.setRevocationDate(entry.getRevocationDate());
                         limitedCertificateData.setInvalidityDate(entry.getInvalidityDate());
                         limitedCertificateData.setUpdateTime(System.currentTimeMillis());
                         entityManager.merge(limitedCertificateData);
+                        if (log.isDebugEnabled()) {
+                            log.debug("Updating limited CertificateData entry with fingerprint=" + limitedFingerprint + ", serialNumber=" + serialNumber + ", issuerDn='" + issuerDn + "'");
+                        }
                         updated++;
                     } else {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Skipping limited CertificateData entry with fingerprint=" + limitedFingerprint + ", serialNumber=" + serialNumber + " as it is already up-to-date.");
+                        }
                         skipped++;
                     }
                 }
             } else {
                 // Not a limited entry — skip, will be handled individually by the caller
+                if (log.isDebugEnabled()) {
+                    log.debug("Skipping entry with serialNumber=" + serialNumber + " as it is a non-limited entry.");
+                }
                 skipped++;
             }
         }
