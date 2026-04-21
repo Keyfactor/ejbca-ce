@@ -36,6 +36,15 @@ public class ServiceDataSessionBean implements ServiceDataSessionLocal, ServiceD
     private EntityManager entityManager;
 
     @Override
+    public ServiceData refreshServiceData(String name) {
+        ServiceData serviceData = findByName(name);
+        if (serviceData != null) {
+            entityManager.refresh(serviceData);
+        }
+        return serviceData;
+    }
+
+    @Override
     public void addServiceData(Integer id, String name, ServiceConfiguration serviceConfiguration) {
         entityManager.persist(new ServiceData(id, name, serviceConfiguration));
     }
