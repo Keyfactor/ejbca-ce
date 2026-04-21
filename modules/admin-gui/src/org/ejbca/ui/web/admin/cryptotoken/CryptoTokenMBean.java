@@ -917,6 +917,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private String keyPairGuiListError = null;
     private int currentCryptoTokenId = 0;
     private CurrentCryptoTokenGuiInfo currentCryptoToken = null;
+    /** Current key pair for the Authorize Key dialog */
     private KeyPairGuiInfo currentKeyPairGuiInfo = null;
     private boolean p11SlotUsed = false; // Note if the P11 slot is already used by another crypto token, forcing a confirm
     private boolean currentCryptoTokenEditMode = true;  // currentCryptoTokenId==0 from start
@@ -969,9 +970,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         internalKeyBindings = null;
     }
 
-    public void actionAuthorizeStart() throws AuthorizationDeniedException {
+    public void actionAuthorizeStart(final String alias) throws AuthorizationDeniedException {
         authorizeInProgress = true;
-        currentKeyPairGuiInfo = getKeyPairGuiList().getRowData();
+        currentKeyPairGuiInfo = guiInfoFromAlias(alias);
     }
 
     public void actionAuthorizeCancel() {
@@ -1904,27 +1905,20 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     }
 
     public boolean isKeyPairGuiListEmpty() throws AuthorizationDeniedException {
-        return getKeyPairGuiList().getRowCount() == 0;
+        return getKeyPairGuiInfos().isEmpty();
     }
 
     public boolean isKeyPairGuiListFailed() throws AuthorizationDeniedException {
-        getKeyPairGuiList(); // ensure loaded
+        getKeyPairGuiInfos(); // ensure loaded
         return keyPairGuiListError != null;
     }
 
     public String getKeyPairGuiListError() throws AuthorizationDeniedException {
-        getKeyPairGuiList(); // ensure loaded
+        getKeyPairGuiInfos(); // ensure loaded
         return keyPairGuiListError;
     }
 
-    /**
-     * @return a list of all the keys in the current CryptoToken.
-     */
-    public ListDataModel<KeyPairGuiInfo> getKeyPairGuiList() throws AuthorizationDeniedException {
-        return new ListDataModel<>(getKeyPairGuiInfos());
-    }
-
-    private List<KeyPairGuiInfo> getKeyPairGuiInfos() throws AuthorizationDeniedException {
+    public List<KeyPairGuiInfo> getKeyPairGuiInfos() throws AuthorizationDeniedException {
         if (keyPairGuiInfos == null) {
             final ArrayList<KeyPairGuiInfo> ret = new ArrayList<>();
             if (getCurrentCryptoToken().isActive()) {
@@ -2017,14 +2011,13 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
      * Invoked when admin requests key pair generation from a template placeholder
      * @throws AuthorizationDeniedException
      */
-    public void generateFromTemplate() throws AuthorizationDeniedException {
+    public void generateFromTemplate(final String alias) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">generateFromTemplate");
         }
         String keyUsage = null;
         KeyPairTemplate template = null;
-        final KeyPairGuiInfo keyPairGuiInfo = getKeyPairGuiList().getRowData();
-        final String alias = keyPairGuiInfo.getAlias();
+        final KeyPairGuiInfo keyPairGuiInfo = guiInfoFromAlias(alias);
         if (keyPairGuiInfo.getKeyUsage() != null) {
             keyUsage = keyPairGuiInfo.getKeyUsage().toString();
         }
@@ -2047,6 +2040,15 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
     }
 
+    private KeyPairGuiInfo guiInfoFromAlias(final String alias) {
+        for (var info : keyPairGuiInfos) {
+            if (info.getAlias().equals(alias)) {
+                return info;
+            }
+        }
+        throw new IllegalArgumentException("No key pair with alias " + alias);
+    }
+
     private KeyPairTemplate matchTemplate(String keyUsage) {
         if (keyUsage != null) {
             return KeyPairTemplate.valueOf(keyUsage);
@@ -2058,10 +2060,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
      * Invoked when admin associates KAK with HSM key (specific to CP5 HSMs)
      * @throws AuthorizationDeniedException
      */
-    public void initializeKey() throws AuthorizationDeniedException {
-        final KeyPairGuiInfo keyPairGuiInfo = getKeyPairGuiList().getRowData();
+    public void initializeKey(final String alias) throws AuthorizationDeniedException {
+        final KeyPairGuiInfo keyPairGuiInfo = guiInfoFromAlias(alias);
         if (!keyPairGuiInfo.initialized) {
-            final String alias = keyPairGuiInfo.getAlias();
             final String kakAlias = keyPairGuiInfo.getSelectedKakKeyAlias();
             final int kakTokenId = keyPairGuiInfo.getSelectedKakCryptoTokenId();
             if (kakTokenId == 0 || kakAlias == null) {
@@ -2116,9 +2117,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
      * Invoked when admin requests a test of a key pair.
      * @throws AuthorizationDeniedException
      */
-    public void testKeyPair() throws AuthorizationDeniedException {
-        final KeyPairGuiInfo keyPairGuiInfo = getKeyPairGuiList().getRowData();
-        final String alias = keyPairGuiInfo.getAlias();
+    public void testKeyPair(final String alias) throws AuthorizationDeniedException {
+        final KeyPairGuiInfo keyPairGuiInfo = guiInfoFromAlias(alias);
         final String messageString = getKeyUsageInfoMessage(keyPairGuiInfo.getKeyUsage(), alias);
         try {
             getCryptoTokenManagementSession().testKeyPair(getAdmin(), getCurrentCryptoTokenId(), alias);
@@ -2266,7 +2266,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     }
 
     public boolean isAnyKeyUsagePresent() throws AuthorizationDeniedException {
-        ListDataModel<KeyPairGuiInfo> keyPairs = getKeyPairGuiList();
+        List<KeyPairGuiInfo> keyPairs = getKeyPairGuiInfos();
         if (keyPairs == null) {
             return false;
         }
