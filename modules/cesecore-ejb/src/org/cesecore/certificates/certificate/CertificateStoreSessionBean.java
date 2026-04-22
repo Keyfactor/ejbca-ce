@@ -1948,10 +1948,9 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         }
         final String dn = DnComponents.stringToBCDNString(StringTools.strip(issuerDn));
         // Chunk serial numbers to avoid exceeding database IN-clause limits
-        final int chunkSize = 500;
         final List<BigInteger> serialList = new ArrayList<>(serialNumbers);
-        for (int i = 0; i < serialList.size(); i += chunkSize) {
-            final List<BigInteger> chunk = serialList.subList(i, Math.min(i + chunkSize, serialList.size()));
+        for (int i = 0; i < serialList.size(); i += BATCH_CHUNK_SIZE) {
+            final List<BigInteger> chunk = serialList.subList(i, Math.min(i + BATCH_CHUNK_SIZE, serialList.size()));
             final List<String> serialStrings = new ArrayList<>(chunk.size());
             for (final BigInteger serno : chunk) {
                 serialStrings.add(serno.toString());
@@ -2065,9 +2064,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                     if (limitedCertificateData == null) {
                         log.warn("Limited CertificateData with fingerprint " + limitedFingerprint + " was expected but not found in database. Skipping.");
                         skipped++;
-                    } else if (entry.getRevocationDate() != null && (limitedCertificateData.getRevocationDate() != entry.getRevocationDate().getTime()
-                            || limitedCertificateData.getRevocationReason() != entry.getReasonCode()
-                            || (entry.getInvalidityDate() != null && limitedCertificateData.getInvalidityDateNeverNull() != entry.getInvalidityDate().getTime()))) {
+                    } else if (isUpdateRequired(entry, limitedCertificateData)) {
                         limitedCertificateData.setStatus(CertificateConstants.CERT_REVOKED);
                         limitedCertificateData.setRevocationReason(entry.getReasonCode());
                         limitedCertificateData.setRevocationDate(entry.getRevocationDate());
@@ -2097,6 +2094,29 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         entityManager.flush();
         entityManager.clear();
         return new int[]{persisted, updated, deleted, skipped};
+    }
+
+    /**
+     * Checks if the limited CertificateData entry needs to be updated based on the CRL entry.
+     *
+     * @param entry the CRL entry
+     * @param limitedCertificateData the existing limited CertificateData
+     * @return true if an update is required, false otherwise
+     */
+    private boolean isUpdateRequired(final LimitedCertificateEntry entry, final CertificateData limitedCertificateData) {
+        if (entry.getRevocationDate() == null) {
+            return false;
+        }
+        if (limitedCertificateData.getRevocationDate() != entry.getRevocationDate().getTime()) {
+            return true;
+        }
+        if (limitedCertificateData.getRevocationReason() != entry.getReasonCode()) {
+            return true;
+        }
+        if (entry.getInvalidityDate() != null && limitedCertificateData.getInvalidityDateNeverNull() != entry.getInvalidityDate().getTime()) {
+            return true;
+        }
+        return false;
     }
 
     @Override
