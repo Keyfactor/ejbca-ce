@@ -56,7 +56,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final long serialVersionUID = 1L;
 
     protected static final InternalResources intres = InternalResources.getInstance();
-    protected static final float LATEST_VERSION = 17;
+    protected static final float LATEST_VERSION = 18;
 
     private static final String KEY_RA_NAMEGENERATIONSCHEME = "ra.namegenerationscheme";
     private static final String KEY_RA_NAMEGENERATIONPARAMS = "ra.namegenerationparameters";
@@ -102,7 +102,8 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String KEY_APPROVAL_FOR_KEY_CHANGE_ID = "approvalForKeyChangeId";
     private static final String KEY_CLIENT_AUTHENTICATION_REQUIRED = "clientAuthenticationRequired";
     private static final String KEY_PREFERRED_ROOT_CA_SUBJECTDN = "preferredrootcasubjectdn";
-    private static final String KEY_DEVICE_ATTESTATION_ACE_ROOT = "deviceAttestationAcaRoot";
+    private static final String KEY_DEVICE_ATTESTATION_ACA_ROOT_CA = "deviceAttestationAcaRootCA";
+    private static final String KEY_DEVICE_ATTESTATION_ACA_ROOT_CA_FINGERPRINT = "deviceAttestationAcaRootCAFingerprint";
 
     private static final String KEY_ENABLED_RENEWAL_INFO = "enabledRenewalInfo";
     private static final String KEY_SUGGESTED_RENEWAL_START = "suggestedRenewalStart";
@@ -151,7 +152,9 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     public static final int DEFAULT_APPROVAL_FOR_KEY_CHANGE_ID = -1;
     private static final boolean DEFAULT_CLIENT_AUTHENTICATION_REQUIRED = false;
     public static final String DEFAULT_PREFERRED_ROOT_CA_SUBJECTDN = "default";
-    public static final String DEFAULT_DEVICE_ATTESTATION_ACA_ROOT = "";
+    public static final String DEFAULT_DEVICE_ATTESTATION_ACA_ROOT_CA = "";
+    public static final String DEFAULT_DEVICE_ATTESTATION_ACA_ROOT_CA_SUBJECT = "";
+    public static final String DEFAULT_DEVICE_ATTESTATION_ACA_ROOT_CA_FINGERPRINT = "";
 
     public static final boolean DEFAULT_ENABLED_RENEWAL_INFO = true;
     public static final String DEFAULT_SUGGESTED_RENEWAL_START = "5d";
@@ -187,9 +190,12 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
             // New version of the class, upgrade.
             log.info(intres.getLocalizedMessage("acmeconfiguration.upgrade", getVersion()));
 
-            // v17. ACME device attestation.
-            if (data.get(KEY_DEVICE_ATTESTATION_ACE_ROOT) == null) {
-                setDeviceAttestationAcaRoot(DEFAULT_DEVICE_ATTESTATION_ACA_ROOT);
+            // v17-18. ACME device attestation.
+            if (data.get(KEY_DEVICE_ATTESTATION_ACA_ROOT_CA) == null) {
+                setDeviceAttestationAcaRootCA(DEFAULT_DEVICE_ATTESTATION_ACA_ROOT_CA);
+            }
+            if (data.get(KEY_DEVICE_ATTESTATION_ACA_ROOT_CA_FINGERPRINT) == null) {
+                setDeviceAttestationAcaRootCAFingerprint(DEFAULT_DEVICE_ATTESTATION_ACA_ROOT_CA_FINGERPRINT);
             }
             if (data.get(KEY_CONFIGURATION_TYPE) == null) {
                 setConfigurationType(DEFAULT_CONFIGURATION_TYPE);
@@ -1062,12 +1068,20 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         data.put(KEY_PREFERRED_ROOT_CA_SUBJECTDN, preferredRootCaSubjectDn);
     }
 
-    public String getDeviceAttestationAcaRoot() {
-        return (String) super.data.get(KEY_DEVICE_ATTESTATION_ACE_ROOT);
+    public String getDeviceAttestationAcaRootCA() {
+        return (String) super.data.get(KEY_DEVICE_ATTESTATION_ACA_ROOT_CA);
     }
 
-    public void setDeviceAttestationAcaRoot(String url) {
-        super.data.put(KEY_DEVICE_ATTESTATION_ACE_ROOT, url);
+    public void setDeviceAttestationAcaRootCA(String url) {
+        super.data.put(KEY_DEVICE_ATTESTATION_ACA_ROOT_CA, url);
+    }
+
+    public String getDeviceAttestationAcaRootCAFingerprint() {
+        return (String) super.data.get(KEY_DEVICE_ATTESTATION_ACA_ROOT_CA_FINGERPRINT);
+    }
+
+    public void setDeviceAttestationAcaRootCAFingerprint(String fingerprint) {
+        super.data.put(KEY_DEVICE_ATTESTATION_ACA_ROOT_CA_FINGERPRINT, fingerprint);
     }
 
     public String[] getTlsAlpnProtocolsEnabled() {
@@ -1130,7 +1144,8 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         setApprovalForKeyChangeId(DEFAULT_APPROVAL_FOR_KEY_CHANGE_ID);
         setClientAuthenticationRequired(DEFAULT_CLIENT_AUTHENTICATION_REQUIRED);
         setPreferredRootCaSubjectDn(DEFAULT_PREFERRED_ROOT_CA_SUBJECTDN);
-        setDeviceAttestationAcaRoot(DEFAULT_DEVICE_ATTESTATION_ACA_ROOT);
+        setDeviceAttestationAcaRootCA(DEFAULT_DEVICE_ATTESTATION_ACA_ROOT_CA);
+        setDeviceAttestationAcaRootCAFingerprint(DEFAULT_DEVICE_ATTESTATION_ACA_ROOT_CA_FINGERPRINT);
         setEnabledRenewalInfo(DEFAULT_ENABLED_RENEWAL_INFO);
         setSuggestedRenewalStart(DEFAULT_SUGGESTED_RENEWAL_START);
         setSuggestedRenewalEnd(DEFAULT_SUGGESTED_RENEWAL_END);
