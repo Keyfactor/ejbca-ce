@@ -50,7 +50,7 @@ dependencyResolutionManagement {
     		library("numbers", ":numbers:1.8.2")
             library("jakartaee-api", ":jakarta.jakartaee-api:10.0.0")
             library("jakarta.xml.ws-api", ":jakarta.xml.ws-api:4.0.1")
-            library("cert.cvc", ":cert-cvc:1.6.5")
+            library("cert.cvc", ":cert-cvc:1.6.3")
             library("guava", ":guava:33.0.0-jre")
             library("log4j-v12-api", ":log4j-1.2-api:2.25.4")
             library("log4j-api", ":log4j-api:2.25.4")
