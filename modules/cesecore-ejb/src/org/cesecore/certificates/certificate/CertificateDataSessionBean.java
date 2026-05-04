@@ -171,6 +171,18 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
     }
 
     @Override
+    public List<CertificateData> findByIssuerDNAndSerialNumbers(final String issuerDN, final Collection<String> serialNumbers) {
+        if (serialNumbers == null || serialNumbers.isEmpty()) {
+            return new LinkedList<>();
+        }
+        final TypedQuery<CertificateData> query = entityManager.createQuery(
+                "SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber IN (:serialNumbers)", CertificateData.class);
+        query.setParameter("issuerDN", issuerDN);
+        query.setParameter("serialNumbers", serialNumbers);
+        return query.getResultList();
+    }
+
+    @Override
     public Long findQuantityOfAllCertificates() {
         Query query = entityManager.createQuery("SELECT count(cd) FROM CertificateData cd");
         return (Long) query.getResultList().get(0);

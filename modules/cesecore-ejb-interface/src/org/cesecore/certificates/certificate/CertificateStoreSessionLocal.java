@@ -23,6 +23,7 @@ import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -308,6 +309,50 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
     void updateLimitedCertificateDataStatus(final AuthenticationToken admin, final int caId, final String issuerDn, final String subjectDn, final String username, final BigInteger serialNumber,
             final int status, final Date revocationDate, final int reasonCode, final String caFingerprint, Date invalidityDate) throws AuthorizationDeniedException;
     
+    /**
+     * Bulk lookup of certificate data by issuer DN and a collection of serial numbers.
+     * Serial numbers are chunked internally to avoid exceeding database IN-clause limits.
+     *
+     * @param issuerDn the issuer DN.
+     * @param serialNumbers the serial numbers to look up.
+     * @return a map from serial number to CertificateDataWrapper for entries found in the database.
+     */
+    Map<BigInteger, CertificateDataWrapper> getCertificateDataByIssuerAndSernos(String issuerDn, Collection<BigInteger> serialNumbers);
+
+    /**
+     * Persists a batch of limited CertificateData entries, chunked into multiple transactions to avoid
+     * long-running transactions that could cause lock contention or timeout issues on the database.
+     * Entries that already exist as limited entries will be updated if their revocation data differs.
+     * Entries with reason REMOVEFROMCRL will be deleted.
+     *
+     * @param admin an admin that is authorized to the CA.
+     * @param caId the CA identifier.
+     * @param issuerDn the BC normalized issuer DN.
+     * @param caFingerprint the SHA-1 fingerprint of the CA certificate.
+     * @param existingCertificates pre-fetched map of existing certificate data, keyed by serial number.
+     * @param limitedEntries list of limited certificate entry data to persist. Must not exceed 1,000,000 entries.
+     * @throws AuthorizationDeniedException if the admin is not authorized.
+     * @throws IllegalArgumentException if limitedEntries exceeds the maximum allowed size.
+     */
+    void persistLimitedCertificateDataBatch(AuthenticationToken admin, int caId, String issuerDn, String caFingerprint,
+            Map<BigInteger, CertificateDataWrapper> existingCertificates, List<LimitedCertificateEntry> limitedEntries) throws AuthorizationDeniedException;
+
+    /**
+     * Persists a chunk of limited CertificateData entries in a new transaction.
+     * This method is intended to be called internally by persistLimitedCertificateDataBatch and should not be called directly.
+     *
+     * @param admin an admin that is authorized to the CA.
+     * @param caId the CA identifier.
+     * @param issuerDn the BC normalized issuer DN.
+     * @param caFingerprint the SHA-1 fingerprint of the CA certificate.
+     * @param existingCertificates pre-fetched map of existing certificate data, keyed by serial number.
+     * @param limitedEntries chunk of limited certificate entry data to persist.
+     * @return an array of four ints: [persisted, updated, deleted, skipped].
+     * @throws AuthorizationDeniedException if the admin is not authorized.
+     */
+    int[] persistLimitedCertificateDataChunk(AuthenticationToken admin, int caId, String issuerDn, String caFingerprint,
+            Map<BigInteger, CertificateDataWrapper> existingCertificates, List<LimitedCertificateEntry> limitedEntries) throws AuthorizationDeniedException;
+
     /** Reloads the cache containing CA certificates */
     void reloadCaCertificateCache();
     

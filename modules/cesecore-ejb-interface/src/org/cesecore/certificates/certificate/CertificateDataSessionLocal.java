@@ -56,6 +56,15 @@ public interface CertificateDataSessionLocal extends CertificateDataSession {
     /** @return return the query results as a List. */
     List<CertificateData> findByIssuerDNSerialNumber(String issuerDN, String serialNumber);
 
+    /**
+     * Bulk lookup of certificate data by issuer DN and a collection of serial numbers.
+     *
+     * @param issuerDN the issuer DN to search for.
+     * @param serialNumbers the serial numbers to search for (as String representations).
+     * @return return the query results as a List.
+     */
+    List<CertificateData> findByIssuerDNAndSerialNumbers(String issuerDN, Collection<String> serialNumbers);
+
     /** @return the quantity of all the certificates saved within the CA lifecycle. */
     Long findQuantityOfAllCertificates();
 
