@@ -34,7 +34,8 @@ public enum IssuancePhase implements IndexEnum {
     CERTIFICATE_VALIDATION(2, "VALIDATORPHASE_CERTIFICATE_VALIDATION"),
     APPROVAL_VALIDATION(3, "VALIDATORPHASE_APPROVAL_VALIDATION"),
     /** on a certificate signed with a dummy key (not the CAs signature key), before real certificate is created */
-    PRESIGN_CERTIFICATE_VALIDATION(4, "VALIDATORPHASE_PRESIGN_CERTIFICATE_VALIDATION");
+    PRESIGN_CERTIFICATE_VALIDATION(4, "VALIDATORPHASE_PRESIGN_CERTIFICATE_VALIDATION"),
+    ACME(5, "ACME");
     // @formatter:on
 
     /** The unique index. */

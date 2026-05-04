@@ -176,6 +176,11 @@ public class KeyValidatorProxySessionBean implements KeyValidatorProxySessionRem
     }
 
     @Override
+    public List<ValidationResult> validateDnsNames(AuthenticationToken authenticationToken, IssuancePhase issuancePhase, int certificateProfileId, int caId, ValidationRequestParameters validationRequestParameters, String identifier) throws ValidationException {
+        return keyValidatorSession.validateDnsNames(authenticationToken, issuancePhase, certificateProfileId, caId, validationRequestParameters, identifier);
+    }
+    
+    @Override
     public boolean willValidateInPhase(IssuancePhase phase, CA ca) {
         return keyValidatorSession.willValidateInPhase(phase, ca);
     }

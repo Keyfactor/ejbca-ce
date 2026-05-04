@@ -46,6 +46,8 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CACommon;
+import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
@@ -483,7 +485,74 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         }
         return allResults;
     }
+    
+    @Override
+    public List<ValidationResult> validateDnsNames(final AuthenticationToken authenticationToken, final IssuancePhase phase, final int certificateProfileId, final int caId, final ValidationRequestParameters validationRequestParameters, final String identifier) throws ValidationException {
+        final List<ValidationResult> allResults = new ArrayList<>();
+        final CAData ca = caSession.findById(caId);
+        final CACommon cac = ca.getCA();
+                
+        if (!CollectionUtils.isEmpty(cac.getValidators())) {
+            Validator baseValidator;
+            DnsNameValidator validator;
+            for (Integer id : cac.getValidators()) {
+                baseValidator = getValidatorInternal(id, true);
+                if (baseValidator == null) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("CA " + ca.getName() + " references a non-existent validator: " + id);
+                    }
+                } else if (baseValidator.getValidatorSubType().equals(DnsNameValidator.class) && phase.getIndex() == baseValidator.getPhase()) {
+                    validator = (DnsNameValidator) baseValidator;
+                    // Filter for validator criteria.
+                    if (!filterCertificateProfileAwareValidator(validator, certificateProfileId)) {
+                        continue;
+                    }
 
+                    // Add the identifier.
+                    final Set<String> dnsNames = new TreeSet<>();
+                    dnsNames.add(identifier);
+                    
+                    // TODO: ECA-14875 We do not have ACME for S/MIME yet.
+                    // if (validator.validateEmailDomains()) {
+                    //     dnsNames.addAll(findAllEmailDomainsInSubject(endEntityInformation.getSubjectAltName()));
+                    // }
+
+                    final Entry<Boolean, List<String>> result = validator.validate(executorService, validationRequestParameters,
+                            dnsNames.toArray(new String[dnsNames.size()]));
+                    final boolean successful = result.getKey();
+                    for (final String message : result.getValue()) {
+                        allResults.add(new ValidationResult(message, successful));
+                    }
+
+                    final String validatorType = validator.getValidatorTypeIdentifier();
+                    final List<String> messages = result.getValue();
+                    final String message = validator.getLogMessage(successful, messages);
+                    final HashMap<String, Object> additionalDetails = new HashMap<>();
+                    additionalDetails.put("msg", message);
+                    
+                    // TODO: ECA-14875 at least at the first time we do not have a user here (with deterministic username at the second time...).
+                    if (!successful) {
+                        // Validation has failed. Not security event as such, since it will break issuance and not cause anything important to happen.
+                        // We want thorough logging in order to trouble shoot though
+                        auditSession.log(EventTypes.VALIDATOR_VALIDATION_FAILED, EventStatus.FAILURE, ModuleTypes.VALIDATOR, ServiceTypes.CORE,
+                                authenticationToken.toString(), String.valueOf(cac.getCAId()), null, "XXXXX-ACME-User", additionalDetails);
+                        final int index = validator.getFailedAction();
+                        performValidationFailedActions(index, message, validatorType);
+                    } else {
+                        // Validation succeeded, this can be considered a security audit event because CAs may be asked to present this as evidence to an auditor.
+                        auditSession.log(EventTypes.VALIDATOR_VALIDATION_SUCCESS, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE,
+                                authenticationToken.toString(), String.valueOf(cac.getCAId()), null, "XXXXX-ACME-User", additionalDetails);
+                    }
+                }
+            }
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("No validators configured for CA " + ca.getName() + " (ID=" + cac.getCAId() + ").");
+            }
+        }
+        return allResults;
+    }
+    
     protected static List<String> findAllEmailDomainsInSubject(String subject) {
 		return Arrays.stream(subject.trim().split(","))
 				.map(s -> s.trim().split("="))
