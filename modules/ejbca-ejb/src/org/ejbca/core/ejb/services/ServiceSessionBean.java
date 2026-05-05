@@ -199,6 +199,11 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     }
 
     @Override
+    public void refreshServiceData(String name) {
+        serviceDataSession.refreshServiceData(name);
+    }
+
+    @Override
     public int addService(AuthenticationToken admin, String name, ServiceConfiguration serviceConfiguration) throws ServiceExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">addService(name: " + name + ")");

@@ -37,6 +37,9 @@ public interface ServiceDataSessionLocal extends ServiceDataSession {
     /** @return return the query results as a List. */
     List<ServiceData> findAll();
 
+    /** Refresh the service data from the database */
+    void refreshServiceData(String name);
+
     /** Adds a new ServiceData object with the given parameters to persistence. */
     void addServiceData(Integer id, String name, ServiceConfiguration serviceConfiguration);
 

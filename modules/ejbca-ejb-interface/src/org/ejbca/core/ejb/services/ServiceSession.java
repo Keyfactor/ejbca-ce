@@ -39,6 +39,9 @@ public interface ServiceSession {
      */
     void addService(AuthenticationToken admin, int id, String name, ServiceConfiguration serviceConfiguration) throws ServiceExistsException;
 
+    /** Refresh the service data from the database */
+    void refreshServiceData(String name);
+
     /**
      * Adds a service with the same content as the original.
      * @throws ServiceExistsException if service already exists.
