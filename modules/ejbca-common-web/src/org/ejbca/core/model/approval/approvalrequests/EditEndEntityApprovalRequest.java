@@ -17,6 +17,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import jakarta.ejb.EJBException;
 
@@ -303,4 +304,27 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest implements End
     public EndEntityInformation getEndEntityInformation() {
         return getNewEndEntityInformation();
     }
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == null ||
+				getClass() != o.getClass() ||
+				!super.equals(o)) {
+			return false;
+		}
+
+		EditEndEntityApprovalRequest that = (EditEndEntityApprovalRequest) o;
+		return clearpwd == that.clearpwd &&
+				Objects.equals(newuserdata, that.newuserdata) &&
+				Objects.equals(orguserdata, that.orguserdata);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = super.hashCode();
+		result = 31 * result + Objects.hashCode(newuserdata);
+		result = 31 * result + Boolean.hashCode(clearpwd);
+		result = 31 * result + Objects.hashCode(orguserdata);
+		return result;
+	}
 }

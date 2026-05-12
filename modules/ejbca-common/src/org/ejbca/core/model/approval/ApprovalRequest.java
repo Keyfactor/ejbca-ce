@@ -18,9 +18,11 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -423,4 +425,35 @@ public abstract class ApprovalRequest implements Externalizable {
         }
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        ApprovalRequest that = (ApprovalRequest) o;
+        return approvalRequestType == that.approvalRequestType &&
+                cAId == that.cAId &&
+                endEntityProfileId == that.endEntityProfileId &&
+                Objects.equals(requestAdmin, that.requestAdmin) &&
+                Objects.equals(requestSignature, that.requestSignature) &&
+                Arrays.equals(approvalSteps, that.approvalSteps) &&
+                Objects.equals(approvalProfile, that.approvalProfile) &&
+                Objects.equals(validationResults, that.validationResults) &&
+                Objects.equals(editedByAdmins, that.editedByAdmins);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hashCode(requestAdmin);
+        result = 31 * result + Objects.hashCode(requestSignature);
+        result = 31 * result + approvalRequestType;
+        result = 31 * result + cAId;
+        result = 31 * result + endEntityProfileId;
+        result = 31 * result + Arrays.hashCode(approvalSteps);
+        result = 31 * result + Objects.hashCode(approvalProfile);
+        result = 31 * result + Objects.hashCode(validationResults);
+        result = 31 * result + Objects.hashCode(editedByAdmins);
+        return result;
+    }
 }

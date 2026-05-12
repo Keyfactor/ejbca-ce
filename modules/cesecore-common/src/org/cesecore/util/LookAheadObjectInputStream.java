@@ -213,7 +213,8 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
                 if (log.isTraceEnabled()) {
                     log.trace("resolvedClassName: " + resolvedClassName);
                 }
-                boolean allowedPrefixFound = allowedSubclassingPackagePrefixes.stream().anyMatch(allowedPrefix -> resolvedClassName.startsWith(allowedPrefix + "."));
+                boolean allowedPrefixFound = allowedSubclassingPackagePrefixes.stream()
+                        .anyMatch(allowedPrefix -> resolvedClassName.startsWith(allowedPrefix + "."));
                 if (allowedSubclassingPackagePrefixes.isEmpty() || allowedPrefixFound) {
                     Class<?> superclass = resolvedClassType.getSuperclass();
                     while (superclass != null) {
@@ -230,14 +231,17 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
                 if (log.isTraceEnabled()) {
                     log.trace("resolvedClassName: " + resolvedClassName);
                 }
-                boolean allowedPrefixFound = allowedInterfaceImplementationsPackagePrefixes.stream().anyMatch(allowedPrefix -> resolvedClassName.startsWith(allowedPrefix + "."));
+                boolean allowedPrefixFound = allowedInterfaceImplementationsPackagePrefixes.stream()
+                        .anyMatch(allowedPrefix -> resolvedClassName.startsWith(allowedPrefix + "."));
                 if (allowedInterfaceImplementationsPackagePrefixes.isEmpty() || allowedPrefixFound) {
                     Class<?> superclass = resolvedClassType;
                     while (superclass != null) {
                         if (log.isTraceEnabled()) {
                             log.trace(superclass.getName() + " implements " + Arrays.toString(superclass.getInterfaces()));
                         }
-                        if (Arrays.stream(superclass.getInterfaces()).anyMatch(implementedInterface -> acceptedClasses.contains(implementedInterface))) {
+                        if (Arrays.stream(superclass.getInterfaces())
+                                .anyMatch(implementedInterface ->
+                                        acceptedClasses.contains(implementedInterface))) {
                             whitelistImplementation(resolvedClassType);
                             return resolvedClass;
                         }

@@ -15,10 +15,14 @@ package org.ejbca.core.ejb.approval;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.InputStream;
 import java.io.Serializable;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import jakarta.persistence.Entity;
@@ -29,14 +33,23 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
+import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.profiles.ProfileBase;
+import org.cesecore.util.Base64GetHashMap;
+import org.cesecore.util.LookAheadObjectInputStream;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalRequest;
+import org.cesecore.authentication.tokens.WebPrincipal;
 
 import com.keyfactor.util.Base64;
+
+import javax.security.auth.x500.X500Principal;
 
 /**
  * Representation of approval request data used to control request and their approvals.
@@ -47,6 +60,40 @@ public class ApprovalData extends ProtectedData implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = Logger.getLogger(ApprovalData.class);
+
+	@SuppressWarnings("unchecked")
+	private static Class<? extends Serializable> forName(final String className) {
+        try {
+            return (Class<? extends Serializable>) Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+	}
+
+	static List<Class<? extends Serializable>> allowedClasses = List.of(
+			Approval.class,
+			ApprovalRequest.class,
+			ArrayList.class,
+			AuthenticationToken.class,
+			Base64GetHashMap.class,
+			Certificate.class,
+			forName("java.security.cert.Certificate$CertificateRep"),
+			Date.class,
+			Enum.class,
+			HashMap.class,
+			HashSet.class,
+			LinkedHashMap.class,
+			ProfileBase.class,
+			UpgradeableDataHashMap.class,
+			UsernamePrincipal.class,
+			WebPrincipal.class,
+			X500Principal.class
+	);
+	static String[] allowedSubclassPackagePrefixes = new String[] {
+			"org.cesecore",
+			"org.ejbca.core",
+			"java.security.cert"
+	};
 
 	private int id; // the unique id stored in the database, also referred to as requestID
 	private int approvalId; // a hash of the request, referred to as approvalID
@@ -64,7 +111,7 @@ public class ApprovalData extends ProtectedData implements Serializable {
 	private String subjectDn;	
 	private int rowVersion = 0;
 	private String rowProtection;
-		
+
     /**
 	 * Entity holding data of a approval data.
 	 * 
@@ -356,40 +403,56 @@ public class ApprovalData extends ProtectedData implements Serializable {
                 getReqadmincertsn(), getStatus(), getApprovals(), getApprovalRequest(), getRequestDate(), getExpireDate());
         return result;
     }
-    
+
+	@SuppressWarnings("unchecked")
+	<T extends Serializable> T readObjectWithLookAhead(final InputStream inputStream) throws IOException, ClassNotFoundException, SecurityException {
+		try (final LookAheadObjectInputStream lookAheadObjectInputStream = new LookAheadObjectInputStream(inputStream)) {
+			lookAheadObjectInputStream.setEnabledMaxObjects(false);
+			lookAheadObjectInputStream.setAcceptedClasses(allowedClasses);
+			lookAheadObjectInputStream.setEnabledSubclassing(true, allowedSubclassPackagePrefixes);
+			final T result = (T)lookAheadObjectInputStream.readObject();
+			if (log.isDebugEnabled()) {
+				log.debug("readObjectWithLookAhead: " + result + " (" + result.getClass().getName() + ")");
+			}
+			return result;
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	<T extends Serializable> List<T> readObjectsWithLookAhead(final InputStream inputStream) throws IOException, ClassNotFoundException, SecurityException {
+		final LookAheadObjectInputStream lookAheadObjectInputStream = new LookAheadObjectInputStream(inputStream);
+		lookAheadObjectInputStream.setEnabledMaxObjects(false);
+		lookAheadObjectInputStream.setAcceptedClasses(allowedClasses);
+		lookAheadObjectInputStream.setEnabledSubclassing(true, allowedSubclassPackagePrefixes);
+		int count = lookAheadObjectInputStream.readInt();
+		List<T> list = new ArrayList<>();
+		for (int i = 0; i < count; i++) {
+			list.add((T)lookAheadObjectInputStream.readObject());
+		}
+		return list;
+	}
+
     @Transient
     public ApprovalRequest getApprovalRequest() {
-        ApprovalRequest retval = null;      
-        try {
-            ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(Base64.decode(getRequestdata().getBytes())));
-            retval= (ApprovalRequest) ois.readObject();
-        } catch (IOException e) {
-            log.error("Error building approval request.",e);
-            throw new IllegalStateException(e);
-        } catch (ClassNotFoundException e) {
-            log.error("Error building approval request.",e);
-            throw new IllegalStateException(e);
+		final byte[] bytes = Base64.decode(getRequestdata().getBytes());
+		final var inputStream = new ByteArrayInputStream(bytes);
+		try {
+			return (ApprovalRequest) readObjectWithLookAhead(inputStream);
+		} catch (IOException | ClassNotFoundException | SecurityException e) {
+			log.error("Error building approval request.",e);
+			throw new IllegalStateException(e);
         }
-        return retval;
     }
-    
+
     @Transient
     public List<Approval> getApprovals() {
-        List<Approval> retval = new ArrayList<>();
-        try{
-            ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(Base64.decode(getApprovaldata().getBytes())));
-            int size = ois.readInt();
-            for(int i=0;i<size;i++){
-                Approval next = (Approval) ois.readObject();
-                retval.add(next);
-            }
-        } catch (IOException e) {
-            log.error("Error building approvals.",e);
-            throw new IllegalStateException(e);
-        } catch (ClassNotFoundException e) {
+        try {
+			var bytes = Base64.decode(getApprovaldata().getBytes());
+			var byteInputStream = new ByteArrayInputStream(bytes);
+			return readObjectsWithLookAhead(byteInputStream);
+        } catch (IOException|ClassNotFoundException e) {
             log.error("Error building approvals.",e);
             throw new IllegalStateException(e);
         }
-        return retval;
     }
 }

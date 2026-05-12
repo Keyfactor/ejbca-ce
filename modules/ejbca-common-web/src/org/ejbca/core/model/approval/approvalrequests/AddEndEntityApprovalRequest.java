@@ -18,6 +18,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import jakarta.ejb.EJBException;
 import jakarta.persistence.PersistenceException;
@@ -229,4 +230,22 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest implements EndE
         }
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (o == null || getClass() != o.getClass() || !super.equals(o)) {
+			return false;
+		}
+
+		AddEndEntityApprovalRequest that = (AddEndEntityApprovalRequest) o;
+		return clearpwd == that.clearpwd &&
+				Objects.equals(userdata, that.userdata);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = super.hashCode();
+		result = 31 * result + Objects.hashCode(userdata);
+		result = 31 * result + Boolean.hashCode(clearpwd);
+		return result;
+	}
 }

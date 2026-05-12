@@ -175,7 +175,7 @@ public class ApprovalSessionSystemTest extends CaTestCase {
     private static final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
 
     private final static String DEVICE_NAME = IntegrityProtectedDevice.class.getSimpleName();
-    private static String REDACTED_END_ENTITY_PROFILE_NAME = "redacted_ee_profile";
+    private static String REDACTED_END_ENTITY_PROFILE_NAME = "redacted_ee_profile_"+System.currentTimeMillis() ;
     private static int redactedEndEntityProfileId;
 
     @ClassRule
@@ -193,13 +193,14 @@ public class ApprovalSessionSystemTest extends CaTestCase {
 
         createTestCA();
 
-        approvalProfile = new AccumulativeApprovalProfile("AccumulativeApprovalProfile");
+        final long now = System.currentTimeMillis();
+        approvalProfile = new AccumulativeApprovalProfile("AccumulativeApprovalProfile"+now);
         approvalProfile.setNumberOfApprovalsRequired(2);
         approvalProfile.setMaxExtensionTime(0);
         ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
         int approvalProfileId = approvalProfileSession.addApprovalProfile(intadmin, approvalProfile);
         approvalProfile.setProfileId(approvalProfileId);
-        approvalProfileLongExpirationPeriod = new AccumulativeApprovalProfile("ApprovalProfileLongExpirationPeriod");
+        approvalProfileLongExpirationPeriod = new AccumulativeApprovalProfile("ApprovalProfileLongExpirationPeriod"+now);
         approvalProfileLongExpirationPeriod.setNumberOfApprovalsRequired(2);
         approvalProfileLongExpirationPeriod.setMaxExtensionTime(0);
         int longExpirationApprovalProfileId = approvalProfileSession.addApprovalProfile(intadmin, approvalProfileLongExpirationPeriod);

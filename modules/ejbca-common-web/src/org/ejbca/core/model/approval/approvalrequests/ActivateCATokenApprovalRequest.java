@@ -17,6 +17,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import jakarta.ejb.EJBException;
 
@@ -172,5 +173,24 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
     		cAName = (String) in.readObject();
     		authenticationCode = (String) in.readObject();
         }
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == null || getClass() != o.getClass() || !super.equals(o)){
+			return false;
+		}
+
+		ActivateCATokenApprovalRequest that = (ActivateCATokenApprovalRequest) o;
+		return Objects.equals(cAName, that.cAName) &&
+				Objects.equals(authenticationCode, that.authenticationCode);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = super.hashCode();
+		result = 31 * result + Objects.hashCode(cAName);
+		result = 31 * result + Objects.hashCode(authenticationCode);
+		return result;
 	}
 }
