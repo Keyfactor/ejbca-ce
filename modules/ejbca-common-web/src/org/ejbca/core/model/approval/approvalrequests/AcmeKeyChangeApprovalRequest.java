@@ -17,6 +17,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.model.approval.ApprovalDataText;
@@ -121,5 +122,26 @@ public class AcmeKeyChangeApprovalRequest extends ApprovalRequest {
     		this.caId = in.readInt();
     		this.endEntityProfileId = in.readInt();
         }
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == null || getClass() != o.getClass() || !super.equals(o)) {
+			return false;
+		}
+
+		AcmeKeyChangeApprovalRequest that = (AcmeKeyChangeApprovalRequest) o;
+		return caId == that.caId &&
+				endEntityProfileId == that.endEntityProfileId &&
+				Objects.equals(acmeAccountId, that.acmeAccountId);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = super.hashCode();
+		result = 31 * result + Objects.hashCode(acmeAccountId);
+		result = 31 * result + caId;
+		result = 31 * result + endEntityProfileId;
+		return result;
 	}
 }

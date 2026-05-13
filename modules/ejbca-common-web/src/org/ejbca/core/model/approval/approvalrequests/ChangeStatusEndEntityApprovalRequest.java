@@ -17,6 +17,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import jakarta.ejb.EJBException;
 
@@ -229,5 +230,28 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
     		newstatus = in.readInt();
     		oldstatus = in.readInt();
         }
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == null ||
+				getClass() != o.getClass() ||
+				!super.equals(o)) {
+			return false;
+		}
+
+		ChangeStatusEndEntityApprovalRequest that = (ChangeStatusEndEntityApprovalRequest) o;
+		return oldstatus == that.oldstatus &&
+				newstatus == that.newstatus &&
+				Objects.equals(username, that.username);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = super.hashCode();
+		result = 31 * result + Objects.hashCode(username);
+		result = 31 * result + oldstatus;
+		result = 31 * result + newstatus;
+		return result;
 	}
 }

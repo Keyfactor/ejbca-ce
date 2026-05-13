@@ -155,4 +155,22 @@ public class DummyApprovalRequest extends ApprovalRequest {
         	this.executable = in.readBoolean();
         }
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == null || getClass() != o.getClass() || !super.equals(o)) {
+			return false;
+		}
+		DummyApprovalRequest that = (DummyApprovalRequest) o;
+		return executable == that.executable &&
+				redactPii == that.redactPii;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = super.hashCode();
+		result = 31 * result + Boolean.hashCode(executable);
+		result = 31 * result + Boolean.hashCode(redactPii);
+		return result;
+	}
 }

@@ -20,6 +20,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.TimeZone;
 import jakarta.ejb.EJBException;
 import org.apache.log4j.Logger;
@@ -261,5 +262,36 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 
 	public String getUsername() {
 	    return username;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == null ||
+				getClass() != o.getClass() ||
+				!super.equals(o)) {
+			return false;
+		}
+
+		RevocationApprovalRequest that = (RevocationApprovalRequest) o;
+		return approvalType == that.approvalType &&
+				reason == that.reason &&
+				Objects.equals(username, that.username) &&
+				Objects.equals(certificateSerialNumber, that.certificateSerialNumber) &&
+				Objects.equals(issuerDN, that.issuerDN) &&
+				Objects.equals(revocationDate, that.revocationDate) &&
+				Objects.equals(invalidityDate, that.invalidityDate);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = super.hashCode();
+		result = 31 * result + approvalType;
+		result = 31 * result + Objects.hashCode(username);
+		result = 31 * result + Objects.hashCode(certificateSerialNumber);
+		result = 31 * result + Objects.hashCode(issuerDN);
+		result = 31 * result + reason;
+		result = 31 * result + Objects.hashCode(revocationDate);
+		result = 31 * result + Objects.hashCode(invalidityDate);
+		return result;
 	}
 }

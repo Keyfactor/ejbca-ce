@@ -19,6 +19,7 @@ import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Date;
+import java.util.Objects;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -208,4 +209,35 @@ public class Approval implements Serializable, Comparable<Approval>, Externaliza
     public void setPartitionId(int partitionId) {
         this.partitionId = partitionId;
     }
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		Approval approval = (Approval) o;
+		return approved == approval.approved &&
+				stepId == approval.stepId &&
+				partitionId == approval.partitionId &&
+				Objects.equals(admin, approval.admin) &&
+				Objects.equals(adminCertIssuerDN, approval.adminCertIssuerDN) &&
+				Objects.equals(adminCertSerialNumber, approval.adminCertSerialNumber) &&
+				Objects.equals(approvalDate, approval.approvalDate) &&
+				Objects.equals(comment, approval.comment) &&
+				Objects.equals(approvalSignature, approval.approvalSignature);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = Objects.hashCode(admin);
+		result = 31 * result + Objects.hashCode(adminCertIssuerDN);
+		result = 31 * result + Objects.hashCode(adminCertSerialNumber);
+		result = 31 * result + Boolean.hashCode(approved);
+		result = 31 * result + Objects.hashCode(approvalDate);
+		result = 31 * result + Objects.hashCode(comment);
+		result = 31 * result + Objects.hashCode(approvalSignature);
+		result = 31 * result + stepId;
+		result = 31 * result + partitionId;
+		return result;
+	}
 }

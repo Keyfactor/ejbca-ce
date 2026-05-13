@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 import org.cesecore.util.Base64GetHashMap;
 
@@ -283,5 +284,20 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
         return clonedData;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
+        UpgradeableDataHashMap that = (UpgradeableDataHashMap) o;
+        return upgraded == that.upgraded && Objects.equals(data, that.data);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hashCode(data);
+        result = 31 * result + Boolean.hashCode(upgraded);
+        return result;
+    }
 }

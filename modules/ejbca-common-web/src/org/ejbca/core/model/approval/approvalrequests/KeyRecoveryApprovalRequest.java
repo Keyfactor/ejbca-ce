@@ -20,6 +20,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import jakarta.ejb.EJBException;
 
@@ -136,7 +137,9 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 		out.writeObject(username);
 		out.writeBoolean(recoverNewestCert);
 		try {
-			String certString = new String(Base64.encode(cert.getEncoded()),"UTF8");
+			String certString = cert == null ?
+					null :
+					new String(Base64.encode(cert.getEncoded()),"UTF8");
 			out.writeObject(certString);
 		} catch (CertificateEncodingException e) {
 			log.debug("Error serializing certificate", e);
@@ -153,11 +156,36 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
     		recoverNewestCert = in.readBoolean();
     		String certString = (String) in.readObject();
     		try {
-				cert = CertTools.getCertfromByteArray(Base64.decode(certString.getBytes("UTF8")), Certificate.class);
+				cert = certString == null ?
+						null :
+						CertTools.getCertfromByteArray(Base64.decode(certString.getBytes("UTF8")), Certificate.class);
 			} catch (CertificateException e) {
 				log.debug("Error deserializing certificate", e);
 				throw new IOException(e.getMessage());
 			}
         }
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == null ||
+				getClass() != o.getClass() ||
+				!super.equals(o)) {
+			return false;
+		}
+
+		KeyRecoveryApprovalRequest that = (KeyRecoveryApprovalRequest) o;
+		return recoverNewestCert == that.recoverNewestCert &&
+				Objects.equals(username, that.username) &&
+				Objects.equals(cert, that.cert);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = super.hashCode();
+		result = 31 * result + Objects.hashCode(username);
+		result = 31 * result + Objects.hashCode(cert);
+		result = 31 * result + Boolean.hashCode(recoverNewestCert);
+		return result;
 	}
 }
