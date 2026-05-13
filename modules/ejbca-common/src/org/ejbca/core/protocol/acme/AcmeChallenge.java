@@ -88,9 +88,9 @@ public interface AcmeChallenge {
 
         public static List<String> DISTINCT_CHALLENGE_TYPES;
 
-        private static final String REQUEST_V2_VALIDATION_METHOD_ACME_HTTP_01 = "acme-http-01";
-        private static final String REQUEST_V2_VALIDATION_METHOD_ACME_DNS_01 = "acme-dns-01";
-        private static final String REQUEST_V2_VALIDATION_METHOD_ACME_TLS_ALPN_01 = "acme-tls-alpn-01";
+        public static final String REQUEST_V2_VALIDATION_METHOD_ACME_HTTP_01 = "acme-http-01";
+        public static final String REQUEST_V2_VALIDATION_METHOD_ACME_DNS_01 = "acme-dns-01";
+        public static final String REQUEST_V2_VALIDATION_METHOD_ACME_TLS_ALPN_01 = "acme-tls-alpn-01";
 
         private static final Map<String,String> CHALLENGE_TO_MPIC_CHALLENGE_MAPPING = new TreeMap<>();
         
