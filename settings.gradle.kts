@@ -85,7 +85,6 @@ dependencyResolutionManagement {
             library("jackson-core", ":jackson-core:2.21.3")
             library("jackson-databind", ":jackson-databind:2.21.3")
             library("jackson-annotations", ":jackson-annotations:2.21")
-            library("jackson-dataformat-xml", "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.18.3")
             library("jackson-dataformat-yaml", ":jackson-dataformat-yaml:2.21.3")
             library("reflections", ":reflections:0.9.11")
             library("swagger-annotations", ":swagger-annotations-jakarta:2.2.22")
