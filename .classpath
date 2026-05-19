@@ -196,9 +196,9 @@
 	<classpathentry kind="lib" path="lib/cryptotokens-impl-ee-3.10.1.jar"/>
 	<classpathentry kind="lib" path="lib/primefaces/primefaces-15.0.3-jakarta.jar"/>
 	<classpathentry kind="lib" path="lib/p11ng-0.30.1.jar"/>
-	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-jakarta-rs-json-provider-2.20.0.jar"/>
-	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-module-jaxb-annotations-2.20.0.jar"/>
-	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-jakarta-rs-base-2.20.0.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-jakarta-rs-json-provider-2.21.3.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-module-jaxb-annotations-2.21.3.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-jakarta-rs-base-2.21.3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jackson2/jaxb-api-2.2.12.jar"/>
 	<classpathentry kind="var" path="APPSRV_HOME/bin/client/jboss-client.jar"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
@@ -223,10 +223,10 @@
 	<classpathentry kind="lib" path="lib/ext/swagger/classgraph-4.8.174.jar"/>
 	<classpathentry kind="lib" path="lib/guava-33.0.0-jre.jar"/>
 	<classpathentry kind="lib" path="lib/caffeine-3.1.6.jar"/>
-	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-dataformat-yaml-2.20.0.jar"/>
-	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-core-2.20.0.jar"/>
-	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-databind-2.20.0.jar"/>
-	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-annotations-2.20.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-dataformat-yaml-2.21.3.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-core-2.21.3.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-databind-2.21.3.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-annotations-2.21.jar"/>
 	<classpathentry kind="lib" path="lib/ct/ctlog-0.1.7.jar"/>
 	<classpathentry kind="lib" path="lib/ct/protobuf-java-3.25.5.jar"/>
 	<classpathentry kind="lib" path="lib/bcpkix-jdk18on-1.84.jar"/>
