@@ -15,6 +15,7 @@ package org.cesecore.certificates.certificate.request;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -35,6 +36,8 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
@@ -47,6 +50,7 @@ import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.cms.ContentInfo;
 import org.bouncycastle.asn1.cms.SignedData;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.pkcs.RSAPrivateKey;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.cms.CMSEnvelopedDataParser;
@@ -69,6 +73,7 @@ import org.bouncycastle.pkcs.PKCSException;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.CertificateCreateException;
+import org.cesecore.util.LogRedactionUtils;
 
 public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
 
@@ -84,6 +89,10 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
 
     // optional: for later use
     public static final ASN1ObjectIdentifier szOID_REQUEST_CLIENT_INFO = new ASN1ObjectIdentifier("1.3.6.1.4.1.311.21.20");
+    private static final int CAPI_RSA_PRIVATE_KEY_BLOB_MIN_LENGTH = 20;
+    private static final int CNG_RSA_KEY_BLOB_HEADER_LENGTH = 24;
+    private static final int BCRYPT_RSAPRIVATE_MAGIC = 0x32415352; // RSA2
+    private static final int BCRYPT_RSAFULLPRIVATE_MAGIC = 0x33415352; // RSA3
     
     private byte[] message;
     private byte[] encryptedPrivateKey;
@@ -108,7 +117,7 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
         ContentInfo contentInfo = signedData.getEncapContentInfo();
         DEROctetString octetData = (DEROctetString) DEROctetString.getInstance(contentInfo.getContent());
 
-        pkiData = PKIData.getInstance(octetData.getOctets()); // need to unwrap manually(remove Tag and Length)
+        pkiData = PKIData.getInstance(octetData.getOctets()); // need to unwrap manually (remove Tag and Length)
         for (TaggedRequest tr : pkiData.getReqSequence()) { // only one
             TaggedCertificationRequest tcr = TaggedCertificationRequest.getInstance(tr.getValue());
             p10msg = tcr.getCertificationRequest().getEncoded();
@@ -128,7 +137,8 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
             verifierProvider = CertTools.genContentVerifierProvider(pkcs10.getPublicKey());
             
             if (!pkcs10.isSignatureValid(verifierProvider)) {
-                log.debug("Innner PKCS10 verification failed.");
+                log.debug("Inner PKCS10 verification failed for PKCS10 subject DN '"
+                        + LogRedactionUtils.getSubjectDnLogSafe(pkcs10.getSubject().toString()) + "'.");
                 return false;
             }
             
@@ -240,7 +250,8 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
             RecipientInformationStore recipients = ep.getRecipientInfos();
 
             if (recipients.getRecipients().size() != 1) {
-                log.info("Decryption failed: MS Key archival should contain only one recepient.");
+                log.info("Decryption failed: MS Key archival should contain only one recipient, but contained "
+                        + recipients.getRecipients().size() + ".");
                 return;
             }
 
@@ -278,77 +289,192 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
      */
     private PrivateKey parsePrivateKeyBlob(byte[] encodedPrivateKey) {
         // TODO: move to x509-common-utils or some other common place
-        if (encodedPrivateKey[0]!=0x07 || encodedPrivateKey[1]!=0x02 ) { // only parsing normal RSA keys
-            return null;
-        }
-        
         try {
-            byte[] buffer = ArrayUtils.subarray(encodedPrivateKey, 12, 16);
-            ArrayUtils.reverse(buffer);
-            int byteLen = ByteBuffer.wrap(buffer).getInt()/8;
-            BigInteger pubExp = bigIntFromByteArray(encodedPrivateKey, 16, 20);
-            
-            int start = 20;
-            int end = 20+byteLen;
-            BigInteger modulus = bigIntFromByteArray(encodedPrivateKey, start, end);
-            
-            start=end;
-            end=start + byteLen/2;
-            BigInteger prime1 = bigIntFromByteArray(encodedPrivateKey, start, end);
-            
-            start=end;
-            end=start + byteLen/2;
-            BigInteger prime2 = bigIntFromByteArray(encodedPrivateKey, start, end);
-            
-            start=end;
-            end=start + byteLen/2;
-            BigInteger exponent1 = bigIntFromByteArray(encodedPrivateKey, start, end);
-            
-            start=end;
-            end=start + byteLen/2;
-            BigInteger exponent2 = bigIntFromByteArray(encodedPrivateKey, start, end);
-            
-            start=end;
-            end=start + byteLen/2;
-            BigInteger coefficient = bigIntFromByteArray(encodedPrivateKey, start, end);
-            
-            start=end;
-            end=start + byteLen;
-            BigInteger privateExp = bigIntFromByteArray(encodedPrivateKey, start, end);
-            
-            if(log.isTraceEnabled()) {
-                log.trace("Decrypted end entity private key params:");
-                log.trace("pubexp:" + pubExp);
-                log.trace("modulus:" + modulus);
-                log.trace("prime1:" + prime1);
-                log.trace("prime2:" + prime2);
-                log.trace("exponent1:" + exponent1);
-                log.trace("exponent2:" + exponent2);
-                log.trace("coefficient:" + coefficient);
-                log.trace("privateExp:" + privateExp);
+            if (encodedPrivateKey == null || encodedPrivateKey.length == 0) {
+                return null;
             }
-            
-            RSAPrivateKey privKey = new RSAPrivateKey(modulus, pubExp, privateExp, prime1, prime2, 
-                                                                        exponent1, exponent2, coefficient);
-            
-            // see org/bouncycastle/jcajce/provider/asymmetric/rsa/BCRSAPublicKey.java
-            AlgorithmIdentifier algorithmIdentifier = new AlgorithmIdentifier(
-                                                PKCSObjectIdentifiers.rsaEncryption, DERNull.INSTANCE);
-            byte[] derEncodedPrivKey = KeyUtil.getEncodedPrivateKeyInfo(algorithmIdentifier, privKey);
-            // TODO: need to decide for using BC or system default provider
-            KeyFactory kf = KeyFactory.getInstance("RSA");
-            PrivateKey requestPrivatekey = kf.generatePrivate(new PKCS8EncodedKeySpec(derEncodedPrivKey));            
-            return requestPrivatekey;
+            if (encodedPrivateKey.length >= 2 && encodedPrivateKey[0] == 0x07 && encodedPrivateKey[1] == 0x02) {
+                return parseCapiPrivateKeyBlob(encodedPrivateKey);
+            }
+            if (isCngRsaPrivateKeyBlob(encodedPrivateKey)) {
+                return parseCngRsaPrivateKeyBlob(encodedPrivateKey);
+            }
+            if (encodedPrivateKey[0] == 0x30) {
+                return parseAsn1RsaPrivateKey(encodedPrivateKey);
+            }
+            if (encodedPrivateKey[0] == 0x04) {
+                return parsePrivateKeyBlob(DEROctetString.getInstance(ASN1Primitive.fromByteArray(encodedPrivateKey)).getOctets());
+            }
+            log.info("Unsupported private key blob format. Length: " + encodedPrivateKey.length + ", header: "
+                    + Hex.toHexString(ArrayUtils.subarray(encodedPrivateKey, 0, Math.min(encodedPrivateKey.length, 16))));
+            return null;
         } catch (Exception e) {
             log.error("Exception during private key blob processing: ", e);
             return null;
         }
     }
     
-    private BigInteger bigIntFromByteArray(byte[] encodedPrivateKey, int start, int end) {
+    private PrivateKey parseCapiPrivateKeyBlob(byte[] encodedPrivateKey) throws Exception {
+        if (encodedPrivateKey.length < CAPI_RSA_PRIVATE_KEY_BLOB_MIN_LENGTH) {
+            throw new IOException("CAPI RSA private key blob is too short.");
+        }
+        byte[] buffer = ArrayUtils.subarray(encodedPrivateKey, 12, 16);
+        ArrayUtils.reverse(buffer);
+        int byteLen = ByteBuffer.wrap(buffer).getInt()/8;
+        BigInteger pubExp = littleEndianUnsignedBigInt(encodedPrivateKey, 16, 20);
+        
+        int start = 20;
+        int end = 20+byteLen;
+        BigInteger modulus = littleEndianUnsignedBigInt(encodedPrivateKey, start, end);
+        
+        start=end;
+        end=start + byteLen/2;
+        BigInteger prime1 = littleEndianUnsignedBigInt(encodedPrivateKey, start, end);
+        
+        start=end;
+        end=start + byteLen/2;
+        BigInteger prime2 = littleEndianUnsignedBigInt(encodedPrivateKey, start, end);
+        
+        start=end;
+        end=start + byteLen/2;
+        BigInteger exponent1 = littleEndianUnsignedBigInt(encodedPrivateKey, start, end);
+        
+        start=end;
+        end=start + byteLen/2;
+        BigInteger exponent2 = littleEndianUnsignedBigInt(encodedPrivateKey, start, end);
+        
+        start=end;
+        end=start + byteLen/2;
+        BigInteger coefficient = littleEndianUnsignedBigInt(encodedPrivateKey, start, end);
+        
+        start=end;
+        end=start + byteLen;
+        BigInteger privateExp = littleEndianUnsignedBigInt(encodedPrivateKey, start, end);
+        
+        return generateRsaPrivateKey(modulus, pubExp, privateExp, prime1, prime2, exponent1, exponent2, coefficient);
+    }
+    
+    private boolean isCngRsaPrivateKeyBlob(final byte[] encodedPrivateKey) {
+        if (encodedPrivateKey.length < CNG_RSA_KEY_BLOB_HEADER_LENGTH) {
+            return false;
+        }
+        final int magic = ByteBuffer.wrap(encodedPrivateKey, 0, 4).order(ByteOrder.LITTLE_ENDIAN).getInt();
+        return magic == BCRYPT_RSAPRIVATE_MAGIC || magic == BCRYPT_RSAFULLPRIVATE_MAGIC;
+    }
+    
+    private PrivateKey parseCngRsaPrivateKeyBlob(byte[] encodedPrivateKey) throws Exception {
+        final ByteBuffer header = ByteBuffer.wrap(encodedPrivateKey, 0, CNG_RSA_KEY_BLOB_HEADER_LENGTH).order(ByteOrder.LITTLE_ENDIAN);
+        final int magic = header.getInt();
+        final int bitLength = header.getInt();
+        final int publicExponentLength = header.getInt();
+        final int modulusLength = header.getInt();
+        final int prime1Length = header.getInt();
+        final int prime2Length = header.getInt();
+        if (bitLength <= 0 || publicExponentLength <= 0 || modulusLength <= 0 || prime1Length <= 0 || prime2Length <= 0) {
+            throw new IOException("Invalid CNG RSA private key blob length.");
+        }
+        
+        int start = CNG_RSA_KEY_BLOB_HEADER_LENGTH;
+        int end = start + publicExponentLength;
+        final BigInteger pubExp = unsignedBigInt(encodedPrivateKey, start, end);
+        start = end;
+        end = start + modulusLength;
+        final BigInteger modulus = unsignedBigInt(encodedPrivateKey, start, end);
+        start = end;
+        end = start + prime1Length;
+        final BigInteger prime1 = unsignedBigInt(encodedPrivateKey, start, end);
+        start = end;
+        end = start + prime2Length;
+        final BigInteger prime2 = unsignedBigInt(encodedPrivateKey, start, end);
+        
+        final BigInteger privateExp;
+        final BigInteger exponent1;
+        final BigInteger exponent2;
+        final BigInteger coefficient;
+        if (magic == BCRYPT_RSAFULLPRIVATE_MAGIC) {
+            start = end;
+            end = start + prime1Length;
+            exponent1 = unsignedBigInt(encodedPrivateKey, start, end);
+            start = end;
+            end = start + prime2Length;
+            exponent2 = unsignedBigInt(encodedPrivateKey, start, end);
+            start = end;
+            end = start + prime1Length;
+            coefficient = unsignedBigInt(encodedPrivateKey, start, end);
+            start = end;
+            end = start + modulusLength;
+            privateExp = unsignedBigInt(encodedPrivateKey, start, end);
+        } else {
+            privateExp = pubExp.modInverse(prime1.subtract(BigInteger.ONE).multiply(prime2.subtract(BigInteger.ONE)));
+            exponent1 = privateExp.remainder(prime1.subtract(BigInteger.ONE));
+            exponent2 = privateExp.remainder(prime2.subtract(BigInteger.ONE));
+            coefficient = prime2.modInverse(prime1);
+        }
+        if (end != encodedPrivateKey.length) {
+            throw new IOException("Unexpected trailing data in CNG RSA private key blob.");
+        }
+        return generateRsaPrivateKey(modulus, pubExp, privateExp, prime1, prime2, exponent1, exponent2, coefficient);
+    }
+    
+    private PrivateKey parseAsn1RsaPrivateKey(final byte[] encodedPrivateKey) throws Exception {
+        try {
+            return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(encodedPrivateKey));
+        } catch (Exception e) {
+            final ASN1Sequence sequence = ASN1Sequence.getInstance(ASN1Primitive.fromByteArray(encodedPrivateKey));
+            try {
+                final PrivateKeyInfo privateKeyInfo = PrivateKeyInfo.getInstance(sequence);
+                if (PKCSObjectIdentifiers.rsaEncryption.equals(privateKeyInfo.getPrivateKeyAlgorithm().getAlgorithm())) {
+                    return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(privateKeyInfo.getEncoded()));
+                }
+            } catch (Exception ignored) {
+                // Fall through and try PKCS#1 RSAPrivateKey below.
+            }
+            final RSAPrivateKey rsaPrivateKey = RSAPrivateKey.getInstance(sequence);
+            return generateRsaPrivateKey(rsaPrivateKey.getModulus(), rsaPrivateKey.getPublicExponent(), rsaPrivateKey.getPrivateExponent(),
+                    rsaPrivateKey.getPrime1(), rsaPrivateKey.getPrime2(), rsaPrivateKey.getExponent1(), rsaPrivateKey.getExponent2(),
+                    rsaPrivateKey.getCoefficient());
+        }
+    }
+    
+    private PrivateKey generateRsaPrivateKey(final BigInteger modulus, final BigInteger pubExp, final BigInteger privateExp, final BigInteger prime1,
+            final BigInteger prime2, final BigInteger exponent1, final BigInteger exponent2, final BigInteger coefficient) throws Exception {
+        if(log.isTraceEnabled()) {
+            log.trace("Decrypted end entity private key params:");
+            log.trace("pubexp:" + pubExp);
+            log.trace("modulus:" + modulus);
+            log.trace("prime1:" + prime1);
+            log.trace("prime2:" + prime2);
+            log.trace("exponent1:" + exponent1);
+            log.trace("exponent2:" + exponent2);
+            log.trace("coefficient:" + coefficient);
+            log.trace("privateExp:" + privateExp);
+        }
+        
+        RSAPrivateKey privKey = new RSAPrivateKey(modulus, pubExp, privateExp, prime1, prime2, exponent1, exponent2, coefficient);
+        
+        // see org/bouncycastle/jcajce/provider/asymmetric/rsa/BCRSAPublicKey.java
+        AlgorithmIdentifier algorithmIdentifier = new AlgorithmIdentifier(PKCSObjectIdentifiers.rsaEncryption, DERNull.INSTANCE);
+        byte[] derEncodedPrivKey = KeyUtil.getEncodedPrivateKeyInfo(algorithmIdentifier, privKey);
+        // TODO: need to decide for using BC or system default provider
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        PrivateKey requestPrivatekey = kf.generatePrivate(new PKCS8EncodedKeySpec(derEncodedPrivKey));            
+        return requestPrivatekey;
+    }
+    
+    private BigInteger unsignedBigInt(byte[] encodedPrivateKey, int start, int end) throws IOException {
+        if (start < 0 || end > encodedPrivateKey.length || start >= end) {
+            throw new IOException("Invalid private key blob field length.");
+        }
+        return new BigInteger(1, ArrayUtils.subarray(encodedPrivateKey, start, end));
+    }
+    
+    private BigInteger littleEndianUnsignedBigInt(byte[] encodedPrivateKey, int start, int end) throws IOException {
+        if (start < 0 || end > encodedPrivateKey.length || start >= end) {
+            throw new IOException("Invalid private key blob field length.");
+        }
         byte[] buffer = ArrayUtils.subarray(encodedPrivateKey, start, end);
         ArrayUtils.reverse(buffer);
-        return new BigInteger(buffer);
+        return new BigInteger(1, buffer);
     }
     
     private void testKeyPair() throws CertificateCreateException {

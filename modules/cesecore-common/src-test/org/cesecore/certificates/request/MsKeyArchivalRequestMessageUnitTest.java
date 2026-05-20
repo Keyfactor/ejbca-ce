@@ -17,11 +17,17 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.lang.reflect.Method;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.RSAPrivateCrtKeySpec;
 
 import org.bouncycastle.util.Properties;
 import org.bouncycastle.util.encoders.Base64;
@@ -288,18 +294,11 @@ public class MsKeyArchivalRequestMessageUnitTest {
                 .setLdapOrder(true)
                 .generateCertificate(); 
         
-        // these fails cause spec validation in BC
-         KeyTools.createP12("abcd", msg.getKeyPairToArchive().getPrivate(), eeCert, caCert, KeyStoreCipher.PKCS12_AES256_AES128); 
-         EJBTools.unwrap(EJBTools.wrap(msg.getKeyPairToArchive())); 
-         
-         Properties.removeThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS);
+        KeyTools.createP12("abcd", msg.getKeyPairToArchive().getPrivate(), eeCert, caCert, KeyStoreCipher.PKCS12_AES256_AES128); 
+        EJBTools.unwrap(EJBTools.wrap(msg.getKeyPairToArchive())); 
         
-         try {
-             EJBTools.unwrap(EJBTools.wrap(msg.getKeyPairToArchive())); 
-             fail("failed to remove allow_unsafe_mod");
-         } catch (Exception e) {
-             
-         }
+        Properties.removeThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS);
+        EJBTools.unwrap(EJBTools.wrap(msg.getKeyPairToArchive())); 
     }
     
     @Test
@@ -506,6 +505,112 @@ public class MsKeyArchivalRequestMessageUnitTest {
         msg.decryptPrivateKey("BC", exchangePrivKey);
         assertNotNull(msg.getKeyPairToArchive()); 
                                 
+    }
+    
+    @Test
+    public void testParsePrivateKeyBlobTreatsRsaParametersAsUnsigned() throws Exception {
+        final KeyPair keyPair = KeyTools.genKeys("2048", "RSA");
+        final RSAPrivateCrtKey originalKey = (RSAPrivateCrtKey) keyPair.getPrivate();
+        final byte[] privateKeyBlob = toMicrosoftPrivateKeyBlob(originalKey);
+
+        final Method parser = MsKeyArchivalRequestMessage.class.getDeclaredMethod("parsePrivateKeyBlob", byte[].class);
+        parser.setAccessible(true);
+        final PrivateKey parsedKey = (PrivateKey) parser.invoke(new MsKeyArchivalRequestMessage(), privateKeyBlob);
+
+        assertNotNull(parsedKey);
+        final RSAPrivateCrtKeySpec parsedKeySpec = KeyFactory.getInstance("RSA").getKeySpec(parsedKey, RSAPrivateCrtKeySpec.class);
+        assertEquals(originalKey.getModulus(), parsedKeySpec.getModulus());
+        assertEquals(originalKey.getPrivateExponent(), parsedKeySpec.getPrivateExponent());
+        assertEquals(originalKey.getPrimeP(), parsedKeySpec.getPrimeP());
+        assertEquals(originalKey.getPrimeQ(), parsedKeySpec.getPrimeQ());
+    }
+    
+    @Test
+    public void testParseCngRsaFullPrivateKeyBlob() throws Exception {
+        final KeyPair keyPair = KeyTools.genKeys("2048", "RSA");
+        final RSAPrivateCrtKey originalKey = (RSAPrivateCrtKey) keyPair.getPrivate();
+        final byte[] privateKeyBlob = toCngRsaFullPrivateKeyBlob(originalKey);
+
+        final Method parser = MsKeyArchivalRequestMessage.class.getDeclaredMethod("parsePrivateKeyBlob", byte[].class);
+        parser.setAccessible(true);
+        final PrivateKey parsedKey = (PrivateKey) parser.invoke(new MsKeyArchivalRequestMessage(), privateKeyBlob);
+
+        assertNotNull(parsedKey);
+        final RSAPrivateCrtKeySpec parsedKeySpec = KeyFactory.getInstance("RSA").getKeySpec(parsedKey, RSAPrivateCrtKeySpec.class);
+        assertEquals(originalKey.getModulus(), parsedKeySpec.getModulus());
+        assertEquals(originalKey.getPrivateExponent(), parsedKeySpec.getPrivateExponent());
+        assertEquals(originalKey.getPrimeP(), parsedKeySpec.getPrimeP());
+        assertEquals(originalKey.getPrimeQ(), parsedKeySpec.getPrimeQ());
+    }
+    
+    private static byte[] toMicrosoftPrivateKeyBlob(final RSAPrivateCrtKey privateKey) {
+        final int byteLen = (privateKey.getModulus().bitLength() + 7) / 8;
+        final ByteBuffer blob = ByteBuffer.allocate(20 + byteLen + (byteLen / 2) * 5 + byteLen);
+        blob.order(ByteOrder.LITTLE_ENDIAN);
+        blob.put((byte) 0x07); // PRIVATEKEYBLOB
+        blob.put((byte) 0x02); // CUR_BLOB_VERSION
+        blob.putShort((short) 0);
+        blob.putInt(0x0000a400); // CALG_RSA_KEYX
+        blob.putInt(0x32415352); // RSA2
+        blob.putInt(byteLen * 8);
+        blob.putInt(privateKey.getPublicExponent().intValue());
+        blob.put(littleEndianUnsigned(privateKey.getModulus(), byteLen));
+        blob.put(littleEndianUnsigned(privateKey.getPrimeP(), byteLen / 2));
+        blob.put(littleEndianUnsigned(privateKey.getPrimeQ(), byteLen / 2));
+        blob.put(littleEndianUnsigned(privateKey.getPrimeExponentP(), byteLen / 2));
+        blob.put(littleEndianUnsigned(privateKey.getPrimeExponentQ(), byteLen / 2));
+        blob.put(littleEndianUnsigned(privateKey.getCrtCoefficient(), byteLen / 2));
+        blob.put(littleEndianUnsigned(privateKey.getPrivateExponent(), byteLen));
+        return blob.array();
+    }
+    
+    private static byte[] toCngRsaFullPrivateKeyBlob(final RSAPrivateCrtKey privateKey) {
+        final int byteLen = (privateKey.getModulus().bitLength() + 7) / 8;
+        final byte[] publicExponent = bigEndianUnsigned(privateKey.getPublicExponent());
+        final ByteBuffer blob = ByteBuffer.allocate(24 + publicExponent.length + byteLen + (byteLen / 2) * 5 + byteLen);
+        blob.order(ByteOrder.LITTLE_ENDIAN);
+        blob.putInt(0x33415352); // RSA3
+        blob.putInt(byteLen * 8);
+        blob.putInt(publicExponent.length);
+        blob.putInt(byteLen);
+        blob.putInt(byteLen / 2);
+        blob.putInt(byteLen / 2);
+        blob.put(publicExponent);
+        blob.put(bigEndianUnsigned(privateKey.getModulus(), byteLen));
+        blob.put(bigEndianUnsigned(privateKey.getPrimeP(), byteLen / 2));
+        blob.put(bigEndianUnsigned(privateKey.getPrimeQ(), byteLen / 2));
+        blob.put(bigEndianUnsigned(privateKey.getPrimeExponentP(), byteLen / 2));
+        blob.put(bigEndianUnsigned(privateKey.getPrimeExponentQ(), byteLen / 2));
+        blob.put(bigEndianUnsigned(privateKey.getCrtCoefficient(), byteLen / 2));
+        blob.put(bigEndianUnsigned(privateKey.getPrivateExponent(), byteLen));
+        return blob.array();
+    }
+    
+    private static byte[] littleEndianUnsigned(final BigInteger value, final int length) {
+        final byte[] bigEndian = value.toByteArray();
+        final byte[] littleEndian = new byte[length];
+        final int copyLength = Math.min(bigEndian.length, length);
+        for (int i = 0; i < copyLength; i++) {
+            littleEndian[i] = bigEndian[bigEndian.length - 1 - i];
+        }
+        return littleEndian;
+    }
+    
+    private static byte[] bigEndianUnsigned(final BigInteger value) {
+        final byte[] valueBytes = value.toByteArray();
+        if (valueBytes.length > 1 && valueBytes[0] == 0) {
+            final byte[] unsigned = new byte[valueBytes.length - 1];
+            System.arraycopy(valueBytes, 1, unsigned, 0, unsigned.length);
+            return unsigned;
+        }
+        return valueBytes;
+    }
+    
+    private static byte[] bigEndianUnsigned(final BigInteger value, final int length) {
+        final byte[] valueBytes = bigEndianUnsigned(value);
+        final byte[] unsigned = new byte[length];
+        System.arraycopy(valueBytes, 0, unsigned, length - valueBytes.length, valueBytes.length);
+        return unsigned;
     }
     
 }
