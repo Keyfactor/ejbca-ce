@@ -13,6 +13,7 @@
 
 package org.ejbca.core.ejb.services;
 
+import com.google.common.base.Splitter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
@@ -875,7 +876,12 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                         final Map<String, Object> details = new LinkedHashMap<>();
                         details.put("msg", msg);
                         for (Map.Entry<Object, Object> entry : diff.entrySet()) {
-                            details.put(entry.getKey().toString(), entry.getValue().toString());
+                            // For some reason the fields to be masked (appKey and proxyPass) are logged here, even if they are unchanged.
+                            if ("changed:WORKERPROPERTIES".equals(entry.getKey().toString())) {
+                                details.put("changed:WORKERPROPERTIES", maskSensitiveData(entry));
+                            } else {
+                                details.put(entry.getKey().toString(), entry.getValue().toString()); 
+                            }
                         }
                         auditSession.log(EjbcaEventTypes.SERVICE_EDIT, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
                                 admin.toString(), null, null, null, details);
@@ -1201,6 +1207,46 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             log.error("Hostname could not be determined", e);
         }
         return hostname;
+    }
+    
+    /**
+     * The method masks sensitive data.
+     * 
+     * Depending on the properties given by the user it might happen, that the map cannot be parsed.
+     * In this case the original map as String is returned.
+     * 
+     * This implementation masks
+     * - org.ejbca.intune.IntuneRevocationWorker fields appKey, proxyPass.
+     * 
+     * @param entry the map entry including the worker properties to be masked.
+     * 
+     * @return the string of the given entry or the new map to be logged.
+     */
+    private String maskSensitiveData(final Map.Entry<Object,Object> entry) {
+        try {
+            String s = new String(entry.getValue().toString()).trim();
+            if (s.startsWith("{")) {
+                s = s.substring(1, s.length());
+            }
+            if (s.endsWith("}")) {
+                s = s.substring(0, s.length() - 1);
+            }
+            // The map by the splitter is an immutable map.
+            final Map<String,String> map = Splitter.on(", ").withKeyValueSeparator("=").split(s);
+            final Map<String,String> newMap = new HashMap<>();
+            for (String key : map.keySet()) {
+                if ("appKey".equals(key) || "proxyPass".equals(key)) {
+                    newMap.put(key, "******");
+                } else {
+                    newMap.put(key, map.get(key));
+                }
+            }
+            return newMap.toString();
+        } catch (Exception e) {
+            // If the map cannot be parsed with the splitter, e.g. the user uses ', ' in some field.
+            log.warn("Failed to parse worker properties: " + e.getMessage());
+        }
+        return entry.getValue().toString();
     }
 
 }

@@ -37,10 +37,10 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
     
 	private static final float LATEST_VERSION = 7;
 	
+	public static final String WORKERPROPERTIES = "WORKERPROPERTIES";
 	private static final String INTERVALCLASSPATH = "INTERVALCLASSPATH";
 	private static final String INTERVALPROPERTIES = "INTERVALPROPERTIES";
 	private static final String WORKERCLASSPATH = "WORKERCLASSPATH";
-	private static final String WORKERPROPERTIES = "WORKERPROPERTIES";
 	private static final String ACTIONCLASSPATH = "ACTIONCLASSPATH";
 	private static final String ACTIONPROPERTIES = "ACTIONPROPERTIES";
 	private static final String DESCRIPTION = "DESCRIPTION";
