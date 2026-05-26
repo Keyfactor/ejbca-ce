@@ -1,0 +1,4 @@
+-- subjectAltName column size is increased in CertificateData, NoConflictCertificateData and UserData tables
+-- ALTER TABLE UserData MODIFY subjectAltName VARCHAR(4000 byte);
+-- ALTER TABLE CertificateData MODIFY subjectAltName VARCHAR(4000 byte);
+-- ALTER TABLE NoConflictCertificateData MODIFY subjectAltName VARCHAR(4000 byte);
