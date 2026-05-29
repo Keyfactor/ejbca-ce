@@ -177,7 +177,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         // but we only check the ones the admin has access to in order to not leak information
         List<CryptoTokenInfo> infos = getCryptoTokenInfos(authenticationToken);
         List<String> providers = new ArrayList<>();
-        String tokenP11Lib = properties.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY);
+        String tokenP11Lib = properties.getProperty(CryptoTokenConstants.SHLIB_LABEL_KEY);
         final String providerNameToCheck = createProviderName(tokenName, className, properties);
         if (log.isDebugEnabled()) {
             log.debug("isCryptoTokenUsed: Provider name to check for: "+providerNameToCheck);
@@ -249,9 +249,9 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         // (which causes things to break since the provider is not installed)
         Properties properties = new Properties();
         properties.putAll(tokenprops);
-        properties.setProperty(PKCS11CryptoToken.DO_NOT_ADD_P11_PROVIDER, "true");
+        properties.setProperty(CryptoTokenConstants.DO_NOT_ADD_P11_PROVIDER, "true");
         CryptoToken cryptoToken;
-        if (className.equals(AzureCryptoToken.class.getName())) {
+        if (className.equals(CryptoTokenFactory.AZURE_NAME)) {
             cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, null, -1, tokenName, false,
                     new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenManagementSession, caSession));
         } else {
@@ -401,7 +401,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         CryptoToken cryptoToken;
 
         // special case - azure crypto token can do public key authentication
-        if (className.equals(AzureCryptoToken.class.getName())) {
+        if (className.equals(CryptoTokenFactory.AZURE_NAME)) {
             cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, data, cryptoTokenId.intValue(), tokenName, false,
                     new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenManagementSession, caSession));
         }
@@ -420,7 +420,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                 // If we entered the wrong PIN, we may have installed the P11 provider (if it is a P11 token)
                 // In that case, remove it again, so we don't have to warn about already used slot when entering the correct PIN
                 // if it was not already used by anyone else that is
-                if (isSlotUsed.isEmpty() && cryptoToken.isInstanceOf(PKCS11CryptoToken.class)) {
+                if (isSlotUsed.isEmpty() && isTokenType(cryptoToken, CryptoTokenFactory.PKCS11_NAME)) {
                     Security.removeProvider(cryptoToken.getSignProviderName());
                 }
                 throw e;
@@ -519,7 +519,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         // For SoftCryptoTokens, a new secret means that we should change it and it can only be done if the token is active
         CryptoToken newCryptoToken;
         try {
-            if (className.equals(AzureCryptoToken.class.getName())) {
+            if (className.equals(CryptoTokenFactory.AZURE_NAME)) {
                 // special case - pass in an object that can find the authentication key binding
                 newCryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, tokendata, cryptoTokenId, tokenName,
                         new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenManagementSession, caSession));
@@ -1159,6 +1159,15 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             } else {
                 details.put(key, newValue);
             }
+        }
+    }
+
+    private boolean isTokenType(final CryptoToken token, final String className) {
+        try {
+            Class<?> clazz = Class.forName(className);
+            return token.isInstanceOf((Class<? extends CryptoToken>) clazz);
+        } catch (ClassNotFoundException e) {
+            return false;
         }
     }
 }

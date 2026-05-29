@@ -18,8 +18,8 @@ import static org.junit.Assume.assumeTrue;
 
 import java.util.Properties;
 
+import org.cesecore.keys.token.CryptoTokenConstants;
 import org.cesecore.keys.token.CryptoTokenFactory;
-import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.PKCS11TestUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -108,21 +108,21 @@ public class PKCS11CATokenUnitTest extends CATokenTestBase {
         Properties prop = new Properties();
         String hsmlib = PKCS11TestUtils.getHSMLibrary();
         assertNotNull(hsmlib);
-        prop.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, hsmlib);
-        prop.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, PKCS11TestUtils.getPkcs11SlotValue());
-        prop.setProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE, PKCS11TestUtils.getPkcs11SlotType().getKey());
+        prop.setProperty(CryptoTokenConstants.SHLIB_LABEL_KEY, hsmlib);
+        prop.setProperty(CryptoTokenConstants.SLOT_LABEL_VALUE, PKCS11TestUtils.getPkcs11SlotValue());
+        prop.setProperty(CryptoTokenConstants.SLOT_LABEL_TYPE, PKCS11TestUtils.getPkcs11SlotType().getKey());
         if (file != null) {
-            prop.setProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY, file);
+            prop.setProperty(CryptoTokenConstants.ATTRIB_LABEL_KEY, file);
         }
         if (tokenName != null) {
-            prop.setProperty(PKCS11CryptoToken.TOKEN_FRIENDLY_NAME, tokenName);
+            prop.setProperty(CryptoTokenConstants.TOKEN_FRIENDLY_NAME, tokenName);
         }
         if (extractable){
             prop.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, "True");
         } else {
             prop.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, "False");
         }
-        CryptoToken catoken = CryptoTokenFactory.createCryptoToken(PKCS11CryptoToken.class.getName(), prop, null, 111, "P11 CryptoToken");
+        CryptoToken catoken = CryptoTokenFactory.createCryptoToken(CryptoTokenFactory.PKCS11_NAME, prop, null, 111, "P11 CryptoToken");
         return catoken;
     }
 }

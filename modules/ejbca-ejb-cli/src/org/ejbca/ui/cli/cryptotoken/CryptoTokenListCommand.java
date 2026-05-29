@@ -17,9 +17,9 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
-import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -68,7 +68,7 @@ public class CryptoTokenListCommand extends EjbcaCliUserCommandBase {
                 sb.append(", ").append(cryptoTokenInfo.isAllowExportPrivateKey()?"exportable":"non-exportable");
             }
             // Using String reference for p11ng since package isn't available in CE
-            if (PKCS11CryptoToken.class.getSimpleName().equals(cryptoTokenInfo.getType()) || "Pkcs11NgCryptoToken".equals(cryptoTokenInfo.getType())) {
+            if (CryptoTokenFactory.PKCS11_SIMPLE_NAME.equals(cryptoTokenInfo.getType()) || "Pkcs11NgCryptoToken".equals(cryptoTokenInfo.getType())) {
                 sb.append(", library=").append(cryptoTokenInfo.getP11Library());
                 sb.append(", Slot Label=").append(cryptoTokenInfo.getP11Slot());
                 sb.append(", Slot Label Type=").append(cryptoTokenInfo.getP11SlotLabelTypeDescription());

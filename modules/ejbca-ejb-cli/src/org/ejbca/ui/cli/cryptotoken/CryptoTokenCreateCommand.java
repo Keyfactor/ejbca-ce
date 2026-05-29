@@ -21,12 +21,10 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.token.AwsKmsAuthenticationType;
-import org.cesecore.keys.token.AzureCryptoToken;
 import org.cesecore.keys.token.CryptoTokenConstants;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
-import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -101,13 +99,13 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
                 "(" + SoftCryptoToken.class.getSimpleName() + ") Set to true|false to allow|disallow private key export."));
         //PKCS#11
         registerParameter(new Parameter(PKCS11_LIB_KEY, "Library Name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, "("
-                + PKCS11CryptoToken.class.getSimpleName() + ") PKCS#11 library file. Required if type is " + PKCS11CryptoToken.class.getSimpleName()));
+                + CryptoTokenFactory.PKCS11_SIMPLE_NAME  + ") PKCS#11 library file. Required if type is " + CryptoTokenFactory.PKCS11_SIMPLE_NAME));
         registerParameter(new Parameter(SLOT_REFERENCE_TYPE_KEY, "Slot Reference Type", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW,
-                ParameterMode.ARGUMENT, "(" + PKCS11CryptoToken.class.getSimpleName() + ") Slot Reference Type."));
+                ParameterMode.ARGUMENT, "(" + CryptoTokenFactory.PKCS11_SIMPLE_NAME + ") Slot Reference Type."));
         registerParameter(new Parameter(SLOT_REFERENCE_KEY, "Slot Reference", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "(" + PKCS11CryptoToken.class.getSimpleName() + ") Slot reference."));
+                "(" + CryptoTokenFactory.PKCS11_SIMPLE_NAME + ") Slot reference."));
         registerParameter(new Parameter(PKCS11_ATTR_FILE_KEY, "Attribute File", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "(" + PKCS11CryptoToken.class.getSimpleName() + ") PKCS#11 Attribute File"));
+                "(" + CryptoTokenFactory.PKCS11_SIMPLE_NAME + ") PKCS#11 Attribute File"));
         registerParameter(new Parameter(PKCS11_SLOTCOLLIDE_IGNORE, "Ignore used P11 slots", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG, "Ignore warnings, and confirm yes, for P11 slots that are already used."));
         registerParameter(new Parameter(AWSKMS_ACCESSKEYID, "Access Key ID", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "(AWSKMSCryptoToken) Access Key ID for AWS KMS, example AKIA2I6NL4C3YGQJ6YY3"));
@@ -163,9 +161,9 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
         final StringBuilder sb = new StringBuilder();
         sb.append(SoftCryptoToken.class.getSimpleName());
         sb.append(", ");
-        sb.append(PKCS11CryptoToken.class.getSimpleName());
+        sb.append(CryptoTokenFactory.PKCS11_SIMPLE_NAME);
         sb.append(", ");
-        sb.append(AzureCryptoToken.class.getSimpleName());
+        sb.append(CryptoTokenFactory.AZURE_SIMPLE_NAME);
         try {
             final Class<?> jackJni11Class = Class.forName(CryptoTokenFactory.JACKNJI_NAME);
             sb.append(", ");
@@ -234,25 +232,25 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
             cryptoTokenPropertes.setProperty(CryptoTokenConstants.SECUROSYS_OPERATION_KEY, parameters.get(SECUROSYS_OPERATION_KEY));
             cryptoTokenPropertes.setProperty(CryptoTokenConstants.SECUROSYS_SERVICE_KEY, parameters.get(SECUROSYS_SERVICE_KEY));
             cryptoTokenPropertes.setProperty(CryptoTokenConstants.SECUROSYS_APPROVAL_TIMEOUT, parameters.get(SECUROSYS_APPROVAL_KEY));
-        } else if (AzureCryptoToken.class.getSimpleName().equals(type)) {
-            className = AzureCryptoToken.class.getName();
+        } else if (CryptoTokenFactory.AZURE_SIMPLE_NAME.equals(type)) {
+            className = CryptoTokenFactory.AZURE_NAME;
             // For an Azure token all three parameters are needed
             if (parameters.get(AZUREVAULT_NAME) == null || parameters.get(AZUREVAULT_TYPE) == null || parameters.get(AZUREVAULT_CLIENTID) == null) {
                 getLogger().info("You need to specify all parameters for Azure Key Vault.");
                 return CommandResult.CLI_FAILURE;
             }
-            cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_NAME, parameters.get(AZUREVAULT_NAME));
-            cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_TYPE, parameters.get(AZUREVAULT_TYPE));
-            cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_CLIENTID, parameters.get(AZUREVAULT_CLIENTID));
+            cryptoTokenPropertes.setProperty(CryptoTokenConstants.KEY_VAULT_NAME, parameters.get(AZUREVAULT_NAME));
+            cryptoTokenPropertes.setProperty(CryptoTokenConstants.KEY_VAULT_TYPE, parameters.get(AZUREVAULT_TYPE));
+            cryptoTokenPropertes.setProperty(CryptoTokenConstants.KEY_VAULT_CLIENTID, parameters.get(AZUREVAULT_CLIENTID));
             
             // use defaults if not set
             String useKeyBinding = parameters.get(AZUREVAULT_USE_KEY_BINDING);
             String keyBinding = parameters.get(AZUREVAULT_KEY_BINDING);
-            cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_USE_KEY_BINDING, useKeyBinding == null ? "false" : useKeyBinding);
-            cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_KEY_BINDING, keyBinding == null ? "0" : keyBinding);
-        } else if (PKCS11CryptoToken.class.getSimpleName().equals(type) || CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(type)) {
-            if (PKCS11CryptoToken.class.getSimpleName().equals(type)) {
-                className = PKCS11CryptoToken.class.getName();
+            cryptoTokenPropertes.setProperty(CryptoTokenConstants.KEY_VAULT_USE_KEY_BINDING, useKeyBinding == null ? "false" : useKeyBinding);
+            cryptoTokenPropertes.setProperty(CryptoTokenConstants.KEY_VAULT_KEY_BINDING, keyBinding == null ? "0" : keyBinding);
+        } else if (CryptoTokenFactory.PKCS11_SIMPLE_NAME.equals(type) || CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(type)) {
+            if (CryptoTokenFactory.PKCS11_SIMPLE_NAME.equals(type)) {
+                className = CryptoTokenFactory.PKCS11_NAME;
             } else {
                 className = CryptoTokenFactory.JACKNJI_NAME;
             }
@@ -266,7 +264,7 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
                 getLogger().info("PKCS#11 library file " + pkcs11LibFilename + " does not exist!");
                 return CommandResult.CLI_FAILURE;
             }
-            cryptoTokenPropertes.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, pkcs11LibFilename);
+            cryptoTokenPropertes.setProperty(CryptoTokenConstants.SHLIB_LABEL_KEY, pkcs11LibFilename);
             String slotPropertyValue = parameters.get(SLOT_REFERENCE_KEY);
             if(slotPropertyValue == null) {
                 getLogger().info("Slot reference key (" + SLOT_REFERENCE_KEY + ") needs to be defined for PKCS#11 tokens.");
@@ -282,7 +280,7 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
                 getLogger().info(parameters.get(SLOT_REFERENCE_TYPE_KEY) + " was not a valid slot reference type.");
                 return CommandResult.CLI_FAILURE;
             }
-            cryptoTokenPropertes.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, slotPropertyValue);
+            cryptoTokenPropertes.setProperty(CryptoTokenConstants.SLOT_LABEL_VALUE, slotPropertyValue);
             //If an index was given, accept just numbers as well
             if (labelType.isEqual(Pkcs11SlotLabelType.SLOT_INDEX)) {
                 if (slotPropertyValue.charAt(0) != 'i') {
@@ -293,7 +291,7 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
                 getLogger().info("Invalid value " + slotPropertyValue + " given for slot type " + labelType.getDescription());
                 return CommandResult.CLI_FAILURE;
             } else {
-                cryptoTokenPropertes.setProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE, labelType.getKey());
+                cryptoTokenPropertes.setProperty(CryptoTokenConstants.SLOT_LABEL_TYPE, labelType.getKey());
             }
             // Parse attribute file
             String attributeFileName = parameters.get(PKCS11_ATTR_FILE_KEY);
@@ -302,7 +300,7 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
                     getLogger().info("PKCS#11 attribute file " + attributeFileName + " does not exist!");
                     return CommandResult.CLI_FAILURE;
                 }
-                cryptoTokenPropertes.setProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY, attributeFileName);
+                cryptoTokenPropertes.setProperty(CryptoTokenConstants.ATTRIB_LABEL_KEY, attributeFileName);
             }
 
             // Check if this crypto token is already used

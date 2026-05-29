@@ -70,11 +70,11 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
+import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenManagementProxySessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
-import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.SimpleTime;
@@ -266,7 +266,7 @@ public abstract class CaTestUtils {
             int keyusage, String caSignAlg) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException, CertIOException {
         final String cryptoTokenImplementation;
         if (pkcs11) {
-            cryptoTokenImplementation = PKCS11CryptoToken.class.getName();
+            cryptoTokenImplementation = CryptoTokenFactory.PKCS11_NAME;
         } else {
 
             cryptoTokenImplementation = SoftCryptoToken.class.getName();

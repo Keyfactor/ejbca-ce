@@ -146,12 +146,12 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
                     // 4. If database is different from cache, create the crypto token and replace it in the cache (while trying to keep activation)
                     //    (Invokes org.cesecore.keys.token.CryptoTokenFactory.createCryptoToken)
                     try {
-                        if (AzureCryptoToken.class.getName().equals(inClassname)) {
+                        if (CryptoTokenFactory.AZURE_NAME.equals(inClassname)) {
                             // Key Vault may need to find a key pair for authentication
                             cryptoToken = CryptoTokenFactory.createCryptoToken(inClassname, properties, data, cryptoTokenId, tokenName, true,
                                     new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenManagementSession, caSession));
                         } else {
-                            if (inClassname != null && inClassname.equals("org.cesecore.keys.token.PKCS11CryptoToken")){
+                            if (inClassname != null && inClassname.equals(CryptoTokenFactory.PKCS11_NAME)){
                                 if (isMigrateP11Tokens()) { // Running on enterprise edition and migrate crypto tokens environment variable is set?
                                     log.info("Migrating PKCS11CryptoToken " + tokenName + " to Pkcs11NgCryptoToken in cache.");
                                     inClassname = "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken";

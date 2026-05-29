@@ -25,7 +25,6 @@ import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
-import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -78,7 +77,7 @@ public class CaMergeCryptoTokenCommand extends BaseCaAdminCommand {
             }
             final int cryptoTokenId = caInfo.getCAToken().getCryptoTokenId();
             final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(getAuthenticationToken(), cryptoTokenId);
-            if (!cryptoTokenInfo.getType().equals(PKCS11CryptoToken.class.getSimpleName()) && !CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(cryptoTokenInfo.getType())) {
+            if (!cryptoTokenInfo.getType().equals(CryptoTokenFactory.PKCS11_SIMPLE_NAME) && !CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(cryptoTokenInfo.getType())) {
                 log.error("CA with name " + caName + " does not reference a PKCS#11 Crypto Token (SunP11 or P11NG). Merge is not possible.");
                 return CommandResult.CLI_FAILURE;
             }
@@ -103,7 +102,7 @@ public class CaMergeCryptoTokenCommand extends BaseCaAdminCommand {
                 }
                 final CryptoTokenInfo currentCryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(getAuthenticationToken(), currentCryptoTokenId);
                 if (currentCryptoTokenInfo==null || 
-                        (!currentCryptoTokenInfo.getType().equals(PKCS11CryptoToken.class.getSimpleName()) &&
+                        (!currentCryptoTokenInfo.getType().equals(CryptoTokenFactory.PKCS11_SIMPLE_NAME) &&
                         !CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(cryptoTokenInfo.getType())) 
                         ) {
                     // Skip non PKCS#11 crypto token CAs
