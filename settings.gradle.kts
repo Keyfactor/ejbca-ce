@@ -310,7 +310,7 @@ dependencyResolutionManagement {
             bundle("jacknji", listOf("jacknji11", "jna"))
             bundle("hibernate-validator", listOf("hibernate.validator", "el-impl"))
 
-            val cryptoTokensLibraries = mutableListOf("cryptotokens-api", "cryptotokens-impl")
+            val cryptoTokensLibraries = mutableListOf("cryptotokens-api", "cryptotokens-impl", "json-simple", "nimbus-jose-jwt", "jcip-annotations")
             if (edition == "ee") {
                 cryptoTokensLibraries.add("cryptotokens-impl-ee")
             }
