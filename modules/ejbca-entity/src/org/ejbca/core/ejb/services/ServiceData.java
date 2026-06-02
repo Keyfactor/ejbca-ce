@@ -15,11 +15,13 @@ package org.ejbca.core.ejb.services;
 
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.Properties;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
@@ -42,8 +44,6 @@ import org.ejbca.core.model.services.ServiceConfiguration;
 
 /**
  * Representation of a service configuration used by the monitoring services framework.
- * 
- * @version $Id$
  */
 @Entity
 @Table(name="ServiceData")
@@ -165,16 +165,16 @@ public class ServiceData extends ProtectedData implements Serializable {
      */
     @SuppressWarnings("unchecked")
     public void setServiceConfiguration(ServiceConfiguration serviceConfiguration) {
-        // We must base64 encode string for UTF safety
-        HashMap<Object, Object> a = new Base64PutHashMap();
-        a.putAll((HashMap<Object, Object>)serviceConfiguration.saveData());
-        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+        // We must base64 encode string for UTF safety.
+        final HashMap<Object, Object> map = new Base64PutHashMap();
+        map.putAll((HashMap<Object, Object>)serviceConfiguration.saveData());
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (XMLEncoder encoder = new XMLEncoder(baos)) {
-            encoder.writeObject(a);
+            encoder.writeObject(map);
         }
         try {
             if (log.isDebugEnabled()) {
-                log.debug("Service data: \n" + baos.toString("UTF8"));
+                log.debug("Service data: \n" + maskSensitiveData(map, serviceConfiguration).toString());
             }
             setData(baos.toString("UTF8"));
         } catch (UnsupportedEncodingException e) {
@@ -240,4 +240,35 @@ public class ServiceData extends ProtectedData implements Serializable {
 		query.setParameter("oldNextRunTimeStamp", oldNextRunTimeStamp);
 		return query.executeUpdate() == 1;
 	}
+	
+	/**
+	 * The method masks sensitive data.
+	 * 
+	 * This implementation masks
+	 * - org.ejbca.intune.IntuneRevocationWorker fields appKey, proxyPass.
+	 * 
+	 * @param map the map of the service data to be stored.
+	 * @param config the service configuration object.
+	 * @return the byte array output stream with the service data to be logged.
+	 */
+	private ByteArrayOutputStream maskSensitiveData(final HashMap<Object, Object> map, final ServiceConfiguration config) {
+	    final HashMap<Object, Object> mapCopy = new HashMap<>();
+        mapCopy.putAll(map);
+        if ("org.ejbca.intune.IntuneRevocationWorker".equals(config.getWorkerClassPath())) {
+            final Properties p = new Properties(config.getWorkerProperties());
+            p.putAll(config.getWorkerProperties());
+            if (p.containsKey("appKey")) {
+                p.setProperty("appKey", "******");
+            }
+            if (p.containsKey("proxyPass")) {
+                p.setProperty("proxyPass", "******");
+            }
+            mapCopy.put(ServiceConfiguration.WORKERPROPERTIES, p);
+        }
+        final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (XMLEncoder encoder = new XMLEncoder(bytes)) {
+            encoder.writeObject(mapCopy);
+        }
+        return bytes;
+    }
 }
