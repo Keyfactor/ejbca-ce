@@ -160,31 +160,25 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
     private String getAvailableTokenTypes() {
         final StringBuilder sb = new StringBuilder();
         sb.append(SoftCryptoToken.class.getSimpleName());
-        sb.append(", ");
-        sb.append(CryptoTokenFactory.PKCS11_SIMPLE_NAME);
-        sb.append(", ");
-        sb.append(CryptoTokenFactory.AZURE_SIMPLE_NAME);
-        try {
-            final Class<?> jackJni11Class = Class.forName(CryptoTokenFactory.JACKNJI_NAME);
-            sb.append(", ");
-            sb.append(jackJni11Class.getSimpleName());
-        } catch (ClassNotFoundException e) { /* Ignored */ }
-        try {
-            final Class<?> awsKmsClass = Class.forName(CryptoTokenFactory.AWSKMS_NAME);
-            sb.append(", ");
-            sb.append(awsKmsClass.getSimpleName());
-        } catch (ClassNotFoundException e) { /* Ignored */ }
-        try {
-            final Class<?> fortanixClass = Class.forName(CryptoTokenFactory.FORTANIX_NAME);
-            sb.append(", ");
-            sb.append(fortanixClass.getSimpleName());
-        } catch (ClassNotFoundException e) { /* Ignored */ }
-        try {
-            final Class<?> securosysClass = Class.forName(CryptoTokenFactory.SECUROSYS_NAME);
-            sb.append(", ");
-            sb.append(securosysClass.getSimpleName());
-        } catch (ClassNotFoundException e) { /* Ignored */ }
+        appendAvailableTokenType(sb, CryptoTokenFactory.PKCS11_NAME);
+        appendAvailableTokenType(sb, CryptoTokenFactory.AZURE_NAME);
+        appendAvailableTokenType(sb, CryptoTokenFactory.JACKNJI_NAME);
+        appendAvailableTokenType(sb, CryptoTokenFactory.AWSKMS_NAME);
+        appendAvailableTokenType(sb, CryptoTokenFactory.FORTANIX_NAME);
+        appendAvailableTokenType(sb, CryptoTokenFactory.SECUROSYS_NAME);
         return sb.toString();
+    }
+
+    private void appendAvailableTokenType(final StringBuilder sb, final String className) {
+        try {
+            final Class<?> cryptoTokenClass = Class.forName(className, false, CryptoTokenCreateCommand.class.getClassLoader());
+            sb.append(", ");
+            sb.append(cryptoTokenClass.getSimpleName());
+        } catch (ClassNotFoundException | LinkageError e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Crypto token type " + className + " is not available.", e);
+            }
+        }
     }
 
     @Override
@@ -197,7 +191,7 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
 
         final String cryptoTokenName = parameters.get(CRYPTOTOKEN_NAME_KEY);
         final boolean autoActivate = Boolean.valueOf(parameters.get(AUTOACTIVATE_KEY));
-        final boolean ignoreslotwarning = (parameters.get(PKCS11_SLOTCOLLIDE_IGNORE) != null);
+        final boolean ignoreSlotWarning = (parameters.get(PKCS11_SLOTCOLLIDE_IGNORE) != null);
         final String type = parameters.get(TYPE_KEY);
         final String className;
         final Properties cryptoTokenPropertes = new Properties();
@@ -306,7 +300,7 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
             // Check if this crypto token is already used
             try {
                 List<String> usedBy = cryptoTokenManagementSession.isCryptoTokenSlotUsed(getAuthenticationToken(), cryptoTokenName, className, cryptoTokenPropertes);
-                if (!usedBy.isEmpty() && !ignoreslotwarning) {
+                if (!usedBy.isEmpty() && !ignoreSlotWarning) {
                     for (String usedByName : usedBy) {
                         String name = usedByName;
                         if (NumberUtils.isCreatable(name)) {
