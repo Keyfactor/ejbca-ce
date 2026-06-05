@@ -57,4 +57,10 @@ public interface AccountBinding extends Profile, Cloneable {
      * @return the type as a human readable name.
      */
     String getLabel();
+
+    /**
+     * @return The key identifier
+     */
+    String getKeyIdentifier();
+
 }
