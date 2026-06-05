@@ -67,6 +67,7 @@
 			<h:outputLabel for="selectSigAlg" value="#{web.text.SIGNINGALGORITHM}" />
 			<h:selectOneMenu id="selectSigAlg" name="#{web.text.SELECT_SIGNATUREALGORITHM}" value="#{initNewPkiMBean.caInfoDto.signatureAlgorithmParam}" styleClass="ui-md-12">
 				<f:selectItems value="#{initNewPkiMBean.availableSigningAlgList}" />
+				<f:ajax event="change" render="initNewPkiForm" />
 			</h:selectOneMenu>
 			
 			<h:outputLabel for="selectDefaultKey" value="defaultKey"/>

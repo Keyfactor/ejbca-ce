@@ -13,41 +13,24 @@
 
 package org.ejbca.ui.web.admin.cainterface;
 
-import java.io.Serializable;
-import java.security.PublicKey;
-import java.security.cert.Certificate;
-import java.text.ParseException;
-import java.util.AbstractMap;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.ServiceLoader;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-
+import jakarta.ejb.EJBException;
+import jakarta.faces.context.FacesContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.log4j.Logger;
+import org.bouncycastle.jcajce.CompositePublicKey;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -105,10 +88,27 @@ import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.cert.OID;
 
-import jakarta.ejb.EJBException;
-import jakarta.faces.context.FacesContext;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
+import java.io.Serializable;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.text.ParseException;
+import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.ServiceLoader;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * A class used as an interface between CA jsp pages and CA ejbca functions.
@@ -1218,7 +1218,7 @@ public class CAInterfaceBean implements Serializable {
     /** @return a list of key pair aliases that can be used for either signing or encryption under the supplied CA signing algorithm */
     public List<String> getAvailableCryptoTokenMixedAliases(final List<KeyPairInfo> keyPairInfos, final String caSigingAlgorithm) {
         final List<String> aliases = new ArrayList<>(getAvailableCryptoTokenAliases(keyPairInfos, caSigingAlgorithm));
-        final List<String> encAliases = getAvailableCryptoTokenEncryptionAliases(keyPairInfos, caSigingAlgorithm);
+        final List<String> encAliases = getAvailableCryptoTokenEncryptionAliases(keyPairInfos);
         aliases.removeAll(encAliases);  // Avoid duplicates
         aliases.addAll(encAliases);
         return aliases;
@@ -1235,23 +1235,59 @@ public class CAInterfaceBean implements Serializable {
         return aliases;
     }
 
-    /** @return a list of key pair aliases that can be used for encryption using the supplied CA signing algorithm to derive encryption algo. */
-    public List<String> getAvailableCryptoTokenEncryptionAliases(final List<KeyPairInfo> keyPairInfos, final String caSigingAlgorithm) {
-        final List<String> aliases = new ArrayList<>();
-        for (final KeyPairInfo cryptoTokenKeyPairInfo : keyPairInfos) {
-            if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())
-                    || AlgorithmConstants.KEYALGORITHM_EC.equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
-                //Only a limited subset of EC curves are available for ECCDH
-                if (AlgorithmConstants.ECCDH_PERMITTED_CURVES.contains(cryptoTokenKeyPairInfo.getKeySpecification())) {
-                    aliases.add(cryptoTokenKeyPairInfo.getAlias());
-                }
-            } else if (AlgorithmConstants.KEYALGORITHM_RSA.equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
-                //Or in case of RSA
-                aliases.add(cryptoTokenKeyPairInfo.getAlias());
+    boolean isEncryptionKey(final String algorithm, final String specification) {
+        if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(algorithm)
+                || AlgorithmConstants.KEYALGORITHM_EC.equals(algorithm)) {
+            //Only a limited subset of EC curves are available for ECCDH
+            if (AlgorithmConstants.ECCDH_PERMITTED_CURVES.contains(specification)) {
+                return true;
             }
-            // ML-DSA, SLH-DSA and Falcon can only sign, so skip the PQ algorithms
+        } else if (AlgorithmConstants.KEYALGORITHM_RSA.equals(algorithm)) {
+            //Or in case of RSA
+            return true;
         }
+        // ML-DSA, SLH-DSA and Falcon can only sign, so skip the PQ algorithms
+        return false;
+    }
 
+    boolean isEncryptionKey(final PublicKey publicKey) {
+        final String specification = AlgorithmTools.getKeySpecification(publicKey);
+        return isEncryptionKey(publicKey.getAlgorithm(), specification);
+    }
+
+    boolean isEncryptionKey(CompositePublicKey compositePublicKey) {
+        return compositePublicKey
+                .getPublicKeys()
+                .stream()
+                .anyMatch(this::isEncryptionKey);
+    }
+
+    /** @return a list of key pair aliases that can be used for encryption using the supplied CA signing algorithm to derive encryption algo. */
+    public List<String> getAvailableCryptoTokenEncryptionAliases(final List<KeyPairInfo> keyPairInfos) {
+        final List<String> aliases = new ArrayList<>();
+        for (final KeyPairInfo keyPairInfo : keyPairInfos) {
+            if (isEncryptionKey(keyPairInfo.getKeyAlgorithm(), keyPairInfo.getKeySpecification())) {
+                aliases.add(keyPairInfo.getAlias());
+            }
+        }
+        return aliases;
+    }
+
+    public List<String> getAvailableCryptoTokenEncryptionAliases(final List<KeyPairInfo> keyPairInfos, final CryptoToken cryptoToken) throws CryptoTokenOfflineException {
+        final List<String> aliases = new ArrayList<>();
+        for (final KeyPairInfo keyPairInfo : keyPairInfos) {
+            final var publicKey = cryptoToken.getPublicKey(keyPairInfo.getAlias());
+            if (publicKey instanceof CompositePublicKey compositePublicKey) {
+                if (isEncryptionKey(compositePublicKey)) {
+                    aliases.add(keyPairInfo.getAlias());
+                }
+            }
+            else {
+                if (isEncryptionKey(publicKey)) {
+                    aliases.add(keyPairInfo.getAlias());
+                }
+            }
+       }
         return aliases;
     }
 

@@ -2651,11 +2651,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         availableSigningAlgorithmSelectItems = getAvailableSigningAlgList();
 
         // Update caInfoDTO with a default algorithm
-        if (StringUtils.isEmpty(caInfoDto.getSignatureAlgorithmParam()) && availableSigningAlgorithmSelectItems.size() > 0){
+        if (StringUtils.isEmpty(caInfoDto.getSignatureAlgorithmParam()) && !availableSigningAlgorithmSelectItems.isEmpty()){
             // Never suggest SHA1 based signature algorithms as default
-            if (availableSigningAlgorithmSelectItems.get(0).getLabel() == AlgorithmConstants.SIGALG_SHA1_WITH_RSA) {
+            if (Objects.equals(availableSigningAlgorithmSelectItems.get(0).getLabel(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA)) {
                 caInfoDto.setSignatureAlgorithmParam(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-            } else if (availableSigningAlgorithmSelectItems.get(0).getLabel() == AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA) {
+            } else if (Objects.equals(availableSigningAlgorithmSelectItems.get(0).getLabel(), AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA)) {
                 caInfoDto.setSignatureAlgorithmParam(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
             } else {
                 caInfoDto.setSignatureAlgorithmParam(availableSigningAlgorithmSelectItems.get(0).getLabel());
@@ -2772,7 +2772,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         final List<KeyPairInfo> keyPairInfos = getCaBean().getKeyPairInfos(currentCryptoTokenId);
         availableCryptoTokenKeyAliases = getCaBean().getAvailableCryptoTokenAliases(keyPairInfos, caInfoDto.getSignatureAlgorithmParam());
         availableCryptoTokenMixedAliases = getCaBean().getAvailableCryptoTokenMixedAliases(keyPairInfos, caInfoDto.getSignatureAlgorithmParam());
-        availableCryptoTokenEncryptionAliases = getCaBean().getAvailableCryptoTokenEncryptionAliases(keyPairInfos, caInfoDto.getSignatureAlgorithmParam());
+        availableCryptoTokenEncryptionAliases = getCaBean().getAvailableCryptoTokenEncryptionAliases(keyPairInfos);
         if (StringUtils.isNotEmpty(caInfoDto.getAlternativeSignatureAlgorithmParam())) {
             availableCryptoTokenAlternativeKeyAliases = getCaBean().getAvailableCryptoTokenAliases(keyPairInfos,
                     caInfoDto.getAlternativeSignatureAlgorithmParam());

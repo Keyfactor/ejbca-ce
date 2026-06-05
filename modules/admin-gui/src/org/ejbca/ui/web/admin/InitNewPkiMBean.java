@@ -13,31 +13,21 @@
 
 package org.ejbca.ui.web.admin;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.stream.Collectors;
-
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyStoreTools;
+import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-
+import jakarta.ejb.EJB;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.model.SelectItem;
+import jakarta.inject.Named;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
@@ -94,14 +84,24 @@ import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 import org.ejbca.ui.web.admin.cainterface.CaInfoDto;
 
-import jakarta.ejb.EJB;
-import jakarta.enterprise.context.SessionScoped;
-import jakarta.faces.context.ExternalContext;
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.model.SelectItem;
-import jakarta.inject.Named;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.stream.Collectors;
 
 @Named
 @SessionScoped
@@ -149,10 +149,11 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
 
     private transient CAInterfaceBean caBean;
 
-    public void initialize() {
+    public void initialize() throws AuthorizationDeniedException, CryptoTokenOfflineException {
         updateAvailableCryptoTokenList();
         updateAvailableSigningAlgorithmList();
         updateKeyAliases();
+        updateAvailableKeyAliasesList();
     }
 
     public InitNewPkiMBean() {
@@ -255,9 +256,13 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         return cryptoTokenManagementSession.getCryptoToken(currentCryptoTokenId).getTokenName();
     }
 
-    public void setCryptoTokenIdParam(final String cryptoTokenIdParam) {
+    public void setCryptoTokenIdParam(final String cryptoTokenIdParam) throws AuthorizationDeniedException, CryptoTokenOfflineException {
         caInfoDto.setCryptoTokenIdParam(cryptoTokenIdParam);
+        caInfoDto.setSignatureAlgorithmParam(StringUtils.EMPTY);
+        caInfoDto.setAlternativeSignatureAlgorithmParam(StringUtils.EMPTY);
+        updateAvailableSigningAlgorithmList();
         updateKeyAliases();
+        updateAvailableKeyAliasesList();
     }
 
     public String getCryptoTokenType() {
@@ -559,7 +564,14 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
 
         // Update caInfoDTO with a default algorithm
         if (StringUtils.isEmpty(caInfoDto.getSignatureAlgorithmParam()) && !availableSigningAlgorithmSelectItems.isEmpty()) {
-            caInfoDto.setSignatureAlgorithmParam(availableSigningAlgorithmSelectItems.get(0).getLabel());
+            // Never suggest SHA1 based signature algorithms as default
+            if (Objects.equals(availableSigningAlgorithmSelectItems.get(0).getLabel(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA)) {
+                caInfoDto.setSignatureAlgorithmParam(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+            } else if (Objects.equals(availableSigningAlgorithmSelectItems.get(0).getLabel(), AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA)) {
+                caInfoDto.setSignatureAlgorithmParam(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+            } else {
+                caInfoDto.setSignatureAlgorithmParam(availableSigningAlgorithmSelectItems.get(0).getLabel());
+            }
         }
     }
 
@@ -596,22 +608,25 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     }
 
     private void updateAvailableKeyAliasesList() throws CryptoTokenOfflineException, AuthorizationDeniedException {
-        final List<KeyPairInfo> keyPairInfos = getCaBean().getKeyPairInfos(currentCryptoTokenId);
-        availableCryptoTokenKeyAliases = getCaBean().getAvailableCryptoTokenAliases(keyPairInfos, caInfoDto.getSignatureAlgorithmParam());
-        availableCryptoTokenMixedAliases = getCaBean().getAvailableCryptoTokenMixedAliases(keyPairInfos, caInfoDto.getSignatureAlgorithmParam());
-        availableCryptoTokenEncryptionAliases = getCaBean().getAvailableCryptoTokenEncryptionAliases(keyPairInfos, caInfoDto.getSignatureAlgorithmParam());
+        final List<KeyPairInfo> keyPairInfos  = getCaBean().getKeyPairInfos(currentCryptoTokenId);
+        final CryptoToken cryptoToken         = cryptoTokenManagementSession.getCryptoToken(currentCryptoTokenId);
+        availableCryptoTokenKeyAliases        = getCaBean().getAvailableCryptoTokenAliases(keyPairInfos, caInfoDto.getSignatureAlgorithmParam());
+        availableCryptoTokenMixedAliases      = getCaBean().getAvailableCryptoTokenMixedAliases(keyPairInfos, caInfoDto.getSignatureAlgorithmParam());
+        availableCryptoTokenEncryptionAliases = getCaBean().getAvailableCryptoTokenEncryptionAliases(keyPairInfos, cryptoToken);
     }
 
     private void updateKeyAliases() {
         if (caInfoDto.getCryptoTokenIdParam() != null && caInfoDto.getCryptoTokenIdParam().length() > 0 && Integer.parseInt(caInfoDto.getCryptoTokenIdParam()) != 0) {
             currentCryptoTokenId = Integer.parseInt(caInfoDto.getCryptoTokenIdParam());
         }
+
         availableCryptoTokenKeyAliases = new ArrayList<>(); // Avoids NPE in getters if the code below fails.
         availableCryptoTokenMixedAliases = new ArrayList<>();
         availableCryptoTokenEncryptionAliases = new ArrayList<>();
         if (currentCryptoTokenId != 0) {
             try {
                 // List of key aliases is needed even on Edit CA page, to show the renew key dropdown list
+                updateAvailableSigningAlgorithmList();
                 updateAvailableKeyAliasesList();
                 setDefaultKeyAliases();
             } catch (CryptoTokenOfflineException | AuthorizationDeniedException e) {
