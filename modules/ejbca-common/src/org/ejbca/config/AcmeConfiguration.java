@@ -131,10 +131,10 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String DEFAULT_MPIC_SERVICES = "";
     private static final String DEFAULT_MPIC_API_KEYS = "";
     private static final boolean DEFAULT_MPIC_CAA_VALIDATION = false;
-    private static final boolean DEFAULT_KEY_USE_MPIC_ORCHESTRATION_PARAMETERS = true;
-    public static final int DEFAULT_KEY_MPIC_PERSPECTIVE_COUNT = 2;
-    public static final int DEFAULT_KEY_MPIC_QUORUM_COUNT = 1;
-    public static final int DEFAULT_KEY_MPIC_ATTEMPT_COUNT = 1;
+    private static final boolean DEFAULT_KEY_USE_MPIC_ORCHESTRATION_PARAMETERS = false;
+    public static final int DEFAULT_KEY_MPIC_PERSPECTIVE_COUNT = 0;
+    public static final int DEFAULT_KEY_MPIC_QUORUM_COUNT = 0;
+    public static final int DEFAULT_KEY_MPIC_ATTEMPT_COUNT = 0;
     public static final String DEFAULT_CHALLENGE_TYPES = "any-dns-challenge";
 
     private static final String DEFAULT_TERMS_OF_SERVICE_URL = "https://example.com/acme/terms";
