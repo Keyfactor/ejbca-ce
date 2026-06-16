@@ -127,7 +127,7 @@
 	<classpathentry kind="lib" path="lib/csrfguard-4.3.0-jakarta.jar"/>
 	<classpathentry kind="lib" path="lib/csrfguard-extension-session-4.3.0-jakarta.jar"/>
 	<classpathentry kind="lib" path="lib/csrfguard-jsp-tags-4.3.0-jakarta.jar"/>
-	<classpathentry kind="lib" path="lib/commons-beanutils-1.9.4.jar"/>
+	<classpathentry kind="lib" path="lib/commons-beanutils-1.11.0.jar"/>
 	<classpathentry kind="lib" path="lib/httpclient-4.5.14.jar"/>
 	<classpathentry kind="lib" path="lib/httpcore-4.4.16.jar"/>
 	<classpathentry kind="lib" path="lib/httpmime-4.5.14.jar"/>

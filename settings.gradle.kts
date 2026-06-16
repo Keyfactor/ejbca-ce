@@ -99,7 +99,7 @@ dependencyResolutionManagement {
             library("p11ng", ":p11ng:0.30.1")
             library("protobuf-java", ":protobuf-java:3.25.5")
             library("ctlog", ":ctlog:0.1.7")
-            library("commons-beanutils", ":commons-beanutils:1.9.4")
+            library("commons-beanutils", ":commons-beanutils:1.11.0")
             library("commons-text", ":commons-text:1.10.0")
             library("angus.activation", ":angus.activation:2.0.2")
             library("myfaces-api", ":myfaces-api:4.1.1")
