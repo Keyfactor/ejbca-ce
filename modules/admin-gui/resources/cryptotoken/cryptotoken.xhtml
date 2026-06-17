@@ -25,6 +25,7 @@
     <ui:param name="resourceBean" value="#{cryptoTokenMBean}"/>
 
     <f:metadata>
+        <f:event type="preRenderView" listener="#{cryptoTokenMBean.authorizedResources}"/>
         <f:viewParam name="initNewPki" value="#{initNewPkiMBean.initNewPkiRedirect}"/>
         <f:event type="preRenderView" listener="#{cryptoTokenMBean.onload}"/>
     </f:metadata>

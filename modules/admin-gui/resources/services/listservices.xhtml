@@ -27,6 +27,7 @@
 <ui:composition template="/WEB-INF/include/template.xhtml">
     <ui:param name="resourceBean" value="#{listServicesManagedBean}"/>
     <f:metadata>
+        <f:event type="preRenderView" listener="#{cryptoTokenMBean.authorizedResources}"/>
         <f:viewAction action="#{listServicesManagedBean.loadData}" />
     </f:metadata>
     <ui:define name="content">
