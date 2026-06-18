@@ -16,6 +16,8 @@ import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 
+import java.util.List;
+
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.config.AcmeConfiguration;
 import org.ejbca.core.protocol.acme.AcmeConfigurationSessionLocal;
@@ -42,5 +44,11 @@ public class AcmeConfigurationSessionBean implements AcmeConfigurationSessionLoc
             String eabRequestJsonString) throws AcmeProblemException {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }
- 
+
+    @Override
+    public List<String> getCaaIdentitiesFromUpstreamPeer(AuthenticationToken authenticationToken, int endEntityProfileId, int caId)
+            throws AcmeProblemException {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+
 }

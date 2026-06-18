@@ -14,6 +14,8 @@ package org.ejbca.core.protocol.acme;
 
 import jakarta.ejb.Local;
 
+import java.util.List;
+
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.config.AcmeConfiguration;
 import org.ejbca.core.protocol.acme.eab.AcmeExternalAccountBinding;
@@ -23,7 +25,7 @@ import org.ejbca.core.protocol.acme.eab.AcmeExternalAccountBinding;
  */
 @Local
 public interface AcmeConfigurationSessionLocal {
-
+    
     /**
      * Get the ACME Configuration settings for the requested alias.
      * @param authenticationToken an authentication token authorizing the retrieval of the end entity profile and CAA identifiers
@@ -46,5 +48,6 @@ public interface AcmeConfigurationSessionLocal {
      */
     String parseAcmeEabMessage(AuthenticationToken authenticationToken, String alias, String requestUrl, String requestJwk,
             String eabRequestJsonString) throws AcmeProblemException;
-
+    
+    List<String> getCaaIdentitiesFromUpstreamPeer(AuthenticationToken authenticationToken, int endEntityProfileId, int defaultCaId) throws AcmeProblemException;
 }

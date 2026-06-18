@@ -26,6 +26,7 @@ import jakarta.ejb.Local;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -171,6 +172,20 @@ public interface KeyValidatorSessionLocal extends KeyValidatorSession, Certifica
     List<ValidationResult> validateDnsNames(final AuthenticationToken authenticationToken, final IssuancePhase phase, final CA ca, final EndEntityInformation endEntityInformation,
             final RequestMessage requestMessage) throws ValidationException;
 
+    /**
+     * Validates dnsName fields defined in the SubjectAltName field of the end entity against CAA rules.
+     *
+     * @param authenticationToken the authentication token of the administrator performing the action
+     * @param issuancePhase the issuancePhase ACME.
+     * @param certificateProfileId the certificate profile ID.
+     * @param caId the issuing CA ID.
+     * @param validationRequestParameters the validation request parameters with CAA verification accountUri and validationMethods. 
+     * @param identifier the domain name.
+     * @return List of validation messages, or an empty list for a successful result without any messages.
+     * @throws ValidationException if validation failed
+     */
+    List<ValidationResult> validateDnsNames(AuthenticationToken authenticationToken, IssuancePhase phase, int certificateProfileId, int caId, ValidationRequestParameters validationRequestParameters, String identifier) throws ValidationException;
+    
     /**
      * Validates a generated certificate during issuance.
      * 

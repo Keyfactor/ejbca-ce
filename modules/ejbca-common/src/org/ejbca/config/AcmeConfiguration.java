@@ -807,6 +807,12 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     }
     /* ARI-capable clients will be told to renew early within this window. */
     public Instant getAriEarlyRenewalEndDate() { return checkAndReturnDate(getAriEarlyRenewalEndDateAsString()); }
+    
+    public boolean hasIanaRootCaaValidator() {
+        final List<String> caaIdentities = getCaaIdentities();
+        // TODO: ECA-14875 Check for IANA root.
+        return caaIdentities != null && caaIdentities.size() > 0;
+    }
 
     public boolean isUseMpicService() {
         return Boolean.valueOf((String) super.data.get(KEY_USE_MPIC_SERVICE));
