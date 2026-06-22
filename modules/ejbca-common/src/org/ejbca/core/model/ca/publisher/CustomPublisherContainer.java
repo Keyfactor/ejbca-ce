@@ -61,7 +61,7 @@ public class CustomPublisherContainer extends BasePublisher {
     private boolean resetCustomPublisher = false;
     private transient ICustomPublisher custompublisher = null; 
 	
-	public static final float LATEST_VERSION = 1;
+	public static final float LATEST_VERSION = 2;
 		
 	// Default Values
     
