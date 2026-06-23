@@ -347,8 +347,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private String keyVaultClientID = "";
         private String keyVaultKeyBinding = "";
         private String fortanixBaseAddress = "https://apps.smartkey.io"; // default value
-        private String awsKMSRegion = "us-east-1"; // default value
-        private String awsKMSAccessKeyID = ""; // default value
+        private String awsKmsRegion = "us-east-1"; // default value
+        private String awsKmsHostname = "amazonaws.com"; // default value
+        private String awsKmsAccessKeyID = ""; // default value
         private AzureAuthenticationType azureAuthenticationType = AzureAuthenticationType.APP_ID_AND_SECRET;
         private AwsKmsAuthenticationType awsKmsAuthenticationType = AwsKmsAuthenticationType.KEY_ID_AND_SECRET;
 
@@ -531,20 +532,28 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             this.keyVaultClientID = keyVaultClientID;
         }
 
-        public String getAWSKMSRegion() {
-            return awsKMSRegion;
+        public String getAwsKmsRegion() {
+            return awsKmsRegion;
         }
 
-        public void setAWSKMSRegion(String awsKMSRegion) {
-            this.awsKMSRegion = awsKMSRegion;
+        public void setAwsKmsRegion(String awsKmsRegion) {
+            this.awsKmsRegion = awsKmsRegion;
         }
 
-        public void setAWSKMSAccessKeyID(String awsKMSAccessKeyID) {
-            this.awsKMSAccessKeyID = awsKMSAccessKeyID;
+        public String getAwsKmsHostname() {
+            return awsKmsHostname;
         }
 
-        public String getAWSKMSAccessKeyID() {
-            return awsKMSAccessKeyID;
+        public void setAwsKmsHostname(String awsKmsHostname) {
+            this.awsKmsHostname = awsKmsHostname;
+        }
+
+        public void setAwsKmsAccessKeyID(String awsKmsAccessKeyID) {
+            this.awsKmsAccessKeyID = awsKmsAccessKeyID;
+        }
+
+        public String getAwsKmsAccessKeyID() {
+            return awsKmsAccessKeyID;
         }
 
 
@@ -1424,9 +1433,11 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 }
             } else if (CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(getCurrentCryptoToken().getType())) {
                 className = CryptoTokenFactory.AWSKMS_NAME;
-                String region = getCurrentCryptoToken().getAWSKMSRegion().trim();
-                String keyid = getCurrentCryptoToken().getAWSKMSAccessKeyID().trim();
+                String region = getCurrentCryptoToken().getAwsKmsRegion().trim();
+                String hostname = getCurrentCryptoToken().getAwsKmsHostname().trim();
+                String keyid = getCurrentCryptoToken().getAwsKmsAccessKeyID().trim();
                 properties.setProperty(CryptoTokenConstants.AWSKMS_REGION, region);
+                properties.setProperty(CryptoTokenConstants.AWSKMS_HOSTNAME, hostname);
                 properties.setProperty(CryptoTokenConstants.AWSKMS_ACCESSKEYID, keyid);
                 properties.setProperty(CryptoTokenConstants.AWSKMS_AUTHENTICATION_TYPE, getCurrentCryptoToken().getAwsKmsAuthenticationType());
             } else if (CryptoTokenFactory.FORTANIX_SIMPLE_NAME.equals(getCurrentCryptoToken().getType())) {
@@ -1763,9 +1774,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     currentCryptoToken.setKeyVaultKeyBinding(cryptoTokenInfo.getKeyVaultKeyBinding());
                 }
                 if (cryptoTokenInfo.getType().equals(CryptoTokenFactory.AWSKMS_SIMPLE_NAME)) {
-                    currentCryptoToken.setAWSKMSRegion(cryptoTokenInfo.getAWSKMSRegion());
-                    currentCryptoToken.setAwsKmsAuthenticationType(cryptoTokenInfo.getAWSKMSAuthenticationType());
-                    currentCryptoToken.setAWSKMSAccessKeyID(cryptoTokenInfo.getAWSKMSAccessKeyID());
+                    currentCryptoToken.setAwsKmsRegion(cryptoTokenInfo.getAwsKmsRegion());
+                    currentCryptoToken.setAwsKmsHostname(cryptoTokenInfo.getAwsKmsHostname());
+                    currentCryptoToken.setAwsKmsAuthenticationType(cryptoTokenInfo.getAwsKmsAuthenticationType());
+                    currentCryptoToken.setAwsKmsAccessKeyID(cryptoTokenInfo.getAwsKmsAccessKeyID());
                 }
                 if (cryptoTokenInfo.getType().equals(CryptoTokenFactory.FORTANIX_SIMPLE_NAME)) {
                     currentCryptoToken.setFortanixBaseAddress(cryptoTokenInfo.getFortanixBaseAddress());

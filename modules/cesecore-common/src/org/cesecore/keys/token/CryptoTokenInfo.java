@@ -143,17 +143,21 @@ public class CryptoTokenInfo implements Named, Serializable {
         return cryptoTokenProperties.getProperty(CryptoTokenConstants.SECUROSYS_APPROVAL_TIMEOUT);
     }
 
-    public String getAWSKMSRegion() {
+    public String getAwsKmsRegion() {
         return cryptoTokenProperties.getProperty(CryptoTokenConstants.AWSKMS_REGION);
     }
 
-    public AwsKmsAuthenticationType getAWSKMSAuthenticationType() {
+    public String getAwsKmsHostname() {
+        return cryptoTokenProperties.getProperty(CryptoTokenConstants.AWSKMS_HOSTNAME, "amazonaws.com");
+    }
+
+    public AwsKmsAuthenticationType getAwsKmsAuthenticationType() {
         String authenticationTypeString = cryptoTokenProperties.getProperty(CryptoTokenConstants.AWSKMS_AUTHENTICATION_TYPE);
         return authenticationTypeString == null ? AwsKmsAuthenticationType.KEY_ID_AND_SECRET
                 : AwsKmsAuthenticationType.valueOf(authenticationTypeString);
     }
 
-    public String getAWSKMSAccessKeyID() {
+    public String getAwsKmsAccessKeyID() {
         return cryptoTokenProperties.getProperty(CryptoTokenConstants.AWSKMS_ACCESSKEYID);
     }
     public Properties getCryptoTokenProperties() {
@@ -180,7 +184,7 @@ public class CryptoTokenInfo implements Named, Serializable {
         if (getType().equals(CryptoTokenFactory.AZURE_SIMPLE_NAME) && getAzureAuthenticationType() != AzureAuthenticationType.APP_ID_AND_SECRET) {
             return false;
         }
-        if (getType().equals(CryptoTokenFactory.AWSKMS_SIMPLE_NAME) && getAWSKMSAuthenticationType() != AwsKmsAuthenticationType.KEY_ID_AND_SECRET) {
+        if (getType().equals(CryptoTokenFactory.AWSKMS_SIMPLE_NAME) && getAwsKmsAuthenticationType() != AwsKmsAuthenticationType.KEY_ID_AND_SECRET) {
             return false;
         }
         return true;
