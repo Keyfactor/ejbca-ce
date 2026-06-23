@@ -682,6 +682,28 @@ table.edit tr:last-child td {
 	border-bottom: 3px solid #FEDD9A;
 	color: #A00;
 }
+/* Database Maintenance Worker — yellow panel for the selected radio mode's
+ * sub-fields. Two panels are emitted (one for MODE_EXPIRED, one for
+ * MODE_REVOKED); both stay visible in the live form with a header label
+ * telling the operator which mode the panel belongs to. The radio button
+ * determines which mode actually runs at tick time.
+ *
+ * Marker class .dbmsPanelCell goes on h:panelGroup in the field column of
+ * each panel row; the :has() rule then colors the parent <tr>'s last <td>
+ * directly. Modern browsers only (Safari 15.4+, Chrome 105+, Firefox 121+).
+ */
+table.edit-ctnd tr:has(.dbmsPanelCell) > td:last-child {
+	background-color: #FFF3D6;
+	padding-left: 30px;
+}
+/* Extra yellow margin at top of a panel (marker on first row). */
+table.edit-ctnd tr:has(.dbmsPanelTop) > td:last-child {
+	padding-top: 14px;
+}
+/* Extra yellow margin at bottom of a panel (marker on last row). */
+table.edit-ctnd tr:has(.dbmsPanelBottom) > td:last-child {
+	padding-bottom: 14px;
+}
 /* Titles */
 table.edit-top tr.title td,
 table.edit-bottom tr.title td,
