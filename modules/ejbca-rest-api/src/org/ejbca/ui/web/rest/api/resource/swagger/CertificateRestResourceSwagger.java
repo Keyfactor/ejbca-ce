@@ -34,6 +34,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.ejb.Stateless;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
@@ -240,6 +241,27 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
             CADoesntExistsException, AlreadyRevokedException, NoSuchEndEntityException, CertificateProfileDoesNotExistException,
             WaitingForApprovalException {
         return super.revokeCertificate(requestContext, issuerDN, serialNumber, reason, date, invalidityDate);
+    }
+
+    @DELETE
+    @Path("/{issuer_dn}/{certificate_serial_number}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Permanently deletes a revoked certificate row.",
+            description = "Permanently removes the database row for a certificate that has already been revoked. The certificate must be in REVOKED status — revoke it first via PUT /v1/certificate/{issuer_dn}/{certificate_serial_number}/revoke. Pairs with the Database Maintenance Worker's 'Delete Revoked Certificates' option, which performs the same deletion in bulk on a schedule; this endpoint is the on-demand equivalent.",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "Certificate row deleted"),
+                    @ApiResponse(responseCode = "403", description = "Caller not authorized to delete certificates from this CA"),
+                    @ApiResponse(responseCode = "404", description = "No certificate exists for the given issuer/serial"),
+                    @ApiResponse(responseCode = "409", description = "Certificate is not in REVOKED status")
+            })
+    public Response deleteCertificate(
+            @Context HttpServletRequest requestContext,
+            @Parameter(description = "Subject DN of the issuing CA")
+            @PathParam("issuer_dn") String issuerDN,
+            @Parameter(description = "Hex serial number (without prefix, e.g. '00')")
+            @PathParam("certificate_serial_number") String serialNumber)
+            throws AuthorizationDeniedException, RestException, CADoesntExistsException, NotFoundException {
+        return super.deleteCertificate(requestContext, issuerDN, serialNumber);
     }
 
     @GET

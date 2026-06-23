@@ -18,6 +18,7 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
 import java.security.cert.CertificateParsingException;
@@ -26,11 +27,15 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
+import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
@@ -132,6 +137,12 @@ public class CertificateRestResource extends BaseRestResource {
 
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
+
+    @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
+
+    @EJB
+    private AuthorizationSessionLocal authorizationSession;
 
     /**
      * Enrolls a user generated certificate from csr.
@@ -526,6 +537,69 @@ public class CertificateRestResource extends BaseRestResource {
                 message("Successfully revoked").
                 build();
         return Response.ok(result).build();
+    }
+
+    /**
+     * Permanently deletes a revoked certificate row from the database.
+     *
+     * <p>The certificate must already be in REVOKED status — callers should
+     * issue a revoke (PUT {@code .../revoke}) first and then this DELETE.
+     * Pairs with the Database Maintenance Worker's
+     * "Delete Revoked Certificates" option, which performs the same deletion
+     * in bulk on a schedule; this endpoint is the on-demand equivalent.
+     *
+     * <p>Authorization: caller must have CA access for the issuing CA.
+     *
+     * @param requestContext HttpServletRequest carrying the client mTLS cert.
+     * @param issuerDN       Subject DN of the issuing CA.
+     * @param serialNumber   HEX-encoded serial number, with or without the {@code 0x} prefix.
+     * @return {@code 204 No Content} on success.
+     * @throws RestException                400 on malformed serial, 409 if not revoked.
+     * @throws NotFoundException            404 if no such certificate.
+     * @throws AuthorizationDeniedException 403 if caller lacks CA access.
+     */
+    public Response deleteCertificate(
+            final HttpServletRequest requestContext,
+            final String issuerDN,
+            final String serialNumber)
+            throws AuthorizationDeniedException, RestException, CADoesntExistsException, NotFoundException {
+        final AuthenticationToken admin = getAdmin(requestContext, false);
+        final BigInteger serialNr;
+        try {
+            serialNr = StringTools.getBigIntegerFromHexString(serialNumber);
+        } catch (NumberFormatException e) {
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Invalid serial number format. Should be "
+                    + "HEX encoded (optionally with '0x' prefix) e.g. '0x10782a83eef170d4'");
+        }
+        // Authorization: caller must have CA access for the issuing CA. The
+        // CA ID is the hash of the BC-normalized subject DN, matching X509CAInfo.
+        final int caId = DnComponents.stringToBCDNString(issuerDN).hashCode();
+        if (!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caId)) {
+            throw new AuthorizationDeniedException("Not authorized to delete certificates from CA '" + issuerDN + "'.");
+        }
+        final Certificate certificate = certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, serialNr);
+        if (certificate == null) {
+            throw new NotFoundException("Certificate with serial number '" + serialNumber
+                    + "' and issuer DN '" + issuerDN + "' was not found");
+        }
+        final String fingerprint = CertTools.getFingerprintAsString(certificate);
+        final CertificateInfo certInfo = certificateStoreSession.getCertificateInfo(fingerprint);
+        if (certInfo == null) {
+            // Race: row vanished between lookup and getCertificateInfo. Treat as not-found.
+            throw new NotFoundException("Certificate with serial number '" + serialNumber
+                    + "' and issuer DN '" + issuerDN + "' was not found");
+        }
+        if (certInfo.getStatus() != CertificateConstants.CERT_REVOKED) {
+            throw new RestException(Status.CONFLICT.getStatusCode(),
+                    "Certificate must be in REVOKED status before it can be deleted (current status=" + certInfo.getStatus()
+                            + "). Revoke it first via PUT /v1/certificate/{issuer_dn}/{certificate_serial_number}/revoke.");
+        }
+        certificateStoreSession.deleteRevokedCertificate(certInfo, admin);
+        if (log.isDebugEnabled()) {
+            log.debug("Deleted revoked certificate fingerprint=" + certInfo.getFingerprint()
+                    + " serial=" + serialNumber + " issuer='" + issuerDN + "' by admin=" + admin);
+        }
+        return Response.noContent().build();
     }
 
     private Date getValidatedDate(String sDate) throws RestException {
