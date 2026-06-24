@@ -73,15 +73,15 @@ public class CryptoTokenInfo implements Named, Serializable {
     }
 
     public String getP11Library() {
-        return cryptoTokenProperties.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, "");
+        return cryptoTokenProperties.getProperty(CryptoTokenConstants.SHLIB_LABEL_KEY, "");
     }
 
     public String getP11Slot() {
-        return cryptoTokenProperties.getProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE);
+        return cryptoTokenProperties.getProperty(CryptoTokenConstants.SLOT_LABEL_VALUE);
     }
 
     public String getP11SlotLabelType() {
-        Pkcs11SlotLabelType slotLabelType = Pkcs11SlotLabelType.getFromKey(cryptoTokenProperties.getProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE));
+        Pkcs11SlotLabelType slotLabelType = Pkcs11SlotLabelType.getFromKey(cryptoTokenProperties.getProperty(CryptoTokenConstants.SLOT_LABEL_TYPE));
         if (slotLabelType != null) {
             return slotLabelType.getKey();
         } else {
@@ -90,7 +90,7 @@ public class CryptoTokenInfo implements Named, Serializable {
     }
 
     public String getP11SlotLabelTypeDescription() {
-        Pkcs11SlotLabelType slotLabelType = Pkcs11SlotLabelType.getFromKey(cryptoTokenProperties.getProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE));
+        Pkcs11SlotLabelType slotLabelType = Pkcs11SlotLabelType.getFromKey(cryptoTokenProperties.getProperty(CryptoTokenConstants.SLOT_LABEL_TYPE));
         if (slotLabelType != null) {
             return slotLabelType.getDescription();
         } else {
@@ -99,20 +99,20 @@ public class CryptoTokenInfo implements Named, Serializable {
     }
 
     public String getP11AttributeFile() {
-        return cryptoTokenProperties.getProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY, "");
+        return cryptoTokenProperties.getProperty(CryptoTokenConstants.ATTRIB_LABEL_KEY, "");
     }
 
     public String getKeyVaultType() {
-        return cryptoTokenProperties.getProperty(AzureCryptoToken.KEY_VAULT_TYPE);
+        return cryptoTokenProperties.getProperty(CryptoTokenConstants.KEY_VAULT_TYPE);
     }
     public String getKeyVaultName() {
-        return cryptoTokenProperties.getProperty(AzureCryptoToken.KEY_VAULT_NAME);
+        return cryptoTokenProperties.getProperty(CryptoTokenConstants.KEY_VAULT_NAME);
     }
     public String getKeyVaultClientID() {
-        return cryptoTokenProperties.getProperty(AzureCryptoToken.KEY_VAULT_CLIENTID);
+        return cryptoTokenProperties.getProperty(CryptoTokenConstants.KEY_VAULT_CLIENTID);
     }
     public String getKeyVaultKeyBinding() {
-        return cryptoTokenProperties.getProperty(AzureCryptoToken.KEY_VAULT_KEY_BINDING);
+        return cryptoTokenProperties.getProperty(CryptoTokenConstants.KEY_VAULT_KEY_BINDING);
     }
 
     public String getSecurosysRestApiName() {
@@ -165,10 +165,10 @@ public class CryptoTokenInfo implements Named, Serializable {
 
     public AzureAuthenticationType getAzureAuthenticationType() {
         // legacy setting
-        if (Boolean.parseBoolean(cryptoTokenProperties.getProperty(AzureCryptoToken.KEY_VAULT_USE_KEY_BINDING, "false"))) {
+        if (Boolean.parseBoolean(cryptoTokenProperties.getProperty(CryptoTokenConstants.KEY_VAULT_USE_KEY_BINDING, "false"))) {
             return AzureAuthenticationType.KEY_BINDING;
         }
-        final String authenticationTypeString = cryptoTokenProperties.getProperty(AzureCryptoToken.KEY_VAULT_AUTHENTICATION_TYPE);
+        final String authenticationTypeString = cryptoTokenProperties.getProperty(CryptoTokenConstants.KEY_VAULT_AUTHENTICATION_TYPE);
         return authenticationTypeString == null ? AzureAuthenticationType.APP_ID_AND_SECRET : AzureAuthenticationType.valueOf(authenticationTypeString);
     }
 
@@ -177,7 +177,7 @@ public class CryptoTokenInfo implements Named, Serializable {
      * or a AWS KMS Key Vault Token using service credentials.
      */
     public boolean requiresSecretToActivate() {
-        if (getType().equals(AzureCryptoToken.class.getSimpleName()) && getAzureAuthenticationType() != AzureAuthenticationType.APP_ID_AND_SECRET) {
+        if (getType().equals(CryptoTokenFactory.AZURE_SIMPLE_NAME) && getAzureAuthenticationType() != AzureAuthenticationType.APP_ID_AND_SECRET) {
             return false;
         }
         if (getType().equals(CryptoTokenFactory.AWSKMS_SIMPLE_NAME) && getAWSKMSAuthenticationType() != AwsKmsAuthenticationType.KEY_ID_AND_SECRET) {

@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.Strings;
@@ -58,6 +59,15 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
     CryptoTokenSessionLocal cryptoTokenSession;
 
     private static final Logger log = Logger.getLogger(CryptoTokenSessionBean.class);
+
+    /**
+     * Simple class names of all crypto token types supported in EJBCA Community Edition.
+     * When a new CE-supported token type is added, add its simple class name here.
+     */
+    private static final Set<String> CE_SUPPORTED_TOKEN_TYPES = Set.of(
+            SoftCryptoToken.class.getSimpleName(),
+            NullCryptoToken.class.getSimpleName()
+    );
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -146,12 +156,12 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
                     // 4. If database is different from cache, create the crypto token and replace it in the cache (while trying to keep activation)
                     //    (Invokes org.cesecore.keys.token.CryptoTokenFactory.createCryptoToken)
                     try {
-                        if (AzureCryptoToken.class.getName().equals(inClassname)) {
+                        if (CryptoTokenFactory.AZURE_NAME.equals(inClassname)) {
                             // Key Vault may need to find a key pair for authentication
                             cryptoToken = CryptoTokenFactory.createCryptoToken(inClassname, properties, data, cryptoTokenId, tokenName, true,
                                     new KeyBindingFinder(internalKeyBindingSession, certificateStoreSession, cryptoTokenManagementSession, caSession));
                         } else {
-                            if (inClassname != null && inClassname.equals("org.cesecore.keys.token.PKCS11CryptoToken")){
+                            if (inClassname != null && inClassname.equals(CryptoTokenFactory.PKCS11_NAME)){
                                 if (isMigrateP11Tokens()) { // Running on enterprise edition and migrate crypto tokens environment variable is set?
                                     log.info("Migrating PKCS11CryptoToken " + tokenName + " to Pkcs11NgCryptoToken in cache.");
                                     inClassname = "org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken";
@@ -324,6 +334,15 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
     @Override
     public List<Integer> getCryptoTokenIds() {
         return entityManager.createQuery("SELECT a.id FROM CryptoTokenData a").getResultList();
+    }
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public boolean hasNonCeSupportedTokenTypes() {
+        final Long count = entityManager.createQuery("SELECT COUNT(a) FROM CryptoTokenData a WHERE a.tokenType NOT IN :ceTypes", Long.class)
+                .setParameter("ceTypes", CE_SUPPORTED_TOKEN_TYPES)
+                .getSingleResult();
+        return count > 0;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)

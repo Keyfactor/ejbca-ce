@@ -57,6 +57,7 @@ import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenFactory;
+import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.util.Log4jLogRedactionRedactHandler;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
@@ -141,6 +142,10 @@ public class StartupSingletonBean {
     private OcspResponseCleanupSessionLocal ocspResponseCleanupSession;
     @EJB
     private ScepKeyRenewalSessionLocal scepKeyRenewalSession;
+    @EJB
+    private CryptoTokenSessionLocal cryptoTokenSession;
+    @EJB
+    private EnterpriseEditionEjbBridgeSessionLocal enterpriseEditionEjbBridgeSession;
 
     @PreDestroy
     private void shutdown() {
@@ -152,6 +157,23 @@ public class StartupSingletonBean {
         //logSession.log(EjbcaEventTypes.EJBCA_STOPPING, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, authenticationToken.toString(), null, null, null, details);
     }
 
+
+    /**
+     * Verifies that no HSM crypto tokens are configured when running EJBCA Community Edition.
+     * HSM and hardware security module support is an Enterprise Edition feature only.
+     * If any unsupported token types are found in the database, startup is aborted.
+     * The set of CE-supported crypto types is defined in {@code CryptoTokenSessionBean}.
+     *
+     * @throws IllegalStateException if running Community Edition and HSM crypto tokens are present in the database
+     */
+    private void checkHsmTokensNotUsedInCommunityEdition() {
+        if (!enterpriseEditionEjbBridgeSession.isRunningEnterprise() && cryptoTokenSession.hasNonCeSupportedTokenTypes()) {
+            final String msg = "EJBCA Community Edition does not support HSM crypto tokens. "
+                    + "Remove all HSM crypto tokens before starting EJBCA Community Edition.";
+            log.error(msg);
+            throw new IllegalStateException(msg);
+        }
+    }
 
     /** Checks that a class is loaded by a classloader that is local to the ejbca.ear deployment.
      * This check is probably JBoss / WildFly specific but not certain. We want to check this so we can detect if JBoss / WildFly bundles jars that we use so we risk having a version conflict.
@@ -284,6 +306,8 @@ public class StartupSingletonBean {
 
         log.debug(">startup CryptoTokenFactory just to load those classes that are available");
         CryptoTokenFactory.instance();
+
+        checkHsmTokensNotUsedInCommunityEdition();
 
         authorizationSession.scheduleBackgroundRefresh();
         // Load CAs at startup to improve impression of speed the first time a CA is accessed, it takes a little time to load it.

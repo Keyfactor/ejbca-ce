@@ -111,7 +111,7 @@ public class CryptoTokenTestUtils {
 
         final String cryptoTokenImplementation;
         if (pkcs11) {
-            cryptoTokenImplementation = PKCS11CryptoToken.class.getName();
+            cryptoTokenImplementation = CryptoTokenFactory.PKCS11_NAME;
         } else {
 
             cryptoTokenImplementation = SoftCryptoToken.class.getName();
@@ -153,9 +153,9 @@ public class CryptoTokenTestUtils {
             if (SystemTestsConfiguration.getPkcs11Library() == null) {
                 throw new IllegalStateException("No crypto library found.");
             }
-            cryptoTokenProperties.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, SystemTestsConfiguration.getPkcs11Library());
-            cryptoTokenProperties.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, SystemTestsConfiguration.getPkcs11SlotValue("1"));
-            cryptoTokenProperties.setProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE,
+            cryptoTokenProperties.setProperty(CryptoTokenConstants.SHLIB_LABEL_KEY, SystemTestsConfiguration.getPkcs11Library());
+            cryptoTokenProperties.setProperty(CryptoTokenConstants.SLOT_LABEL_VALUE, SystemTestsConfiguration.getPkcs11SlotValue("1"));
+            cryptoTokenProperties.setProperty(CryptoTokenConstants.SLOT_LABEL_TYPE,
                     SystemTestsConfiguration.getPkcs11SlotType(Pkcs11SlotLabelType.SLOT_NUMBER.getKey()).getKey());
         }
 

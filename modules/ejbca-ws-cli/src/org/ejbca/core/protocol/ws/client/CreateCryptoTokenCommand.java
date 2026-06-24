@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
 
-import org.cesecore.keys.token.PKCS11CryptoToken;
+import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -104,7 +104,7 @@ public class CreateCryptoTokenCommand extends EJBCAWSRABaseCommand implements IA
         		"[<pathToCryptoTokenPropertiesFile>]");
         getPrintStream().println();
         getPrintStream().println("cryptotokenName: The name of the new crypto token.");
-        getPrintStream().println("cryptotokenType: Can be one of: " + SoftCryptoToken.class.getSimpleName() + ", " + PKCS11CryptoToken.class.getSimpleName());
+        getPrintStream().println("cryptotokenType: Can be one of: " + SoftCryptoToken.class.getSimpleName() + ", " + CryptoTokenFactory.PKCS11_SIMPLE_NAME);
         getPrintStream().println("autoActivate: Set to true|false to allow|disallow whether crypto token should be autoactivated or not.");
         getPrintStream().println("activationPin: Pin code for the crypto token.");
         getPrintStream().println("pathToCryptoTokenPropertiesFile: The path to a .properties file containing the new cryptotoken properties. Optional");

@@ -63,7 +63,6 @@ import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.cesecore.keys.token.AvailableCryptoToken;
 import org.cesecore.keys.token.AwsKmsAuthenticationType;
 import org.cesecore.keys.token.AzureAuthenticationType;
-import org.cesecore.keys.token.AzureCryptoToken;
 import org.cesecore.keys.token.CryptoTokenCompositeWrapper;
 import org.cesecore.keys.token.CryptoTokenConstants;
 import org.cesecore.keys.token.CryptoTokenFactory;
@@ -73,7 +72,6 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.token.NullCryptoToken;
-import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.ejbca.config.AcmeConfiguration;
 import org.ejbca.config.GlobalAcmeConfiguration;
@@ -248,7 +246,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
         public String getAuthenticationCode() {
             if (!requiresSecretToActivate) {
-                return AzureCryptoToken.DUMMY_ACTIVATION_CODE;
+                return CryptoTokenConstants.DUMMY_ACTIVATION_CODE;
             }
             return authenticationCode;
         }
@@ -270,7 +268,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
 
         public boolean isP11SlotType() {
-            return PKCS11CryptoToken.class.getSimpleName().equals(cryptoTokenInfo.getType()) ||
+            return CryptoTokenFactory.PKCS11_SIMPLE_NAME.equals(cryptoTokenInfo.getType()) ||
                     CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(cryptoTokenInfo.getType());
         }
 
@@ -279,7 +277,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
 
         public boolean isAzureType() {
-            return AzureCryptoToken.class.getSimpleName().equals(cryptoTokenInfo.getType());
+            return CryptoTokenFactory.AZURE_SIMPLE_NAME.equals(cryptoTokenInfo.getType());
         }
 
         public boolean isSecurosysType() {
@@ -627,7 +625,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
 
         public boolean isShowP11CryptoToken() {
-            return PKCS11CryptoToken.class.getSimpleName().equals(getType()) ||
+            return CryptoTokenFactory.PKCS11_SIMPLE_NAME.equals(getType()) ||
                     CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(getType());
         }
 
@@ -636,7 +634,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
 
         public boolean isShowAzureCryptoToken() {
-            return AzureCryptoToken.class.getSimpleName().equals(getType());
+            return CryptoTokenFactory.AZURE_SIMPLE_NAME.equals(getType());
         }
 
         public boolean isShowAWSKMSCryptoToken() {
@@ -730,7 +728,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
         public boolean getRequiresSecret() {
             // true for crypto tokens that require some kind of activation code.  Azure and AWS may not
-            if (type.equals(AzureCryptoToken.class.getSimpleName()) && azureAuthenticationType != AzureAuthenticationType.APP_ID_AND_SECRET) {
+            if (type.equals(CryptoTokenFactory.AZURE_SIMPLE_NAME) && azureAuthenticationType != AzureAuthenticationType.APP_ID_AND_SECRET) {
                 return false;
             } else if (type.equals(CryptoTokenFactory.AWSKMS_SIMPLE_NAME) && awsKmsAuthenticationType != AwsKmsAuthenticationType.KEY_ID_AND_SECRET) {
                 return false;
@@ -740,11 +738,11 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
 
         public boolean getShowKeyBinding() {
-            return !type.equals(AzureCryptoToken.class.getSimpleName()) || azureAuthenticationType == AzureAuthenticationType.KEY_BINDING;
+            return !type.equals(CryptoTokenFactory.AZURE_SIMPLE_NAME) || azureAuthenticationType == AzureAuthenticationType.KEY_BINDING;
         }
 
         public boolean getShowClientId() {
-            return !type.equals(AzureCryptoToken.class.getSimpleName()) || azureAuthenticationType != AzureAuthenticationType.MANAGED_IDENTITY;
+            return !type.equals(CryptoTokenFactory.AZURE_SIMPLE_NAME) || azureAuthenticationType != AzureAuthenticationType.MANAGED_IDENTITY;
         }
 
         public void setFortanixBaseAddress(String fortanixBaseAddress) {
@@ -1316,13 +1314,13 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
             final Properties properties = new Properties();
             String className = null;
-            if (PKCS11CryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType()) ||
+            if (CryptoTokenFactory.PKCS11_SIMPLE_NAME.equals(getCurrentCryptoToken().getType()) ||
                     CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(getCurrentCryptoToken().getType())) {
                 className = getCurrentCryptoToken().getType().equals("PKCS11CryptoToken")
-                        ? PKCS11CryptoToken.class.getName()
+                        ? CryptoTokenFactory.PKCS11_NAME
                         : CryptoTokenFactory.JACKNJI_NAME;
                 String library = getCurrentCryptoToken().getP11Library();
-                properties.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, library);
+                properties.setProperty(CryptoTokenConstants.SHLIB_LABEL_KEY, library);
                 String slotTextValue = getCurrentCryptoToken().getP11Slot().trim();
                 String slotLabelType = getCurrentCryptoToken().getP11SlotLabelType();
                 //Perform some name validation
@@ -1356,8 +1354,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     }
                 }
 
-                properties.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, slotTextValue);
-                properties.setProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE, slotLabelType);
+                properties.setProperty(CryptoTokenConstants.SLOT_LABEL_VALUE, slotTextValue);
+                properties.setProperty(CryptoTokenConstants.SLOT_LABEL_TYPE, slotLabelType);
                 // The default should be null, but we will get a value "default" from the GUI code in this case..
                 final String p11AttributeFile = getCurrentCryptoToken().getP11AttributeFile();
                 if (!"default".equals(p11AttributeFile)) {
@@ -1387,7 +1385,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                                             + "attributes file with EJBCA. Remove the line '%s'.", line));
                         }
                     }
-                    properties.setProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY, p11AttributeFile);
+                    properties.setProperty(CryptoTokenConstants.ATTRIB_LABEL_KEY, p11AttributeFile);
                 }
                 if (checkSlotInUse) {
                     log.info("Checking if slot is already used");
@@ -1411,18 +1409,18 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 }
             } else if (SoftCryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType())) {
                 className = SoftCryptoToken.class.getName();
-            } else if (AzureCryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType())) {
-                className = AzureCryptoToken.class.getName();
+            } else if (CryptoTokenFactory.AZURE_SIMPLE_NAME.equals(getCurrentCryptoToken().getType())) {
+                className = CryptoTokenFactory.AZURE_NAME;
                 final String vaultType = getCurrentCryptoToken().getKeyVaultType().trim();
                 final String vaultName = getCurrentCryptoToken().getKeyVaultName().trim();
                 final String vaultClientID = getCurrentCryptoToken().getKeyVaultClientID().trim();
                 final String vaultKeyBinding = getCurrentCryptoToken().getKeyVaultKeyBinding();
-                properties.setProperty(AzureCryptoToken.KEY_VAULT_TYPE, vaultType);
-                properties.setProperty(AzureCryptoToken.KEY_VAULT_NAME, vaultName);
-                properties.setProperty(AzureCryptoToken.KEY_VAULT_CLIENTID, vaultClientID);
-                properties.setProperty(AzureCryptoToken.KEY_VAULT_AUTHENTICATION_TYPE, getCurrentCryptoToken().getAzureAuthenticationType().toString());
+                properties.setProperty(CryptoTokenConstants.KEY_VAULT_TYPE, vaultType);
+                properties.setProperty(CryptoTokenConstants.KEY_VAULT_NAME, vaultName);
+                properties.setProperty(CryptoTokenConstants.KEY_VAULT_CLIENTID, vaultClientID);
+                properties.setProperty(CryptoTokenConstants.KEY_VAULT_AUTHENTICATION_TYPE, getCurrentCryptoToken().getAzureAuthenticationType().toString());
                 if (vaultKeyBinding != null) {
-                    properties.setProperty(AzureCryptoToken.KEY_VAULT_KEY_BINDING, vaultKeyBinding);
+                    properties.setProperty(CryptoTokenConstants.KEY_VAULT_KEY_BINDING, vaultKeyBinding);
                 }
             } else if (CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(getCurrentCryptoToken().getType())) {
                 className = CryptoTokenFactory.AWSKMS_NAME;
@@ -1464,7 +1462,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
             final char[] secret = getCurrentCryptoToken().getRequiresSecret()
                     ? getCurrentCryptoToken().getSecret1().toCharArray()
-                    : AzureCryptoToken.DUMMY_ACTIVATION_CODE.toCharArray();
+                    : CryptoTokenConstants.DUMMY_ACTIVATION_CODE.toCharArray();
             if (getCurrentCryptoTokenId() == 0) {
                 if (secret.length > 0) {
                     if (getCurrentCryptoToken().isAutoActivate()) {
@@ -1628,10 +1626,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 // Special case: Never expose the NullCryptoToken when creating new tokens
                 continue;
             }
-            if (availableCryptoToken.getClassPath().equals(PKCS11CryptoToken.class.getName()) ||
+            if (availableCryptoToken.getClassPath().equals(CryptoTokenFactory.PKCS11_NAME) ||
                     availableCryptoToken.getClassPath().equals(CryptoTokenFactory.JACKNJI_NAME)) {
                 // Never expose the PKCS11 or "PKCS11 NG" crypto tokens when creating new tokens if not enabled in web.properties
-                if (availableCryptoToken.getClassPath().equals(PKCS11CryptoToken.class.getName()) && !WebConfiguration.isSunP11Enabled()) {
+                if (availableCryptoToken.getClassPath().equals(CryptoTokenFactory.PKCS11_NAME) && !WebConfiguration.isSunP11Enabled()) {
                     if (log.isDebugEnabled()) {
                         log.debug("SunP11 Crypto Token support is not enabled in GUI. See web.properties for enabling Sun PKCS#11.");
                     }
@@ -1646,7 +1644,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 }
             }
 
-            if (availableCryptoToken.getClassPath().equals(AzureCryptoToken.class.getName())) {
+            if (availableCryptoToken.getClassPath().equals(CryptoTokenFactory.AZURE_NAME)) {
                 // Never expose the AzureCryptoToken when creating new tokens if it is not enabled in web.properties
                 if (!WebConfiguration.isAzureKeyVaultEnabled()) {
                     if (log.isDebugEnabled()) {
@@ -1744,7 +1742,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 currentCryptoToken.setKeyPlaceholders(cryptoTokenInfo.getCryptoTokenProperties().getProperty(CryptoToken.KEYPLACEHOLDERS_PROPERTY, ""));
                 currentCryptoToken.setAllowExplicitParameters(cryptoTokenInfo.isAllowExplicitParameters());
 
-                if (cryptoTokenInfo.getType().equals(PKCS11CryptoToken.class.getSimpleName()) ||
+                if (cryptoTokenInfo.getType().equals(CryptoTokenFactory.PKCS11_SIMPLE_NAME) ||
                         cryptoTokenInfo.getType().equals(CryptoTokenFactory.JACKNJI_SIMPLE_NAME)) {
                     currentCryptoToken.setP11AttributeFile(cryptoTokenInfo.getP11AttributeFile());
                     currentCryptoToken.setP11Library(cryptoTokenInfo.getP11Library());
@@ -1757,7 +1755,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                         currentCryptoToken.setCanGenerateKeyMsg(libinfo.getCanGenerateKeyMsg());
                     }
                 }
-                if (cryptoTokenInfo.getType().equals(AzureCryptoToken.class.getSimpleName())) {
+                if (cryptoTokenInfo.getType().equals(CryptoTokenFactory.AZURE_SIMPLE_NAME)) {
                     currentCryptoToken.setKeyVaultType(cryptoTokenInfo.getKeyVaultType());
                     currentCryptoToken.setKeyVaultName(cryptoTokenInfo.getKeyVaultName());
                     currentCryptoToken.setKeyVaultClientID(cryptoTokenInfo.getKeyVaultClientID());

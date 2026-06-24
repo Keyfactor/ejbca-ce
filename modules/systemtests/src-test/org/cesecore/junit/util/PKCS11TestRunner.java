@@ -13,7 +13,7 @@
 package org.cesecore.junit.util;
 
 import org.cesecore.SystemTestsConfiguration;
-import org.cesecore.keys.token.PKCS11CryptoToken;
+import org.cesecore.keys.token.CryptoTokenFactory;
 
 /**
  * Test runner for PKCS#11 crypto tokens
@@ -47,7 +47,7 @@ public class PKCS11TestRunner extends HardtokenTestRunnerBase {
 
     @Override
     protected String getTokenImplementation() {    
-        return PKCS11CryptoToken.class.getName();
+        return CryptoTokenFactory.PKCS11_NAME;
     }
 
 }

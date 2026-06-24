@@ -352,7 +352,9 @@
 	<path id="lib.primefaces.classpath"><fileset dir="${ejbca.home}/lib/primefaces" includes="primefaces-*.jar"/></path>
 
 	<path id="lib.x509-common-util.classpath"><fileset dir="${ejbca.home}/lib" includes="x509-common-util*.jar"/></path> 
-	<path id="lib.cryptotokens.classpath"><fileset dir="${ejbca.home}/lib" includes="cryptotokens-*.jar"/></path>
+	<path id="lib.cryptotokens.classpath">
+		<fileset dir="${ejbca.home}/lib" includes="cryptotokens-*.jar json-simple-*.jar nimbus-jose-jwt-*.jar jcip-annotations-*.jar"/>
+	</path>
 	<path id="lib.p11ng.classpath"><fileset dir="${ejbca.home}/lib" includes="p11ng-*.jar"/></path> 
 	
 	
