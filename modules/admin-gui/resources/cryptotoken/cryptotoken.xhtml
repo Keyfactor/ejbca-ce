@@ -558,8 +558,24 @@
                         </h:panelGroup>
                     </p:column>
                     <p:column>
-                        <h:inputText value="#{cryptoTokenMBean.currentCryptoToken.AWSKMSRegion}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" disabled="#{!cryptoTokenMBean.allowedToModify}"/>
-                        <h:outputText value="#{cryptoTokenMBean.currentCryptoToken.AWSKMSRegion}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+                        <h:inputText value="#{cryptoTokenMBean.currentCryptoToken.awsKmsRegion}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" disabled="#{!cryptoTokenMBean.allowedToModify}"/>
+                        <h:outputText value="#{cryptoTokenMBean.currentCryptoToken.awsKmsRegion}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+                    </p:column>
+                </p:row>
+
+                <!-- AWS KMS - Hostname -->
+                <p:row rendered="#{cryptoTokenMBean.currentCryptoToken.showAWSKMSCryptoToken}">
+                    <p:column>
+                        <h:panelGroup>
+                            <h:outputLabel for="currentCryptoTokenAWSKMSHostname" value="#{web.text.CRYPTOTOKEN_AWSKMS_HOSTNAME} "/>
+                            <h:outputText id="currentCryptoTokenAWSKMSHostnameHelp" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+                        </h:panelGroup>
+                    </p:column>
+                    <p:column>
+                        <h:panelGroup id="currentCryptoTokenAWSKMSHostnamePanelGroup">
+                            <h:inputText id="currentCryptoTokenAWSKMSHostname" value="#{cryptoTokenMBean.currentCryptoToken.awsKmsHostname}" size="45" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" disabled="#{!cryptoTokenMBean.allowedToModify}"/>
+                            <h:outputText value="#{cryptoTokenMBean.currentCryptoToken.awsKmsHostname}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+                        </h:panelGroup>
                     </p:column>
                 </p:row>
 
@@ -576,8 +592,8 @@
                     <p:column>
                         <h:panelGroup id="currentCryptoTokenAWSKMSAccessKeyIDValuePanelGroup">
                             <h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.requiresSecret}">
-                                <h:inputText value="#{cryptoTokenMBean.currentCryptoToken.AWSKMSAccessKeyID}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" disabled="#{!cryptoTokenMBean.allowedToModify}"/>
-                                <h:outputText value="#{cryptoTokenMBean.currentCryptoToken.AWSKMSAccessKeyID}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+                                <h:inputText value="#{cryptoTokenMBean.currentCryptoToken.awsKmsAccessKeyID}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" disabled="#{!cryptoTokenMBean.allowedToModify}"/>
+                                <h:outputText value="#{cryptoTokenMBean.currentCryptoToken.awsKmsAccessKeyID}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
                             </h:panelGroup>
                         </h:panelGroup>
                     </p:column>

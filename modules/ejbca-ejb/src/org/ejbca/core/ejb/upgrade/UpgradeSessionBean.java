@@ -25,9 +25,11 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
+import jakarta.persistence.TypedQuery;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.log4j.Logger;
@@ -63,6 +65,8 @@ import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keybind.impl.OcspNonExistingBehavior;
+import org.cesecore.keys.token.CryptoTokenConstants;
+import org.cesecore.keys.token.CryptoTokenData;
 import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleDataSessionLocal;
@@ -1642,6 +1646,23 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     public void migrateDatabase9_6_0() throws UpgradeFailedException {
         log.info("Starting upgrade to 9.6.0");
         migrateGlobalCesecoreConfiguration9_6_0();
+        migrateAwsKmsHostname();
+    }
+
+    private void migrateAwsKmsHostname() {
+        log.info("Upgrade: Adding default hostname to AWS KMS Crypto Tokens.");
+        final TypedQuery<CryptoTokenData> query = entityManager.createQuery(
+                "SELECT c FROM CryptoTokenData c WHERE c.tokenType = :tokenType", CryptoTokenData.class);
+        query.setParameter("tokenType", "AWSKMSCryptoToken");
+        for (final CryptoTokenData cryptoToken : query.getResultList()) {
+            final Properties props = cryptoToken.getTokenProperties();
+            if (!props.containsKey(CryptoTokenConstants.AWSKMS_HOSTNAME)) {
+                log.info("Upgrade: Setting default hostname for AWS KMS Crypto Token: " + cryptoToken.getTokenName());
+                props.setProperty(CryptoTokenConstants.AWSKMS_HOSTNAME, CryptoTokenConstants.AWSKMS_HOSTNAME_DEFAULT);
+                cryptoToken.setTokenProperties(props);
+                entityManager.merge(cryptoToken);
+            }
+        }
     }
     
     @SuppressWarnings("deprecation")
