@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.Strings;
@@ -58,6 +59,15 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
     CryptoTokenSessionLocal cryptoTokenSession;
 
     private static final Logger log = Logger.getLogger(CryptoTokenSessionBean.class);
+
+    /**
+     * Simple class names of all crypto token types supported in EJBCA Community Edition.
+     * When a new CE-supported token type is added, add its simple class name here.
+     */
+    private static final Set<String> CE_SUPPORTED_TOKEN_TYPES = Set.of(
+            SoftCryptoToken.class.getSimpleName(),
+            NullCryptoToken.class.getSimpleName()
+    );
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -324,6 +334,15 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
     @Override
     public List<Integer> getCryptoTokenIds() {
         return entityManager.createQuery("SELECT a.id FROM CryptoTokenData a").getResultList();
+    }
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public boolean hasNonCeSupportedTokenTypes() {
+        final Long count = entityManager.createQuery("SELECT COUNT(a) FROM CryptoTokenData a WHERE a.tokenType NOT IN :ceTypes", Long.class)
+                .setParameter("ceTypes", CE_SUPPORTED_TOKEN_TYPES)
+                .getSingleResult();
+        return count > 0;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)

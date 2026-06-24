@@ -17,9 +17,7 @@ import java.util.Map;
 
 import jakarta.ejb.Local;
 
-/**
- * 
- */
+
 @Local
 public interface CryptoTokenSessionLocal extends CryptoTokenSession {
 
@@ -49,4 +47,13 @@ public interface CryptoTokenSessionLocal extends CryptoTokenSession {
 
     /** clear one item from cache */
     void flushId(Integer id);
+
+    /**
+     * Checks whether the database contains any crypto tokens of a type not supported in Community Edition.
+     * Only {@link SoftCryptoToken} and {@link NullCryptoToken} are supported in Community Edition.
+     * Used at startup to detect HSM token types that require Enterprise Edition.
+     *
+     * @return true if at least one crypto token with a non-CE-supported type exists in the database
+     */
+    boolean hasNonCeSupportedTokenTypes();
 }
