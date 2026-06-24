@@ -162,8 +162,7 @@ public class StartupSingletonBean {
      * Verifies that no HSM crypto tokens are configured when running EJBCA Community Edition.
      * HSM and hardware security module support is an Enterprise Edition feature only.
      * If any unsupported token types are found in the database, startup is aborted.
-     * <p>
-     * The set of EE-only HSM token types is defined in {@code CryptoTokenSessionBean}.
+     * The set of CE-supported crypto types is defined in {@code CryptoTokenSessionBean}.
      *
      * @throws IllegalStateException if running Community Edition and HSM crypto tokens are present in the database
      */
