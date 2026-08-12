@@ -260,7 +260,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         //Lazy initialization for SCEP configurations older than 6.3.1
         if (value == null) {
             data.put(alias + "." + SCEP_CLIENT_CERTIFICATE_RENEWAL, DEFAULT_CLIENT_CERTIFICATE_RENEWAL);
-            return Boolean.getBoolean(DEFAULT_CLIENT_CERTIFICATE_RENEWAL);
+            return Boolean.parseBoolean(DEFAULT_CLIENT_CERTIFICATE_RENEWAL);
         }
         return Boolean.valueOf(value);
     }
@@ -288,7 +288,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         //Lazy initialization for SCEP configurations older than 6.3.1
         if (value == null) {
             data.put(alias + "." + SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY, DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
-            return Boolean.getBoolean(DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
+            return Boolean.parseBoolean(DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
         }
         return Boolean.valueOf(value);
     }
@@ -360,7 +360,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         // Allow for SCEP configurations older than 7.5.1 to use SHA-1 in responses by default
         if (value == null) {
             data.put(alias + "." + SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM, "true");
-            return Boolean.getBoolean("true");
+            return Boolean.parseBoolean("true");
         }
         return StringUtils.equalsIgnoreCase(value, "true");
     }
