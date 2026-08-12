@@ -360,7 +360,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         // Allow for SCEP configurations older than 7.5.1 to use SHA-1 in responses by default
         if (value == null) {
             data.put(alias + "." + SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM, "true");
-            return Boolean.parseBoolean("true");
+            return true;
         }
         return StringUtils.equalsIgnoreCase(value, "true");
     }
