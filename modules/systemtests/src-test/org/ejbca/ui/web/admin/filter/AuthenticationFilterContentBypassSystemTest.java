@@ -31,6 +31,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.TrustManager;
+
 import org.apache.log4j.Logger;
 import org.cesecore.CaTestUtils;
 import org.cesecore.SystemTestsConfiguration;
@@ -41,6 +45,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.provider.X509TrustManagerAcceptAll;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionRemote;
@@ -70,6 +75,7 @@ public class AuthenticationFilterContentBypassSystemTest {
     private static final String CA_DN = "CN=" + CA_NAME;
 
     private static final String ADMINWEB = "/ejbca/adminweb";
+    private static final TrustManager[] ACCEPT_ALL_TRUST_MANAGER = X509TrustManagerAcceptAll.asArray();
 
     private final AuthenticationToken alwaysAllowToken =
             new TestAlwaysAllowLocalAuthenticationToken(AuthenticationFilterContentBypassSystemTest.class.getSimpleName());
@@ -87,13 +93,13 @@ public class AuthenticationFilterContentBypassSystemTest {
 
     @Before
     public void setUp() throws Exception {
-        Assume.assumeTrue("Skipped if not on GITLAB CI", Boolean.parseBoolean(System.getProperty("CI")));
+        Assume.assumeTrue("Skipped if not on GITLAB CI", Boolean.parseBoolean(System.getenv("CI")));
 
         CryptoProviderTools.installBCProviderIfNotAvailable();
 
         httpHost = SystemTestsConfiguration.getRemoteHost("127.0.0.1");
         httpPort = Integer.parseInt(SystemTestsConfiguration
-                .getRemotePortHttp(configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERPRIVHTTPS)));
+                .getRemotePortHttps(configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERPRIVHTTPS)));
 
         // In case a previous run was aborted before tearDown.
         CaTestUtils.removeCa(alwaysAllowToken, CA_NAME, CA_NAME);
@@ -234,15 +240,27 @@ public class AuthenticationFilterContentBypassSystemTest {
         Host: %s:%d
         Accept: application/pkix-crl, application/octet-stream, */*
         Connection: close
-        
+
         """.formatted(requestTarget, httpHost, httpPort);
 
-        try (Socket socket = new Socket(InetAddress.getByName(httpHost), httpPort)) {
+        try (final Socket socket = createTrustingSslSocket(httpHost, httpPort)) {
             socket.setSoTimeout(30000);
             final OutputStream os = socket.getOutputStream();
             os.write(request.getBytes(StandardCharsets.US_ASCII));
             os.flush();
             return RawResponse.read(socket.getInputStream());
+        }
+    }
+
+    /** The AdminWeb listener is TLS-only, and the test CA chain isn't in the default trust store. */
+    private static SSLSocket createTrustingSslSocket(final String host, final int port) throws IOException {
+        try {
+            // Create TLS context that accepts all CA certificates and does not use client cert authentication
+            final SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, ACCEPT_ALL_TRUST_MANAGER, null);
+            return (SSLSocket) sslContext.getSocketFactory().createSocket(InetAddress.getByName(host), port);
+        } catch (final Exception e) {
+            throw new IOException("Failed to establish TLS connection to " + host + ":" + port, e);
         }
     }
 
