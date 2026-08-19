@@ -45,6 +45,7 @@ import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionRemote;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -86,6 +87,8 @@ public class AuthenticationFilterContentBypassSystemTest {
 
     @Before
     public void setUp() throws Exception {
+        Assume.assumeTrue("Skipped if not on GITLAB CI", Boolean.parseBoolean(System.getProperty("CI")));
+
         CryptoProviderTools.installBCProviderIfNotAvailable();
 
         httpHost = SystemTestsConfiguration.getRemoteHost("127.0.0.1");
