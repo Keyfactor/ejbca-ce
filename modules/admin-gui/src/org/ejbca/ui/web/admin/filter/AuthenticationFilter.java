@@ -56,7 +56,7 @@ public class AuthenticationFilter implements Filter {
         boolean hasAuthenticationError = false;
         String authenticationErrorMessage = "";
         String authenticationErrorPublicMessage = "Authorization Denied";
-        final String accessResourcesByRequestURI = getAccessResourcesByRequestURI(httpServletRequest.getRequestURI());
+        final String accessResourcesByRequestURI = getAccessResourcesByRequestURI(httpServletRequest.getHttpServletMapping().getPattern());
         if (log.isTraceEnabled()) {
             log.trace("Access rule for '" + httpServletRequest.getRequestURI() + "' is " + accessResourcesByRequestURI + " (if null, then the page should do authorization checks by itself)");
         }
