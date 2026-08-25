@@ -101,6 +101,10 @@ public class RaCertDistServlet extends HttpServlet {
             return;
         }
         final boolean fullChain = Boolean.parseBoolean(httpServletRequest.getParameter(PARAMETER_CHAIN));
+        String format = httpServletRequest.getParameter(PARAMETER_FORMAT);
+        if (format == null) {
+            format = PARAMETER_FORMAT_OPTION_PEM; // Default value
+        }
         if (httpServletRequest.getParameter(PARAMETER_CAID) != null) {
             List<Certificate> chain = null;
             try {
@@ -133,7 +137,7 @@ public class RaCertDistServlet extends HttpServlet {
                                 .getPublicWebCertChainOrderRootFirst()) {
                             Collections.reverse(chain);
                         }
-                        switch (httpServletRequest.getParameter(PARAMETER_FORMAT)) {
+                        switch (format) {
                             case PARAMETER_FORMAT_OPTION_JKS: {
                                 // Create a JKS truststore with the CA certificates in
                                 final KeyStore keyStore = KeyStore.getInstance("JKS");
@@ -159,7 +163,7 @@ public class RaCertDistServlet extends HttpServlet {
                         }
                     } else {
                         response = caCertificate.getEncoded();
-                        switch (httpServletRequest.getParameter(PARAMETER_FORMAT)) {
+                        switch (format) {
                             case PARAMETER_FORMAT_OPTION_FIREFOX: {
                                 filename = null;
                                 contentType = "application/x-x509-ca-cert";
@@ -210,7 +214,7 @@ public class RaCertDistServlet extends HttpServlet {
                             try {
                                 byte[] response = null;
                                 String filename = "cert" + fingerprint;
-                                switch (httpServletRequest.getParameter(PARAMETER_FORMAT)) {
+                                switch (format) {
                                     case PARAMETER_FORMAT_OPTION_SSH: {
                                         response = chain.get(0).getEncoded();
                                         filename = "ssh-" + fingerprint + "-cert.pub";
