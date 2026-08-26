@@ -127,7 +127,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     public static final float LATEST_VERSION = 9f;
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
 
-    public static final Set<String> DEFAULT_ALIAS_LIST = new LinkedHashSet<String>();
+    public static final Set<String> DEFAULT_ALIAS_LIST = new LinkedHashSet<>();
     public static final String DEFAULT_OPERATION_MODE = Mode.CA.getResource();
     public static final String DEFAULT_INCLUDE_CA = Boolean.TRUE.toString();
     public static final String DEFAULT_CHAIN_ROOT_FIRST = Boolean.TRUE.toString();
@@ -213,7 +213,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
     // return all the key with an alias
     public static Set<String> getAllAliasKeys(String alias) {
         alias += ".";
-        Set<String> keys = new LinkedHashSet<String>();
+        Set<String> keys = new LinkedHashSet<>();
         keys.add(alias + SCEP_OPERATIONMODE);
         keys.add(alias + SCEP_INCLUDE_CA);
         keys.add(alias + SCEP_CHAIN_ROOT_FIRST);
@@ -273,7 +273,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         String value = getValue(key, alias);
         if (value == null) {
             data.put(alias + "." + SCEP_CLIENT_CERTIFICATE_RENEWAL, DEFAULT_CLIENT_CERTIFICATE_RENEWAL);
-            return Boolean.getBoolean(DEFAULT_CLIENT_CERTIFICATE_RENEWAL);
+            return Boolean.parseBoolean(DEFAULT_CLIENT_CERTIFICATE_RENEWAL);
         }
         return Boolean.valueOf(value);
     }
@@ -301,7 +301,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         //Lazy initialization for SCEP configurations older than 6.3.1
         if (value == null) {
             data.put(alias + "." + SCEP_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY, DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
-            return Boolean.getBoolean(DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
+            return Boolean.parseBoolean(DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
         }
         return Boolean.valueOf(value);
     }
@@ -373,7 +373,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         // Allow for SCEP configurations older than 7.5.1 to use SHA-1 in responses by default
         if (value == null) {
             data.put(alias + "." + SCEP_ALLOW_LEGACY_DIGEST_ALGORITHM, "true");
-            return Boolean.getBoolean("true");
+            return true;
         }
         return Strings.CI.equals(value, "true");
     }
@@ -1133,14 +1133,13 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
      * 
      * @return map of string to string
      */
-    
     @SuppressWarnings("unchecked")
     private ArrayList<String> getListValue(String key, String alias) {
         if (aliasExists(alias)) {
             try {
                 return (ArrayList<String>) data.get(key);
             } catch (ClassCastException e) {
-                final ArrayList<String> result = new ArrayList<String>();
+                final ArrayList<String> result = new ArrayList<>();
                 final String Cas = data.get(key).toString();
                 if (Cas != null && Cas.length() > 0) {
                     Cas.replaceAll("[\\[\\]',]", "");
@@ -1226,7 +1225,7 @@ public class ScepConfiguration extends ConfigurationBase implements Serializable
         if (encryptionCAs == null) {
             setListValue(alias + "." + ENCRYPTION_CAS, null, alias);
         } else {
-            ArrayList<String> value = new ArrayList<String>();
+            ArrayList<String> value = new ArrayList<>();
             value.addAll(encryptionCAs);
             value.sort(String::compareTo);
             setListValue(alias + "." + ENCRYPTION_CAS, value, alias);
