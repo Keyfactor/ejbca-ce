@@ -60,7 +60,7 @@ spec:
             {{- toYaml .Values.ejbca.envFrom | nindent 12 }}
           {{- end }}
           command:
-            - "/bin/sh"
+            - "/bin/bash"
             - "-c"
             - |
               /opt/keyfactor/bin/start.sh &
@@ -228,7 +228,7 @@ spec:
             postStart:
               exec:
                 command:
-                  - "/bin/sh"
+                  - "/bin/bash"
                   - "-c"
                   - |
                     {{- if not .Values.ejbca.importEjbcaConfFiles }}
