@@ -59,8 +59,10 @@ import com.keyfactor.util.CertTools;
 public class CRLDownloadWorker extends BaseWorker {
     private static final Logger log = Logger.getLogger(CRLDownloadWorker.class);
 
-    public static final String PROP_IGNORE_NEXT_UPDATE = "ignoreNextUpdate";
-    public static final String PROP_MAX_DOWNLOAD_SIZE = "maxDownloadSize";
+    public static final String PROP_IGNORE_NEXT_UPDATE_LEGACY = "ignoreNextUpdate";
+    public static final String PROP_MAX_DOWNLOAD_SIZE_LEGACY = "maxDownloadSize";
+    public static final String PROP_IGNORE_NEXT_UPDATE = "worker.ignoreNextUpdate";
+    public static final String PROP_MAX_DOWNLOAD_SIZE = "worker.maxDownloadSize";
     public static final int DEFAULT_MAX_DOWNLOAD_SIZE = 1 * 1024 * 1024;
 
     @Override
@@ -152,7 +154,12 @@ public class CRLDownloadWorker extends BaseWorker {
                                          final CrlStoreSessionLocal crlStoreSession, final ImportCrlSessionLocal importCrlSession) throws ServiceExecutionFailedException {
         try {
             final String issuerDn = CertTools.getSubjectDN(caCertificate);
-            final boolean ignoreNextUpdate = PropertyTools.get(properties, PROP_IGNORE_NEXT_UPDATE, false);
+            final boolean ignoreNextUpdate;
+            if (properties.getProperty(PROP_IGNORE_NEXT_UPDATE) != null) {
+                ignoreNextUpdate = PropertyTools.get(properties, PROP_IGNORE_NEXT_UPDATE, false);
+            } else {
+                ignoreNextUpdate = PropertyTools.get(properties, PROP_IGNORE_NEXT_UPDATE_LEGACY, false);
+            }
             // Get last known CRL (if any) and check when the next update will be
             final X509CRL lastFullCrl = getCRLFromBytes(crlStoreSession.getLastCRL(issuerDn, crlPartitionIndex, false));
             final X509CRL newestFullCrl;
@@ -212,7 +219,12 @@ public class CRLDownloadWorker extends BaseWorker {
 
     private X509CRL getAndProcessCrl(final URL cdpUrl, final X509Certificate caCertificate, final CAInfo caInfo,
                                      final ImportCrlSessionLocal importCrlSession, final int crlPartitionIndex) throws CrlStoreException, CrlImportException, ServiceExecutionFailedException {
-        final int maxSize = PropertyTools.get(properties, PROP_MAX_DOWNLOAD_SIZE, DEFAULT_MAX_DOWNLOAD_SIZE);
+        final int maxSize;
+        if (properties.getProperty(PROP_MAX_DOWNLOAD_SIZE) != null) {
+            maxSize = PropertyTools.get(properties, PROP_MAX_DOWNLOAD_SIZE, DEFAULT_MAX_DOWNLOAD_SIZE);
+        } else {
+            maxSize = PropertyTools.get(properties, PROP_MAX_DOWNLOAD_SIZE_LEGACY, DEFAULT_MAX_DOWNLOAD_SIZE);
+        }
         X509CRL newCrl = null;
         final byte[] crlBytesNew = NetworkTools.downloadDataFromUrl(cdpUrl, maxSize);
         if (crlBytesNew == null) {
