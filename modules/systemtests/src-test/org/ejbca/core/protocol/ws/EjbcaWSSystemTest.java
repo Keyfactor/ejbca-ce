@@ -2911,7 +2911,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             Properties ctproperties = token.getCryptoTokenProperties();
             assertEquals("Incorrect number of properties created in crypto token.", 2, ctproperties.keySet().size());
             assertEquals("SoftCryptoToken", token.getType());
-            assertFalse(Boolean.getBoolean((String)token.getCryptoTokenProperties().get(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY)));
+            assertFalse(Boolean.parseBoolean((String)token.getCryptoTokenProperties().get(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY)));
             assertTrue(token.isActive());
             cryptoTokenManagementSession.deactivate(intAdmin, ctid);
             assertFalse(cryptoTokenManagementSession.isCryptoTokenStatusActive(intAdmin, ctid));

@@ -12,16 +12,17 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
+
 import org.apache.log4j.Logger;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.certificates.ca.*;
+import org.cesecore.certificates.ca.ApprovalRequestType;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -48,22 +49,27 @@ import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.approval.profile.PartitionedApprovalProfile;
-import org.ejbca.core.model.era.*;
+import org.ejbca.core.model.era.RaApprovalRequestInfo;
+import org.ejbca.core.model.era.RaApprovalResponseRequest;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.era.TestRaMasterApiProxySessionRemote;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
 import org.ejbca.ui.web.rest.api.resource.swagger.ApprovalRestResourceSwagger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.junit.AfterClass;
 import org.junit.After;
-import org.junit.BeforeClass;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.RunWith;
 
-import java.util.Map;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.Response;
 
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonStatusResponse;
@@ -142,7 +148,7 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
         ApprovalStep firstStep = partitionedApprovalProfile.getFirstStep();
         ApprovalPartition firstStepPartition = firstStep.getPartitions().values().iterator().next();
         final DynamicUiProperty<RadioButton>  property = new DynamicUiProperty<>("Radio test", new RadioButton("Blue"),
-                new ArrayList<RadioButton>( Arrays.asList(new RadioButton("Green"), new RadioButton("Blue"), new RadioButton("Red"))));
+                new ArrayList<>( Arrays.asList(new RadioButton("Green"), new RadioButton("Blue"), new RadioButton("Red"))));
         property.setType(RadioButton.class);
         partitionId = firstStepPartition.getPartitionIdentifier();
         partitionedApprovalProfile.addPropertyToPartition(firstStep.getStepIdentifier(), partitionId, property);
@@ -557,7 +563,7 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
         assertEquals("Approval EEP should be subject dn is incorrect", "CN="+eeName, actualJsonObject.get("subject_dn"));
         assertEquals("Approval CA name is incorrect",  CA_NAME, actualJsonObject.get("ca_name"));
         assertEquals("Approval key_recoverable is incorrect","NO", actualJsonObject.get("key_recoverable"));
-        assertFalse("Approval subject_name_log_redaction is incorrect", Boolean.getBoolean(actualJsonObject.get("subject_name_log_redaction").toString()));
+        assertFalse("Approval subject_name_log_redaction is incorrect", Boolean.parseBoolean(actualJsonObject.get("subject_name_log_redaction").toString()));
         assertEquals("Approval send_notification is incorrect","NO", actualJsonObject.get("send_notification"));
         assertNotNull("Remaining approvals should be present", partition.get("remaining_approvals"));
         assertEquals("Remaining approvals should be 1", 1L, partition.get("remaining_approvals"));
@@ -610,7 +616,7 @@ public class ApprovalRestResourceSystemTest extends RestResourceSystemTestBase {
         assertEquals("Approval EEP should be subject dn is incorrect", "CN="+partitionedEeName, actualJsonObject.get("subject_dn"));
         assertEquals("Approval CA name is incorrect",  CA_NAME_PARTITIONED, actualJsonObject.get("ca_name"));
         assertEquals("Approval key_recoverable is incorrect","NO", actualJsonObject.get("key_recoverable"));
-        assertFalse("Approval subject_name_log_redaction is incorrect", Boolean.getBoolean(actualJsonObject.get("subject_name_log_redaction").toString()));
+        assertFalse("Approval subject_name_log_redaction is incorrect", Boolean.parseBoolean(actualJsonObject.get("subject_name_log_redaction").toString()));
         assertEquals("Approval send_notification is incorrect","NO", actualJsonObject.get("send_notification"));
 
 
