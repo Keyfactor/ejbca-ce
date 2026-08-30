@@ -921,6 +921,140 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public void deleteRevokedCertificate(final CertificateInfo certInfo, final AuthenticationToken adminForLogging) {
+        if (certInfo.getStatus() != CertificateConstants.CERT_REVOKED) {
+            throw new IllegalStateException("Certificate " + certInfo.getSerialNumberHex() +
+                    " is not in REVOKED status (current status=" + certInfo.getStatus() + ")");
+        }
+        final Query deleteQuery = entityManager.createQuery("DELETE FROM CertificateData a WHERE a.fingerprint = :fingerprint");
+        deleteQuery.setParameter("fingerprint", certInfo.getFingerprint());
+        deleteQuery.executeUpdate();
+
+        final String caIdString = (certInfo.getIssuerDN() != null ? String.valueOf(certInfo.getIssuerDN().hashCode()) : null);
+        final String detailsMsg = InternalResources.getInstance().getLocalizedMessage("store.deletedrevokedcert",
+                caIdString, certInfo.getSerialNumberHex());
+        logSession.log(EventTypes.CERT_CLEANUP, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, adminForLogging.toString(),
+                caIdString, certInfo.getSerialNumberHex(), certInfo.getUsername(), detailsMsg);
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public Set<String> deleteCertificatesMatchingInSeparateTransactions(final List<String> issuerDns,
+            final Date expiredBefore, final Date revokedBefore,
+            final Set<RevocationReasons> revocationReasons, final int batchSize,
+            final AuthenticationToken adminForLogging, final Set<String> previousDeletedFingerprints) {
+        final boolean expiredCriterion = (expiredBefore != null);
+        final boolean revokedCriterion = (revocationReasons != null && !revocationReasons.isEmpty());
+        if (!expiredCriterion && !revokedCriterion) {
+            throw new IllegalArgumentException(
+                    "At least one criterion must be supplied (expiredBefore or non-empty revocationReasons).");
+        }
+        final Set<String> currentlyDeletedFingerprints = new HashSet<>();
+        final List<CertificateInfo> certInfos = findCertificatesMatching(
+                issuerDns, expiredBefore, revokedBefore, revocationReasons, batchSize);
+        for (final CertificateInfo certInfo : certInfos) {
+            if (previousDeletedFingerprints.contains(certInfo.getFingerprint())) {
+                throw new IllegalStateException("Certificate still exists after deletion! Certificate serial number: " + certInfo.getSerialNumberHex() +
+                        ", fingerprint: " + certInfo.getFingerprint());
+            } else {
+                // Per-row delete dispatches on status: REVOKED rows use the
+                // revoked single-row primitive (preserves the
+                // store.deletedrevokedcert audit-log key); everything else
+                // uses the expired single-row primitive (preserves
+                // store.deletedexpiredcert). The actual CertificateData
+                // DELETE is identical in either path.
+                if (certInfo.getStatus() == CertificateConstants.CERT_REVOKED) {
+                    certificateStoreSession.deleteRevokedCertificate(certInfo, adminForLogging);
+                } else {
+                    certificateStoreSession.deleteExpiredCertificate(certInfo, adminForLogging);
+                }
+                currentlyDeletedFingerprints.add(certInfo.getFingerprint());
+            }
+        }
+        return currentlyDeletedFingerprints;
+    }
+
+    /**
+     * Private helper for {@link #deleteCertificatesMatchingInSeparateTransactions}.
+     * Builds a JPQL query whose WHERE clause is the AND-composition of the
+     * supplied criteria, runs it, and resolves each returned fingerprint to
+     * a {@link CertificateInfo} via the existing
+     * {@code getCertificateInfo(fingerprint)} method. Returns at most
+     * {@code maxNumberOfResults} entries.
+     *
+     * <p>Composition rules:
+     * <ul>
+     *   <li>{@code issuerDns} non-null/non-empty: adds
+     *       {@code AND a.issuerDN IN :issuerDns}.</li>
+     *   <li>{@code expiredBefore} non-null: adds
+     *       {@code AND a.expireDate < :expiredBefore}.</li>
+     *   <li>{@code revocationReasons} non-null/non-empty: adds
+     *       {@code AND a.status = REVOKED AND a.revocationReason IN :reasons},
+     *       plus {@code AND a.revocationDate < :revokedBefore} when
+     *       {@code revokedBefore} is also non-null.</li>
+     * </ul>
+     */
+    private List<CertificateInfo> findCertificatesMatching(final Collection<String> issuerDns,
+            final Date expiredBefore, final Date revokedBefore,
+            final Set<RevocationReasons> revocationReasons, final int maxNumberOfResults) {
+        final boolean hasIssuerFilter = (issuerDns != null && !issuerDns.isEmpty());
+        final boolean hasExpiredCriterion = (expiredBefore != null);
+        final boolean hasRevokedCriterion = (revocationReasons != null && !revocationReasons.isEmpty());
+        final boolean hasRevokedDateClause = hasRevokedCriterion && (revokedBefore != null);
+        if (!hasExpiredCriterion && !hasRevokedCriterion) {
+            return Collections.emptyList();
+        }
+        final StringBuilder jpql = new StringBuilder("SELECT a.fingerprint FROM CertificateData a WHERE 1=1 ");
+        if (hasIssuerFilter) {
+            jpql.append("AND a.issuerDN IN :issuerDns ");
+        }
+        if (hasExpiredCriterion) {
+            jpql.append("AND a.expireDate < :expiredBefore ");
+        }
+        if (hasRevokedCriterion) {
+            // status IN (REVOKED, ARCHIVED) — catches both still-status=40 rows
+            // and rows that have already passed through EJBCA's archival
+            // housekeeping (status=60). revocationReason is set on both.
+            jpql.append("AND a.status IN :revokedStatuses ");
+            jpql.append("AND a.revocationReason IN :reasons ");
+            if (hasRevokedDateClause) {
+                jpql.append("AND a.revocationDate < :revokedBefore ");
+            }
+        }
+        final Query query = entityManager.createQuery(jpql.toString());
+        if (hasIssuerFilter) {
+            query.setParameter("issuerDns", issuerDns);
+        }
+        if (hasExpiredCriterion) {
+            query.setParameter("expiredBefore", expiredBefore.getTime());
+        }
+        if (hasRevokedCriterion) {
+            query.setParameter("revokedStatuses", Arrays.asList(
+                    CertificateConstants.CERT_REVOKED, CertificateConstants.CERT_ARCHIVED));
+            final List<Integer> reasonCodes = new ArrayList<>(revocationReasons.size());
+            for (final RevocationReasons reason : revocationReasons) {
+                reasonCodes.add(reason.getDatabaseValue());
+            }
+            query.setParameter("reasons", reasonCodes);
+            if (hasRevokedDateClause) {
+                query.setParameter("revokedBefore", revokedBefore.getTime());
+            }
+        }
+        query.setMaxResults(maxNumberOfResults);
+        @SuppressWarnings("unchecked")
+        final List<String> fingerprints = query.getResultList();
+        final List<CertificateInfo> result = new ArrayList<>(fingerprints.size());
+        for (final String fingerprint : fingerprints) {
+            final CertificateInfo info = getCertificateInfo(fingerprint);
+            if (info != null) {
+                result.add(info);
+            }
+        }
+        return result;
+    }
+
+    @Override
     public boolean existsByIssuerAndSerno(String issuerDN, BigInteger serno) {
         if (log.isTraceEnabled()) {
             log.trace(">existsByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno.toString(16));

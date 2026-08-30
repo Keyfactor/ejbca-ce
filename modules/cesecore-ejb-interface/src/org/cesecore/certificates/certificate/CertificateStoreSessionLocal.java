@@ -436,4 +436,62 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
     Set<String> deleteExpiredCertificatesInSeparateTransactions(List<String> issuerDns, Date maximumExpirationDate, int batchSize,
             AuthenticationToken adminForLogging, Set<String> previousDeletedFingerprints);
 
+    /**
+     * Deletes a single revoked certificate row. No authorization check is done.
+     *
+     * <p>Intended for use by the Database Maintenance worker when the
+     * "Delete Revoked Certificates" option is enabled. Pairs with
+     * {@link #deleteExpiredCertificate} — that method covers the expired
+     * branch, this one covers the revoked-but-unexpired branch.
+     *
+     * @param certInfo The certificate to delete.
+     * @param adminForLogging The administrator to use in the log message.
+     * @throws IllegalStateException if the certificate is not in REVOKED status.
+     */
+    void deleteRevokedCertificate(final CertificateInfo certInfo, final AuthenticationToken adminForLogging);
+
+    /**
+     * Deletes certificate rows matching the AND-composition of the supplied
+     * criteria. All database operations run in separate transactions,
+     * batched at {@code batchSize} rows per cycle.
+     *
+     * <p>This is the unified primitive backing the Database Maintenance
+     * Worker's compositional cert-side filter — each non-null criterion
+     * contributes one conjunct to the underlying query, so the worker can
+     * express e.g. "expired AND revoked-with-reason" as a single deletion
+     * sweep rather than two independent passes.
+     *
+     * <p>Criterion semantics:
+     * <ul>
+     *   <li>{@code expiredBefore != null}: rows whose {@code expireDate} is
+     *       strictly earlier than the supplied cutoff are eligible.</li>
+     *   <li>{@code revocationReasons != null && !revocationReasons.isEmpty()}:
+     *       rows in REVOKED status whose {@code revocationReason} is in
+     *       the set are eligible, additionally constrained — when
+     *       {@code revokedBefore != null} — to rows whose
+     *       {@code revocationDate} is strictly earlier than the supplied
+     *       cutoff.</li>
+     *   <li>At least one criterion must be supplied; calling with all
+     *       criteria null/empty throws {@link IllegalArgumentException}.</li>
+     * </ul>
+     *
+     * <p>Per-row deletion routes through {@link #deleteRevokedCertificate}
+     * for rows in REVOKED status (preserves the {@code store.deletedrevokedcert}
+     * audit-log key) and {@link #deleteExpiredCertificate} otherwise
+     * (preserves {@code store.deletedexpiredcert}). The CertificateData
+     * mutation itself is identical in either path.
+     *
+     * @param issuerDns The issuer DNs, or null for all.
+     * @param expiredBefore Cutoff for the expired criterion, or null to omit it.
+     * @param revokedBefore Cutoff for the revocation-date sub-clause of the revoked criterion, or null to catch any revocation date.
+     * @param revocationReasons Reasons for the revoked criterion, or null/empty to omit the revoked criterion entirely.
+     * @param batchSize Batch size.
+     * @param adminForLogging The administrator to use in the log message.
+     * @param previousDeletedFingerprints The certificates that were deleted in the previous execution. Used as a safety precaution to prevent an endless loop.
+     * @return The fingerprints of the certificates that were deleted.
+     */
+    Set<String> deleteCertificatesMatchingInSeparateTransactions(List<String> issuerDns, Date expiredBefore, Date revokedBefore,
+            Set<RevocationReasons> revocationReasons, int batchSize,
+            AuthenticationToken adminForLogging, Set<String> previousDeletedFingerprints);
+
 }
