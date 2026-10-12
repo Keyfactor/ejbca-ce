@@ -115,6 +115,14 @@ ejbca:
   volumes: []
   # Extra volume mounts to be added to the deployment
   volumeMounts: []
+  # readinessProbe configuration (optional)
+  readinessProbe: {}
+  #  httpGet:
+  #    path: /health/ready
+  #    port: 8090
+  #  initialDelaySeconds: 30
+  #  periodSeconds: 5
+  #  timeoutSeconds: 2
 hsm:
   # provide HSM container image here when keyfactor repository is not used i.e. 
   # company internal artifactory is used
@@ -219,6 +227,8 @@ podSecurityContext: {}
 # fsGroup: 2000
 # Annotations to add to the service EJBCA and nginx
 serviceAnnotations: {}
+# securityContext is shared across all containers (for backwards compatibility)
+# Use per-container overrides below to configure individual containers
 securityContext: {}
 # capabilities:
 #   drop:
@@ -227,9 +237,26 @@ securityContext: {}
 # runAsNonRoot: true
 # runAsUser: 1000
 
+# Per-container security contexts (optional, overrides shared securityContext)
+# ejbca-init container security context
+initSecurityContext: {}
+# ejbca-nginx container security context (reverse proxy - security critical)
+nginxSecurityContext: {}
+# ejbca-httpd container security context (reverse proxy - security critical)
+httpdSecurityContext: {}
+# hsm-driver-init container security context
+hsmSecurityContext: {}
+# ejbca main application container security context
+ejbcaSecurityContext: {}
+
 # Only one of the following services can be enabled at a time
 # Use this for ingress or reverse proxy outside of the EJBCA pod which may be connected to a LoadBalancer.
 services:
+  # Service-specific annotations (overrides global serviceAnnotations)
+  annotations: {}
+  # externalTrafficPolicy: "" means use Kubernetes default
+  # Set to "Local" to preserve source IP (recommended for LoadBalancer type)
+  externalTrafficPolicy: ""
   # recommended (automatically enabled when ingress is used)
   proxyHttp:
     enabled: false
@@ -267,11 +294,25 @@ nginx:
     bindIP: 0.0.0.0
     httpPort: 80
     httpsPort: 443
+    # Service-specific annotations (overrides global serviceAnnotations)
+    annotations: {}
+    # externalTrafficPolicy: "" means use Kubernetes default
+    # Set to "Local" to preserve source IP (recommended for LoadBalancer type)
+    externalTrafficPolicy: ""
   # only relevant if multiple replicas
   loadBalancerAccess:
     enableStickySessionClientIp: false
     # create a load balancer service for each Pod with separate IP address
     enableReplicaSpecificAccess: false
+  # readinessProbe configuration (optional)
+  readinessProbe: {}
+  #  httpGet:
+  #    path: /
+  #    port: 443
+  #    scheme: HTTPS
+  #  initialDelaySeconds: 5
+  #  periodSeconds: 5
+  #  timeoutSeconds: 2
   additionalHosts:
 httpd:
   image: httpd:2.4
@@ -288,11 +329,25 @@ httpd:
     bindIP: 0.0.0.0
     httpPort: 80
     httpsPort: 443
+    # Service-specific annotations (overrides global serviceAnnotations)
+    annotations: {}
+    # externalTrafficPolicy: "" means use Kubernetes default
+    # Set to "Local" to preserve source IP (recommended for LoadBalancer type)
+    externalTrafficPolicy: ""
   # only relevant if multiple replicas
   loadBalancerAccess:
     enableStickySessionClientIp: false
     # create a load balancer service for each Pod with separate IP address
     enableReplicaSpecificAccess: false
+  # readinessProbe configuration (optional)
+  readinessProbe: {}
+  #  httpGet:
+  #    path: /
+  #    port: 443
+  #    scheme: HTTPS
+  #  initialDelaySeconds: 5
+  #  periodSeconds: 5
+  #  timeoutSeconds: 2
   additionalHosts:
 # External communication from cluster
 # Requires services.proxyAJP or services.proxyHttp to be enabled for adminweb access

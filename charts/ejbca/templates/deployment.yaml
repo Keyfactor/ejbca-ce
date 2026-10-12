@@ -51,7 +51,7 @@ spec:
         {{- if $proxyType }}
         - name: {{ .Chart.Name }}-init
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+            {{- toYaml (.Values.initSecurityContext | default .Values.securityContext) | nindent 12 }}
           image: {{ include "ejbca.imageRepository" . }}:{{ .Values.image.tag | default .Chart.AppVersion }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env: {{- include "ejbca.ejbcaDeploymentParameters" . | nindent 12 }}
@@ -90,6 +90,8 @@ spec:
         {{- end }}
         {{- if .Values.hsm.enabled }}
         - name: hsm-driver-init
+          securityContext:
+            {{- toYaml (.Values.hsmSecurityContext | default .Values.securityContext) | nindent 12 }}
           image: {{ include "ejbca.hsmImage" . }}
           command:
             [
@@ -132,6 +134,8 @@ spec:
       containers:
         {{- if .Values.nginx.enabled }}
         - name: {{ .Chart.Name }}-nginx
+          securityContext:
+            {{- toYaml (.Values.nginxSecurityContext | default .Values.securityContext) | nindent 12 }}
           image: {{ .Values.nginx.image }}
           {{- if and .Values.nginx.initializeWithSelfSignedTls (not .Values.nginx.mountInternalNginxCert)}}
           command:
@@ -140,6 +144,11 @@ spec:
             - |
               mkdir -p /etc/nginx/ssl/pem/
               openssl req -x509 -newkey rsa:4096 -keyout /etc/nginx/ssl/pem/{{ .Values.nginx.host }}-Key.pem -out /etc/nginx/ssl/pem/{{ .Values.nginx.host }}.pem -sha256 -days 7 -nodes -subj '/CN={{ .Values.nginx.host }}-selfsigned'
+              {{- if .Values.nginx.additionalHosts }}
+              {{- range .Values.nginx.additionalHosts }}
+              openssl req -x509 -newkey rsa:4096 -keyout /etc/nginx/ssl/pem/{{ . }}-Key.pem -out /etc/nginx/ssl/pem/{{ . }}.pem -sha256 -days 7 -nodes -subj '/CN={{ . }}-selfsigned'
+              {{- end }}
+              {{- end }}
               nginx -g "daemon off;"
           {{- end }}
           ports:
@@ -155,6 +164,10 @@ spec:
           livenessProbe:
             tcpSocket:
               port: 443
+          {{- with .Values.nginx.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           volumeMounts:
             - name: nginx-config
               mountPath: /etc/nginx/nginx.conf
@@ -169,6 +182,8 @@ spec:
         {{- end }}
         {{- if .Values.httpd.enabled }}
         - name: {{ .Chart.Name }}-httpd
+          securityContext:
+            {{- toYaml (.Values.httpdSecurityContext | default .Values.securityContext) | nindent 12 }}
           image: {{ .Values.httpd.image }}
           {{- if and .Values.httpd.initializeWithSelfSignedTls (not .Values.httpd.mountInternalHttpdCert)}}
           command:
@@ -194,6 +209,10 @@ spec:
           livenessProbe:
             tcpSocket:
               port: 443
+          {{- with .Values.httpd.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           volumeMounts:
             - name: httpd-config
               mountPath: /usr/local/apache2/conf/httpd.conf
@@ -208,7 +227,7 @@ spec:
          {{- end }}
         - name: {{ .Chart.Name }}
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+            {{- toYaml (.Values.ejbcaSecurityContext | default .Values.securityContext) | nindent 12 }}
           image: {{ include "ejbca.imageRepository" . }}:{{ .Values.image.tag | default .Chart.AppVersion }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env: {{- include "ejbca.ejbcaDeploymentParameters" . | nindent 12 }}
@@ -290,6 +309,10 @@ spec:
               {{- else if or (.Values.services.proxyHttp.enabled) (.Values.nginx.enabled) (.Values.ingress.enabled) }}
               port: 8082
               {{- end }}
+          {{- with .Values.ejbca.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:

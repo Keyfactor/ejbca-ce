@@ -6,12 +6,15 @@ kind: Service
 apiVersion: v1
 metadata:
   name: {{ include "ejbca.fullname" . }}-nginx
-  {{- with .Values.serviceAnnotations }}
+  {{- with (.Values.nginx.service.annotations | default .Values.serviceAnnotations) }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
   type: {{ .Values.nginx.service.type }}
+  {{- if .Values.nginx.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.nginx.service.externalTrafficPolicy }}
+  {{- end }}
   ports:
     {{- if .Values.nginx.service.httpPort }}
     - name: nginx-http
@@ -40,13 +43,16 @@ kind: Service
 apiVersion: v1
 metadata:
   name: {{ include "ejbca.fullname" . }}-nginx-sticky-session-client-ip
-  {{- with .Values.serviceAnnotations }}
+  {{- with (.Values.nginx.service.annotations | default .Values.serviceAnnotations) }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
   type: "LoadBalancer"
   sessionAffinity: "ClientIP"
+  {{- if .Values.nginx.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.nginx.service.externalTrafficPolicy }}
+  {{- end }}
   ports:
     {{- if .Values.nginx.service.httpPort }}
     - name: nginx-http
@@ -71,7 +77,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: {{ include "ejbca.fullname" $ }}-nginx-per-pod-{{ . }}
-  {{- with $.Values.serviceAnnotations }}
+  {{- with ($.Values.nginx.service.annotations | default $.Values.serviceAnnotations) }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
@@ -80,6 +86,9 @@ spec:
   type: "LoadBalancer"
   {{- else }}
   type: "ClusterIP"
+  {{- end }}
+  {{- if $.Values.nginx.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ $.Values.nginx.service.externalTrafficPolicy }}
   {{- end }}
   ports:
     {{- if $.Values.nginx.service.httpPort }}
