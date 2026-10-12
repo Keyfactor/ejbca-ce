@@ -140,6 +140,11 @@ spec:
             - |
               mkdir -p /etc/nginx/ssl/pem/
               openssl req -x509 -newkey rsa:4096 -keyout /etc/nginx/ssl/pem/{{ .Values.nginx.host }}-Key.pem -out /etc/nginx/ssl/pem/{{ .Values.nginx.host }}.pem -sha256 -days 7 -nodes -subj '/CN={{ .Values.nginx.host }}-selfsigned'
+              {{- if .Values.nginx.additionalHosts }}
+              {{- range .Values.nginx.additionalHosts }}
+              openssl req -x509 -newkey rsa:4096 -keyout /etc/nginx/ssl/pem/{{ . }}-Key.pem -out /etc/nginx/ssl/pem/{{ . }}.pem -sha256 -days 7 -nodes -subj '/CN={{ . }}-selfsigned'
+              {{- end }}
+              {{- end }}
               nginx -g "daemon off;"
           {{- end }}
           ports:
