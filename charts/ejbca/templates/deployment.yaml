@@ -51,7 +51,7 @@ spec:
         {{- if $proxyType }}
         - name: {{ .Chart.Name }}-init
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+            {{- toYaml (.Values.initSecurityContext | default .Values.securityContext) | nindent 12 }}
           image: {{ include "ejbca.imageRepository" . }}:{{ .Values.image.tag | default .Chart.AppVersion }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env: {{- include "ejbca.ejbcaDeploymentParameters" . | nindent 12 }}
@@ -90,6 +90,8 @@ spec:
         {{- end }}
         {{- if .Values.hsm.enabled }}
         - name: hsm-driver-init
+          securityContext:
+            {{- toYaml (.Values.hsmSecurityContext | default .Values.securityContext) | nindent 12 }}
           image: {{ include "ejbca.hsmImage" . }}
           command:
             [
@@ -132,6 +134,8 @@ spec:
       containers:
         {{- if .Values.nginx.enabled }}
         - name: {{ .Chart.Name }}-nginx
+          securityContext:
+            {{- toYaml (.Values.nginxSecurityContext | default .Values.securityContext) | nindent 12 }}
           image: {{ .Values.nginx.image }}
           {{- if and .Values.nginx.initializeWithSelfSignedTls (not .Values.nginx.mountInternalNginxCert)}}
           command:
@@ -178,6 +182,8 @@ spec:
         {{- end }}
         {{- if .Values.httpd.enabled }}
         - name: {{ .Chart.Name }}-httpd
+          securityContext:
+            {{- toYaml (.Values.httpdSecurityContext | default .Values.securityContext) | nindent 12 }}
           image: {{ .Values.httpd.image }}
           {{- if and .Values.httpd.initializeWithSelfSignedTls (not .Values.httpd.mountInternalHttpdCert)}}
           command:
@@ -221,7 +227,7 @@ spec:
          {{- end }}
         - name: {{ .Chart.Name }}
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+            {{- toYaml (.Values.ejbcaSecurityContext | default .Values.securityContext) | nindent 12 }}
           image: {{ include "ejbca.imageRepository" . }}:{{ .Values.image.tag | default .Chart.AppVersion }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env: {{- include "ejbca.ejbcaDeploymentParameters" . | nindent 12 }}
