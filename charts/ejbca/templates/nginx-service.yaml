@@ -12,6 +12,9 @@ metadata:
   {{- end }}
 spec:
   type: {{ .Values.nginx.service.type }}
+  {{- if .Values.nginx.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.nginx.service.externalTrafficPolicy }}
+  {{- end }}
   ports:
     {{- if .Values.nginx.service.httpPort }}
     - name: nginx-http
@@ -47,6 +50,9 @@ metadata:
 spec:
   type: "LoadBalancer"
   sessionAffinity: "ClientIP"
+  {{- if .Values.nginx.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.nginx.service.externalTrafficPolicy }}
+  {{- end }}
   ports:
     {{- if .Values.nginx.service.httpPort }}
     - name: nginx-http
@@ -80,6 +86,9 @@ spec:
   type: "LoadBalancer"
   {{- else }}
   type: "ClusterIP"
+  {{- end }}
+  {{- if $.Values.nginx.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ $.Values.nginx.service.externalTrafficPolicy }}
   {{- end }}
   ports:
     {{- if $.Values.nginx.service.httpPort }}

@@ -12,6 +12,9 @@ metadata:
   {{- end }}
 spec:
   type: {{ .Values.httpd.service.type }}
+  {{- if .Values.httpd.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.httpd.service.externalTrafficPolicy }}
+  {{- end }}
   ports:
     {{- if .Values.httpd.service.httpPort }}
     - name: httpd-http
@@ -47,6 +50,9 @@ metadata:
 spec:
   type: "LoadBalancer"
   sessionAffinity: "ClientIP"
+  {{- if .Values.httpd.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.httpd.service.externalTrafficPolicy }}
+  {{- end }}
   ports:
     {{- if .Values.httpd.service.httpPort }}
     - name: httpd-http
@@ -80,6 +86,9 @@ spec:
   type: "LoadBalancer"
   {{- else }}
   type: "ClusterIP"
+  {{- end }}
+  {{- if $.Values.httpd.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ $.Values.httpd.service.externalTrafficPolicy }}
   {{- end }}
   ports:
     {{- if $.Values.httpd.service.httpPort }}

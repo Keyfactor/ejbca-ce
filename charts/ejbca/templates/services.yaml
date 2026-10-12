@@ -18,6 +18,9 @@ metadata:
 {{- if .Values.services.directHttp.enabled }}
 spec:
   type: {{ .Values.services.directHttp.type }}
+  {{- if .Values.services.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.services.externalTrafficPolicy }}
+  {{- end }}
   ports:
     - port: {{ .Values.services.directHttp.httpPort }}
       {{- if eq .Values.services.directHttp.type "NodePort" }}
@@ -43,6 +46,9 @@ spec:
 {{- if or .Values.services.proxyAJP.enabled .Values.httpd.enabled }}
 spec:
   type: {{ .Values.services.proxyAJP.type }}
+  {{- if .Values.services.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.services.externalTrafficPolicy }}
+  {{- end }}
   ports:
     - port: {{ .Values.services.proxyAJP.port }}
       {{- if eq .Values.services.proxyAJP.type "NodePort" }}
@@ -56,6 +62,9 @@ spec:
 {{- else if or .Values.services.proxyHttp.enabled .Values.ingress.enabled }}
 spec:
   type: {{ .Values.services.proxyHttp.type }}
+  {{- if .Values.services.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.services.externalTrafficPolicy }}
+  {{- end }}
   ports:
     {{- if .Values.services.proxyHttp.httpPort }}
     - port: {{ .Values.services.proxyHttp.httpPort }}

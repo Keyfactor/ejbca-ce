@@ -238,6 +238,11 @@ securityContext: {}
 # Only one of the following services can be enabled at a time
 # Use this for ingress or reverse proxy outside of the EJBCA pod which may be connected to a LoadBalancer.
 services:
+  # Service-specific annotations (overrides global serviceAnnotations)
+  annotations: {}
+  # externalTrafficPolicy: "" means use Kubernetes default
+  # Set to "Local" to preserve source IP (recommended for LoadBalancer type)
+  externalTrafficPolicy: ""
   # recommended (automatically enabled when ingress is used)
   proxyHttp:
     enabled: false
@@ -275,6 +280,11 @@ nginx:
     bindIP: 0.0.0.0
     httpPort: 80
     httpsPort: 443
+    # Service-specific annotations (overrides global serviceAnnotations)
+    annotations: {}
+    # externalTrafficPolicy: "" means use Kubernetes default
+    # Set to "Local" to preserve source IP (recommended for LoadBalancer type)
+    externalTrafficPolicy: ""
   # only relevant if multiple replicas
   loadBalancerAccess:
     enableStickySessionClientIp: false
@@ -305,6 +315,11 @@ httpd:
     bindIP: 0.0.0.0
     httpPort: 80
     httpsPort: 443
+    # Service-specific annotations (overrides global serviceAnnotations)
+    annotations: {}
+    # externalTrafficPolicy: "" means use Kubernetes default
+    # Set to "Local" to preserve source IP (recommended for LoadBalancer type)
+    externalTrafficPolicy: ""
   # only relevant if multiple replicas
   loadBalancerAccess:
     enableStickySessionClientIp: false
