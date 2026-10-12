@@ -6,7 +6,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: {{ include "ejbca.fullname" . }}-httpd
-  {{- with .Values.serviceAnnotations }}
+  {{- with (.Values.httpd.service.annotations | default .Values.serviceAnnotations) }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
@@ -40,7 +40,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: {{ include "ejbca.fullname" . }}-httpd-sticky-session-client-ip
-  {{- with .Values.serviceAnnotations }}
+  {{- with (.Values.httpd.service.annotations | default .Values.serviceAnnotations) }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
@@ -71,7 +71,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: {{ include "ejbca.fullname" $ }}-httpd-load-balancer-{{ . }}
-  {{- with $.Values.serviceAnnotations }}
+  {{- with ($.Values.httpd.service.annotations | default $.Values.serviceAnnotations) }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}

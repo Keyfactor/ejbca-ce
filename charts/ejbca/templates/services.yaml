@@ -11,7 +11,7 @@ metadata:
   name: {{ include "ejbca.fullname" . }}
   labels:
     {{- include "ejbca.labels" . | nindent 4 }}
-  {{- with .Values.serviceAnnotations }}
+  {{- with (.Values.services.annotations | default .Values.serviceAnnotations) }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}

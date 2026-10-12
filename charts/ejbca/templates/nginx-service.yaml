@@ -6,7 +6,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: {{ include "ejbca.fullname" . }}-nginx
-  {{- with .Values.serviceAnnotations }}
+  {{- with (.Values.nginx.service.annotations | default .Values.serviceAnnotations) }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
@@ -40,7 +40,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: {{ include "ejbca.fullname" . }}-nginx-sticky-session-client-ip
-  {{- with .Values.serviceAnnotations }}
+  {{- with (.Values.nginx.service.annotations | default .Values.serviceAnnotations) }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
@@ -71,7 +71,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: {{ include "ejbca.fullname" $ }}-nginx-per-pod-{{ . }}
-  {{- with $.Values.serviceAnnotations }}
+  {{- with ($.Values.nginx.service.annotations | default $.Values.serviceAnnotations) }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
