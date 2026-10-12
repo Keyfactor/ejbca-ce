@@ -1072,7 +1072,7 @@
 								<h:message for="passwordConfirmField" id="passwordConfirmFieldMessage" styleClass="validationErrorMessage showErrorMessage"/>
 							</h:panelGroup>
 							<h:panelGroup layout="block" styleClass="pure-control-group" 
-										rendered="#{enrollMakeNewRequestBean.passwordRendered and enrollMakeNewRequestBean.clearPasswordAllowed}">
+										rendered="#{(enrollMakeNewRequestBean.passwordRendered and enrollMakeNewRequestBean.clearPasswordAllowed) or enrollMakeNewRequestBean.clearPasswordRenderedForAutoPassword}">
 								<h:outputLabel for="passwordClearPassword" value="#{msg.component_eedetails_field_cleartextpassword}"/>
 								<h:selectBooleanCheckbox id="passwordClearPassword" disabled="#{enrollMakeNewRequestBean.clearPasswordRequired}"
 														 value="#{enrollMakeNewRequestBean.clearPassword}" />
