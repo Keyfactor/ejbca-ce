@@ -115,6 +115,14 @@ ejbca:
   volumes: []
   # Extra volume mounts to be added to the deployment
   volumeMounts: []
+  # readinessProbe configuration (optional)
+  readinessProbe: {}
+  #  httpGet:
+  #    path: /health/ready
+  #    port: 8090
+  #  initialDelaySeconds: 30
+  #  periodSeconds: 5
+  #  timeoutSeconds: 2
 hsm:
   # provide HSM container image here when keyfactor repository is not used i.e. 
   # company internal artifactory is used
@@ -272,6 +280,15 @@ nginx:
     enableStickySessionClientIp: false
     # create a load balancer service for each Pod with separate IP address
     enableReplicaSpecificAccess: false
+  # readinessProbe configuration (optional)
+  readinessProbe: {}
+  #  httpGet:
+  #    path: /
+  #    port: 443
+  #    scheme: HTTPS
+  #  initialDelaySeconds: 5
+  #  periodSeconds: 5
+  #  timeoutSeconds: 2
   additionalHosts:
 httpd:
   image: httpd:2.4
@@ -293,6 +310,15 @@ httpd:
     enableStickySessionClientIp: false
     # create a load balancer service for each Pod with separate IP address
     enableReplicaSpecificAccess: false
+  # readinessProbe configuration (optional)
+  readinessProbe: {}
+  #  httpGet:
+  #    path: /
+  #    port: 443
+  #    scheme: HTTPS
+  #  initialDelaySeconds: 5
+  #  periodSeconds: 5
+  #  timeoutSeconds: 2
   additionalHosts:
 # External communication from cluster
 # Requires services.proxyAJP or services.proxyHttp to be enabled for adminweb access

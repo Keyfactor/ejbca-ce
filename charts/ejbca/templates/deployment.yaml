@@ -155,6 +155,10 @@ spec:
           livenessProbe:
             tcpSocket:
               port: 443
+          {{- with .Values.nginx.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           volumeMounts:
             - name: nginx-config
               mountPath: /etc/nginx/nginx.conf
@@ -194,6 +198,10 @@ spec:
           livenessProbe:
             tcpSocket:
               port: 443
+          {{- with .Values.httpd.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           volumeMounts:
             - name: httpd-config
               mountPath: /usr/local/apache2/conf/httpd.conf
@@ -290,6 +298,10 @@ spec:
               {{- else if or (.Values.services.proxyHttp.enabled) (.Values.nginx.enabled) (.Values.ingress.enabled) }}
               port: 8082
               {{- end }}
+          {{- with .Values.ejbca.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
