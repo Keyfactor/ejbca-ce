@@ -3040,21 +3040,80 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 log.info("No certificate found for CA with subjectDN: " + issuerDN);
                 break;
             }
-            for (final Certificate cert : caCerts) {
-                try {
-                    certificate.verify(cert.getPublicKey());
-                    // this was the right certificate
-                    certificateList.add(EJBTools.wrap(cert));
-                    // To determine if we have found the last certificate or not
-                    selfSigned = CertTools.isSelfSigned(cert);
-                    // Find the next certificate in the chain now
-                    certificate = cert;
-                    break; // Break of iteration over this CAs certs
-                } catch (Exception e) {
-                    log.debug("Failed verification when looking for CA certificate, this was not the correct CA certificate. IssuerDN: " + issuerDN + ", serno: " + CertTools.getSerialNumberAsString(cert));
+            final Certificate issuerCert = selectIssuerCertificate(certificate, caCerts, new Date());
+            if (issuerCert == null) {
+                log.info("No certificate found that verifies the signature of the certificate issued by CA with subjectDN: " + issuerDN);
+                break;
+            }
+            certificateList.add(EJBTools.wrap(issuerCert));
+            // To determine if we have found the last certificate or not
+            selfSigned = CertTools.isSelfSigned(issuerCert);
+            // Find the next certificate in the chain now
+            certificate = issuerCert;
+        }
+    }
+
+    /**
+     * Selects the issuer certificate for the given certificate among a set of candidate CA certificates having the same subject DN.
+     * <p>
+     * When a CA has been renewed there are several CA certificates with the same subject DN in the database, and when the CA was
+     * renewed without changing keys (or the issuer of a Sub CA was renewed) more than one of them will verify the signature of the
+     * certificate. The database returns these candidates in no particular order, so simply picking the first one that verifies
+     * could return an old (possibly expired) CA certificate instead of the CA's current certificate (see issue #865).
+     * <p>
+     * Among the candidates that verify the signature, the following are preferred, in order:
+     * <ol>
+     * <li>a certificate that is valid at the given time,</li>
+     * <li>a self-signed certificate (to prefer a root CA certificate over a cross certificate with the same key and subject),</li>
+     * <li>the most recently issued certificate (latest notBefore).</li>
+     * </ol>
+     *
+     * @param certificate the certificate to find the issuer certificate for
+     * @param candidates candidate CA certificates, typically all certificates with subject DN equal to the issuer DN of certificate
+     * @param now the time used to determine whether a candidate is currently valid
+     * @return the selected issuer certificate, or null if none of the candidates verify the signature of certificate
+     */
+    static Certificate selectIssuerCertificate(final Certificate certificate, final Collection<Certificate> candidates, final Date now) {
+        if (certificate == null || CollectionUtils.isEmpty(candidates)) {
+            return null;
+        }
+        final List<Certificate> verifyingCandidates = new ArrayList<>();
+        for (final Certificate candidate : candidates) {
+            if (candidate == null) {
+                continue;
+            }
+            try {
+                certificate.verify(candidate.getPublicKey());
+                verifyingCandidates.add(candidate);
+            } catch (Exception e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Failed verification when looking for CA certificate, this was not the correct CA certificate. IssuerDN: "
+                            + CertTools.getIssuerDN(certificate) + ", serno: " + CertTools.getSerialNumberAsString(candidate));
                 }
             }
         }
+        if (verifyingCandidates.isEmpty()) {
+            return null;
+        }
+        final Comparator<Certificate> preference = Comparator
+                .comparing((Certificate c) -> isValidAt(c, now))
+                .thenComparing(CertTools::isSelfSigned)
+                .thenComparing(c -> {
+                    final Date notBefore = CertTools.getNotBefore(c);
+                    return notBefore == null ? new Date(Long.MIN_VALUE) : notBefore;
+                });
+        final Certificate selected = Collections.max(verifyingCandidates, preference);
+        if (log.isDebugEnabled() && verifyingCandidates.size() > 1) {
+            log.debug("Found " + verifyingCandidates.size() + " CA certificates that verify the certificate issued by '"
+                    + CertTools.getIssuerDN(certificate) + "'. Selected CA certificate with serno: " + CertTools.getSerialNumberAsString(selected));
+        }
+        return selected;
+    }
+
+    private static boolean isValidAt(final Certificate certificate, final Date date) {
+        final Date notBefore = CertTools.getNotBefore(certificate);
+        final Date notAfter = CertTools.getNotAfter(certificate);
+        return (notBefore == null || !date.before(notBefore)) && (notAfter == null || !date.after(notAfter));
     }
 
     @Override
